@@ -29,12 +29,11 @@ return [
     ],
 
     // ---------------------------------------------------------------------
-    // Admin (back-office) — built on top of tavphub, auth via tavpid.
+    // Admin (back-office) — self-contained OTP auth, BREAD CRUD.
     // ---------------------------------------------------------------------
     'admin' => [
         'route_prefix' => env('CMS_ADMIN_PREFIX', 'admin'),
         'brand' => 'TAVP CMS',
-        'auth_guard' => 'tavpid',
         'otp_ttl_minutes' => 10,
 
         // Passwordless OTP is restricted to these e-mails.
@@ -137,9 +136,10 @@ return [
 
     // ---------------------------------------------------------------------
     // Webhooks — POST to external URLs on content events.
+    // Enable when you have a webhook receiver to configure.
     // ---------------------------------------------------------------------
     'webhooks' => [
-        'enabled' => true,
+        'enabled' => false,
         'timeout' => 5,
         'events' => ['content.created', 'content.updated', 'content.deleted'],
     ],
@@ -154,10 +154,11 @@ return [
     ],
 
     // ---------------------------------------------------------------------
-    // Publishing — scheduled posts via published_at + the publish command.
+    // Publishing — scheduled posts via published_at field.
+    // Requires: `php bin/cms cms:publish` cron job (not yet implemented).
     // ---------------------------------------------------------------------
     'publishing' => [
-        'enabled' => true,
+        'enabled' => false,
         'sleep_until_field' => 'published_at',
     ],
 

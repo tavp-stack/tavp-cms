@@ -25,7 +25,7 @@ $router->get('/blog/{slug}', function (string $slug) {
     $post = $bread->readBySlug('post', $slug);
 
     if ($post === null || ($post['status'] ?? 'draft') !== 'published') {
-        return response()->notFound();
+        return response('404 Not Found', 404);
     }
 
     // Enrich with taxonomy if available.
@@ -54,7 +54,7 @@ $router->get('/category/{slug}', function (string $slug) {
     $term = $taxonomy->findBySlug('category', $slug);
 
     if ($term === null) {
-        return response()->notFound();
+        return response('404 Not Found', 404);
     }
 
     $bread = app()->getService(BreadManager::class);
@@ -76,7 +76,7 @@ $router->get('/tag/{slug}', function (string $slug) {
     $term = $taxonomy->findBySlug('tag', $slug);
 
     if ($term === null) {
-        return response()->notFound();
+        return response('404 Not Found', 404);
     }
 
     $bread = app()->getService(BreadManager::class);
@@ -107,7 +107,7 @@ $router->get('/{slug}', function (string $slug) {
     $page = $bread->readBySlug('page', $slug);
 
     if ($page === null || ($page['status'] ?? 'draft') !== 'published') {
-        return response()->notFound();
+        return response('404 Not Found', 404);
     }
 
     // Enrich with taxonomy if available.

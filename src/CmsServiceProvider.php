@@ -149,11 +149,6 @@ class CmsServiceProvider implements ServiceProvider
         // Migrations live in database/migrations and are discovered by tavp-core.
     }
 
-    public function loadViews(): void
-    {
-        // The active theme registers its Volt view path with the view factory.
-    }
-
     private function makeStore(): ContentStore
     {
         $driver = (string) config('cms.storage', 'database');

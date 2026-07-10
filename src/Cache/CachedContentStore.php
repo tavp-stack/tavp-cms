@@ -124,8 +124,9 @@ class CachedContentStore implements ContentStore
         $file = $this->cacheFile($key);
 
         if (is_file($file) && (filemtime($file) + $this->ttl) > time()) {
+            $decoded = json_decode((string) file_get_contents($file), true);
             $this->memoryCache[$key] = [
-                'data' => unserialize((string) file_get_contents($file)),
+                'data' => $decoded !== null ? $decoded : [],
                 'expires' => microtime(true) + $this->ttl,
             ];
 
@@ -153,7 +154,7 @@ class CachedContentStore implements ContentStore
             mkdir($dir, 0755, true);
         }
 
-        file_put_contents($this->cacheFile($key), serialize($data));
+        file_put_contents($this->cacheFile($key), json_encode($data));
     }
 
     private function invalidateType(string $type): void

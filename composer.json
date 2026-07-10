@@ -1,6 +1,6 @@
 {
     "name": "tavp/cms",
-    "description": "TAVP CMS — a content management system built on the TAVP Stack. WordPress-familiar, Voyager-style admin, with pluggable database or flat-file storage.",
+    "description": "TAVP CMS — standalone content management system built on tavp/core. Pluggable storage, headless API, BREAD admin.",
     "type": "project",
     "license": "MIT",
     "keywords": [
@@ -14,9 +14,6 @@
     "require": {
         "php": ">=8.3",
         "tavp/core": "^1.0",
-        "tavp/tavpid": "^0.1 || ^1.0",
-        "tavp/tavphub": "^0.1 || ^1.0",
-        "tavp/tavpblocks": "^0.1 || ^1.0",
         "symfony/yaml": "^6.0 || ^7.0"
     },
     "require-dev": {
