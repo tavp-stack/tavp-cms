@@ -163,6 +163,18 @@ return [
     ],
 
     // ---------------------------------------------------------------------
+    // Analytics — page view tracking, fraud detection, experiments.
+    // Requires: tavp/tavp-analytics package.
+    // ---------------------------------------------------------------------
+    'analytics' => [
+        'enabled' => false,
+        'track_page_views' => true,
+        'track_events' => true,
+        'fraud_detection' => false,
+        'dashboard_enabled' => true,
+    ],
+
+    // ---------------------------------------------------------------------
     // Built-in content types. These are the defaults; more can be defined
     // from the admin UI (BREAD-style) and stored via the active driver.
     // "seo" fields are auto-appended when cms.seo.enabled is true.

@@ -117,6 +117,11 @@ class CmsServiceProvider implements ServiceProvider
         $app->bind(PublishScheduler::class, function ($app) {
             return new PublishScheduler($app->getService(BreadManager::class));
         });
+
+        // --- Analytics (optional, if tavp-analytics is installed) -----------
+        if (config('cms.analytics.enabled', false) && class_exists(\Tavp\Analytics\AnalyticsManager::class)) {
+            $app->bind(\Tavp\Analytics\AnalyticsManager::class, fn () => new \Tavp\Analytics\AnalyticsManager());
+        }
     }
 
     public function boot(): void
