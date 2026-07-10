@@ -1,0 +1,52 @@
+{
+    "name": "tavp/cms",
+    "description": "TAVP CMS — a content management system built on the TAVP Stack. WordPress-familiar, Voyager-style admin, with pluggable database or flat-file storage.",
+    "type": "project",
+    "license": "MIT",
+    "keywords": [
+        "tavp",
+        "cms",
+        "phalcon",
+        "content-management",
+        "bread",
+        "flat-file"
+    ],
+    "require": {
+        "php": ">=8.3",
+        "tavp/core": "^1.0",
+        "tavp/tavpid": "^0.1 || ^1.0",
+        "tavp/tavphub": "^0.1 || ^1.0",
+        "tavp/tavpblocks": "^0.1 || ^1.0",
+        "symfony/yaml": "^6.0 || ^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "phpstan/phpstan": "^1.10",
+        "friendsofphp/php-cs-fixer": "^3.40"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tavp\\Cms\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tavp\\Cms\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "stan": "phpstan analyse",
+        "cs-fix": "php-cs-fixer fix"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {}
+    },
+    "support": {
+        "issues": "https://github.com/tavp-stack/tavp-cms/issues",
+        "source": "https://github.com/tavp-stack/tavp-cms"
+    }
+}

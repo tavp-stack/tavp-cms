@@ -1,0 +1,12 @@
+/vendor/
+/node_modules/
+/content/
+/public/uploads/
+/storage/
+.env
+.env.*
+!.env.example
+composer.lock
+*.log
+.DS_Store
+Thumbs.db
