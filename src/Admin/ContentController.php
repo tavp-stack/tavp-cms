@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tavp\Cms\Admin;
 
 use Tavp\Cms\Content\ContentType;
+use Tavp\Cms\Content\ValidationException;
 use Tavp\Core\Http\Response;
 
 /**
@@ -16,6 +17,10 @@ class ContentController extends AdminController
     {
         if ($r = $this->guard()) {
             return $r;
+        }
+
+        if (!$this->can("content.browse")) {
+            return $this->redirect('/admin');
         }
 
         $contentType = $this->type($type);
@@ -33,6 +38,10 @@ class ContentController extends AdminController
     {
         if ($r = $this->guard()) {
             return $r;
+        }
+
+        if (!$this->can("content.create")) {
+            return $this->redirect('/admin');
         }
 
         $contentType = $this->type($type);
@@ -54,12 +63,24 @@ class ContentController extends AdminController
             return $r;
         }
 
+        if (!$this->can("content.create")) {
+            return $this->redirect('/admin');
+        }
+
         $contentType = $this->type($type);
         if ($contentType === null) {
             return $this->redirect('/admin');
         }
 
-        $this->bread()->add($type, $this->collect($contentType));
+        $data = $this->collect($contentType);
+
+        try {
+            $this->bread()->add($type, $data);
+        } catch (ValidationException $e) {
+            $this->flashErrors($e->errors());
+            $this->flashOld($data);
+            return $this->redirect("/admin/c/{$type}/create");
+        }
 
         return $this->redirect("/admin/c/{$type}");
     }
@@ -68,6 +89,10 @@ class ContentController extends AdminController
     {
         if ($r = $this->guard()) {
             return $r;
+        }
+
+        if (!$this->can("content.edit")) {
+            return $this->redirect('/admin');
         }
 
         $contentType = $this->type($type);
@@ -91,12 +116,24 @@ class ContentController extends AdminController
             return $r;
         }
 
+        if (!$this->can("content.edit")) {
+            return $this->redirect('/admin');
+        }
+
         $contentType = $this->type($type);
         if ($contentType === null) {
             return $this->redirect('/admin');
         }
 
-        $this->bread()->edit($type, $id, $this->collect($contentType));
+        $data = $this->collect($contentType);
+
+        try {
+            $this->bread()->edit($type, $id, $data);
+        } catch (ValidationException $e) {
+            $this->flashErrors($e->errors());
+            $this->flashOld($data);
+            return $this->redirect("/admin/c/{$type}/{$id}/edit");
+        }
 
         return $this->redirect("/admin/c/{$type}");
     }
@@ -105,6 +142,10 @@ class ContentController extends AdminController
     {
         if ($r = $this->guard()) {
             return $r;
+        }
+
+        if (!$this->can("content.delete")) {
+            return $this->redirect('/admin');
         }
 
         $this->bread()->delete($type, $id);

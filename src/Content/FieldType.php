@@ -26,6 +26,13 @@ enum FieldType: string
     case Relation = 'relation';
     case Blocks = 'blocks';
     case Json = 'json';
+    case Password = 'password';
+    case Email = 'email';
+    case Url = 'url';
+    case Color = 'color';
+    case Tags = 'tags';
+    case Repeater = 'repeater';
+    case Seo = 'seo';
 
     /**
      * Whether values of this type are stored as structured JSON rather
@@ -34,7 +41,19 @@ enum FieldType: string
     public function isStructured(): bool
     {
         return match ($this) {
-            self::Blocks, self::Json, self::Media, self::Relation => true,
+            self::Blocks, self::Json, self::Media, self::Relation,
+            self::Tags, self::Repeater, self::Seo => true,
+            default => false,
+        };
+    }
+
+    /**
+     * Whether this field supports multiple values.
+     */
+    public function isMultiple(): bool
+    {
+        return match ($this) {
+            self::Tags, self::Relation => true,
             default => false,
         };
     }
@@ -45,7 +64,8 @@ enum FieldType: string
     public function control(): string
     {
         return match ($this) {
-            self::Text, self::Slug => 'input',
+            self::Text, self::Slug, self::Email, self::Url => 'input',
+            self::Password => 'password',
             self::Textarea => 'textarea',
             self::RichText => 'editor',
             self::Number => 'number',
@@ -57,6 +77,10 @@ enum FieldType: string
             self::Relation => 'relation-picker',
             self::Blocks => 'block-editor',
             self::Json => 'code',
+            self::Color => 'color',
+            self::Tags => 'tags-input',
+            self::Repeater => 'repeater',
+            self::Seo => 'seo-editor',
         };
     }
 }

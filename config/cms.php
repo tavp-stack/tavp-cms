@@ -35,6 +35,30 @@ return [
         'route_prefix' => env('CMS_ADMIN_PREFIX', 'admin'),
         'brand' => 'TAVP CMS',
         'auth_guard' => 'tavpid',
+        'otp_ttl_minutes' => 10,
+
+        // Passwordless OTP is restricted to these e-mails.
+        'emails' => array_filter(array_map('trim', explode(',', (string) env('CMS_ADMIN_EMAILS', '')))),
+
+        // RBAC-lite: map an allowed e-mail to a role. Roles map to the
+        // permissions below. Unknown e-mails default to "editor".
+        'roles' => [
+            // 'admin@site.com' => 'admin',
+        ],
+        'permissions' => [
+            'admin' => ['content.*', 'taxonomy.*', 'media.*', 'menu.*', 'settings.*', 'webhook.*', 'api.*'],
+            'editor' => ['content.*', 'taxonomy.*', 'media.*', 'menu.*'],
+            'author' => ['content.create', 'content.edit', 'content.delete', 'media.*'],
+        ],
+    ],
+
+    'mail' => [
+        'driver' => env('CMS_MAIL_DRIVER', 'smtp'),
+        'host' => env('CMS_MAIL_HOST', '127.0.0.1'),
+        'port' => (int) env('CMS_MAIL_PORT', 1025),
+        'username' => env('CMS_MAIL_USERNAME', ''),
+        'password' => env('CMS_MAIL_PASSWORD', ''),
+        'from' => env('CMS_MAIL_FROM', 'noreply@tavp.web.id'),
     ],
 
     // ---------------------------------------------------------------------
@@ -50,6 +74,8 @@ return [
             'medium' => [640, 640],
             'large' => [1280, 1280],
         ],
+        // Generate responsive derivatives on upload (requires GD/Imagick).
+        'responsive' => false,
     ],
 
     // ---------------------------------------------------------------------
@@ -61,8 +87,84 @@ return [
     ],
 
     // ---------------------------------------------------------------------
+    // Caching — wraps the storage layer so reads are cheap.
+    // driver: "file" | "array" (array = request-only, good for dev).
+    // ---------------------------------------------------------------------
+    'cache' => [
+        'enabled' => (bool) env('CMS_CACHE_ENABLED', true),
+        'driver' => env('CMS_CACHE_DRIVER', 'file'),
+        'path' => storage_path('cms/cache'),
+        'ttl' => (int) env('CMS_CACHE_TTL', 300), // seconds
+    ],
+
+    // ---------------------------------------------------------------------
+    // Taxonomy — categories (hierarchical) + tags (flat).
+    // ---------------------------------------------------------------------
+    'taxonomy' => [
+        'enabled' => true,
+        'types' => ['category', 'tag'],
+        'hierarchical' => ['category'],
+    ],
+
+    // ---------------------------------------------------------------------
+    // Revisions — keep a point-in-time snapshot on every save.
+    // ---------------------------------------------------------------------
+    'revisions' => [
+        'enabled' => true,
+        'limit' => (int) env('CMS_REVISIONS_LIMIT', 50),
+        'path' => storage_path('cms/revisions'),
+    ],
+
+    // ---------------------------------------------------------------------
+    // Search — simple in-process full-text over title/body/excerpt.
+    // ---------------------------------------------------------------------
+    'search' => [
+        'enabled' => true,
+        'fields' => ['title', 'body', 'excerpt', 'slug'],
+    ],
+
+    // ---------------------------------------------------------------------
+    // Headless REST API.
+    // ---------------------------------------------------------------------
+    'api' => [
+        'enabled' => true,
+        'prefix' => env('CMS_API_PREFIX', 'api/cms'),
+        'tokens' => array_filter(array_map('trim', explode(',', (string) env('CMS_API_TOKENS', '')))),
+        'tokens_file' => storage_path('cms/api_tokens.json'),
+        'per_page' => (int) env('CMS_API_PER_PAGE', 15),
+        'max_per_page' => 100,
+    ],
+
+    // ---------------------------------------------------------------------
+    // Webhooks — POST to external URLs on content events.
+    // ---------------------------------------------------------------------
+    'webhooks' => [
+        'enabled' => true,
+        'timeout' => 5,
+        'events' => ['content.created', 'content.updated', 'content.deleted'],
+    ],
+
+    // ---------------------------------------------------------------------
+    // SEO — per-record meta + sitemap.
+    // ---------------------------------------------------------------------
+    'seo' => [
+        'enabled' => true,
+        'sitemap_path' => '/sitemap.xml',
+        'default_title_suffix' => '',
+    ],
+
+    // ---------------------------------------------------------------------
+    // Publishing — scheduled posts via published_at + the publish command.
+    // ---------------------------------------------------------------------
+    'publishing' => [
+        'enabled' => true,
+        'sleep_until_field' => 'published_at',
+    ],
+
+    // ---------------------------------------------------------------------
     // Built-in content types. These are the defaults; more can be defined
     // from the admin UI (BREAD-style) and stored via the active driver.
+    // "seo" fields are auto-appended when cms.seo.enabled is true.
     // ---------------------------------------------------------------------
     'content_types' => [
         'page' => [
@@ -71,11 +173,13 @@ return [
             'icon' => 'document',
             'route' => '/{slug}',
             'fields' => [
-                ['name' => 'title', 'type' => 'text', 'required' => true],
-                ['name' => 'slug', 'type' => 'slug', 'from' => 'title'],
+                ['name' => 'title', 'type' => 'text', 'required' => true, 'rules' => ['max:200']],
+                ['name' => 'slug', 'type' => 'slug', 'from' => 'title', 'rules' => ['unique']],
                 ['name' => 'body', 'type' => 'richtext'],
                 ['name' => 'status', 'type' => 'select', 'options' => ['draft', 'published'], 'default' => 'draft'],
                 ['name' => 'featured_image', 'type' => 'media'],
+                ['name' => 'categories', 'type' => 'relation', 'relation' => 'category', 'multiple' => true],
+                ['name' => 'tags', 'type' => 'relation', 'relation' => 'tag', 'multiple' => true],
             ],
         ],
         'post' => [
@@ -84,13 +188,15 @@ return [
             'icon' => 'newspaper',
             'route' => '/blog/{slug}',
             'fields' => [
-                ['name' => 'title', 'type' => 'text', 'required' => true],
-                ['name' => 'slug', 'type' => 'slug', 'from' => 'title'],
-                ['name' => 'excerpt', 'type' => 'textarea'],
+                ['name' => 'title', 'type' => 'text', 'required' => true, 'rules' => ['max:200']],
+                ['name' => 'slug', 'type' => 'slug', 'from' => 'title', 'rules' => ['unique']],
+                ['name' => 'excerpt', 'type' => 'textarea', 'rules' => ['max:500']],
                 ['name' => 'body', 'type' => 'richtext'],
-                ['name' => 'status', 'type' => 'select', 'options' => ['draft', 'published'], 'default' => 'draft'],
+                ['name' => 'status', 'type' => 'select', 'options' => ['draft', 'published', 'scheduled'], 'default' => 'draft'],
                 ['name' => 'featured_image', 'type' => 'media'],
                 ['name' => 'published_at', 'type' => 'datetime'],
+                ['name' => 'categories', 'type' => 'relation', 'relation' => 'category', 'multiple' => true],
+                ['name' => 'tags', 'type' => 'relation', 'relation' => 'tag', 'multiple' => true],
             ],
         ],
     ],

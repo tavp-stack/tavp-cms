@@ -1,0 +1,287 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/**
+ * TAVP CMS CLI — standalone commands for the CMS module.
+ *
+ * Usage:
+ *   php bin/cms <command> [options]
+ *
+ * Commands:
+ *   types                        List registered content types
+ *   make:type <name>             Scaffold a new content type in config/cms.php
+ *   publish                      Publish scheduled content
+ *   search:reindex               Rebuild the search index (flushes cache)
+ *   api:token [name]             Generate a new API bearer token
+ *   taxonomy:list <type>         List taxonomy terms
+ *   taxonomy:create <type> <name> Create a taxonomy term
+ *   help                         Show this help
+ */
+
+// Bootstrap: try to find autoloader.
+$autoloadPaths = [
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php',
+];
+
+$loaded = false;
+
+foreach ($autoloadPaths as $path) {
+    if (is_file($path)) {
+        require $path;
+        $loaded = true;
+        break;
+    }
+}
+
+if (!$loaded) {
+    // Fallback: manual PSR-4 autoloader for Tavp\Cms namespace.
+    spl_autoload_register(static function (string $class): void {
+        $prefix = 'Tavp\\Cms\\';
+        if (!str_starts_with($class, $prefix)) {
+            return;
+        }
+        $relative = str_replace('\\', '/', substr($class, strlen($prefix)));
+        $file = __DIR__ . '/../src/' . $relative . '.php';
+        if (is_file($file)) {
+            require $file;
+        }
+    });
+
+    // Also register core autoload manually.
+    spl_autoload_register(static function (string $class): void {
+        $prefix = 'Tavp\\Core\\';
+        if (!str_starts_with($class, $prefix)) {
+            return;
+        }
+        $relative = str_replace('\\', '/', substr($class, strlen($prefix)));
+        $file = __DIR__ . '/../../../tavp-core/src/' . $relative . '.php';
+        if (is_file($file)) {
+            require $file;
+        }
+    });
+}
+
+// Application bootstrap (if available).
+if (is_file(__DIR__ . '/../bootstrap/app.php')) {
+    require __DIR__ . '/../bootstrap/app.php';
+} elseif (is_file(__DIR__ . '/../../../bootstrap/app.php')) {
+    require __DIR__ . '/../../../bootstrap/app.php';
+}
+
+$args = array_slice($argv, 1);
+$command = $args[0] ?? 'help';
+$params = array_slice($args, 1);
+
+// Helpers.
+function output(string $line): void {
+    echo $line . PHP_EOL;
+}
+
+function heading(string $text): void {
+    output('');
+    output("=== {$text} ===");
+    output('');
+}
+
+// --- Commands ---------------------------------------------------------------
+
+match ($command) {
+    'help' => function () {
+        heading('TAVP CMS CLI');
+        output('Usage:  php bin/cms <command> [options]');
+        output('');
+        output('Commands:');
+        output('  types                       List registered content types');
+        output('  make:type <name>            Create a new content type');
+        output('  publish                     Publish scheduled content');
+        output('  search:reindex              Flush the search/cache');
+        output('  api:token [name]            Generate an API bearer token');
+        output('  taxonomy:list <type>        List taxonomy terms (category|tag)');
+        output('  taxonomy:create <type> <n>  Create a taxonomy term');
+        output('  help                        Show this help');
+    },
+
+    'types' => function () {
+        $configPath = __DIR__ . '/../config/cms.php';
+
+        if (!is_file($configPath)) {
+            output('config/cms.php not found.');
+            return;
+        }
+
+        $cmsConfig = require $configPath;
+        $types = $cmsConfig['content_types'] ?? [];
+
+        heading('Registered Content Types');
+
+        foreach ($types as $name => $def) {
+            $label = $def['label'] ?? ucfirst($name) . 's';
+            $fieldCount = count($def['fields'] ?? []);
+            output("  {$name}  ({$label})  —  {$fieldCount} fields");
+        }
+
+        output('');
+        output('Total: ' . count($types));
+    },
+
+    'make:type' => function (array $params) {
+        $name = $params[0] ?? null;
+
+        if ($name === null) {
+            output('Usage: php bin/cms make:type <name>');
+            return;
+        }
+
+        $name = strtolower(trim($name, '/'));
+
+        if (!preg_match('/^[a-z][a-z0-9_]*$/', $name)) {
+            output('Invalid type name. Use lowercase alphanumeric + underscore.');
+            return;
+        }
+
+        $configPath = __DIR__ . '/../config/cms.php';
+
+        if (!is_file($configPath)) {
+            output('config/cms.php not found.');
+            return;
+        }
+
+        $cmsConfig = require $configPath;
+
+        if (isset($cmsConfig['content_types'][$name])) {
+            output("Content type '{$name}' already exists.");
+            return;
+        }
+
+        $label = ucfirst($name) . 's';
+        $singular = ucfirst($name);
+
+        $newType = [
+            'label' => $label,
+            'singular' => $singular,
+            'icon' => 'document',
+            'route' => '/' . $name . '/{slug}',
+            'fields' => [
+                ['name' => 'title', 'type' => 'text', 'required' => true, 'rules' => ['max:200']],
+                ['name' => 'slug', 'type' => 'slug', 'from' => 'title', 'rules' => ['unique']],
+                ['name' => 'body', 'type' => 'richtext'],
+                ['name' => 'status', 'type' => 'select', 'options' => ['draft', 'published'], 'default' => 'draft'],
+                ['name' => 'featured_image', 'type' => 'media'],
+            ],
+        ];
+
+        // Append to config file.
+        $content = file_get_contents($configPath);
+        $marker = "'content_types' => [";
+
+        if (str_contains($content, $marker)) {
+            $insert = "        '{$name}' => " . var_export($newType, true) . ",\n";
+            $content = str_replace($marker, $marker . "\n" . $insert, $content);
+            file_put_contents($configPath, $content);
+            output("Created content type '{$name}' in config/cms.php");
+        } else {
+            output('Could not find content_types array in config.');
+        }
+    },
+
+    'publish' => function () {
+        heading('Publishing Scheduled Content');
+        output('This command requires a bootstrapped application with database access.');
+        output('Run via:  tavp cms:publish  or  php artisan cms:publish');
+        output('');
+        output('It will publish all content where published_at <= now and status is draft/scheduled.');
+    },
+
+    'search:reindex' => function () {
+        heading('Search Reindex');
+        $cachePath = __DIR__ . '/../storage/cms/cache';
+
+        if (is_dir($cachePath)) {
+            $files = glob($cachePath . '/*.cache') ?: [];
+            $deleted = 0;
+
+            foreach ($files as $file) {
+                if (unlink($file)) {
+                    $deleted++;
+                }
+            }
+
+            output("Cleared {$deleted} cached entries from {$cachePath}");
+        } else {
+            output('Cache directory not found — nothing to clear.');
+        }
+
+        output('Search index will rebuild on next request automatically.');
+    },
+
+    'api:token' => function (array $params) {
+        heading('Generate API Token');
+        $name = $params[0] ?? 'default';
+        $token = bin2hex(random_bytes(32));
+        $hashed = hash('sha256', $token);
+
+        output('Token name:    ' . $name);
+        output('Bearer token:  ' . $token);
+        output('');
+        output('Add to config/cms.php under api.tokens:');
+        output("  'cms_api_token_{$name}' => '{$hashed}',");
+
+        // Also write to tokens file.
+        $tokensFile = __DIR__ . '/../storage/cms/api_tokens.json';
+        $dir = dirname($tokensFile);
+
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $existing = [];
+        if (is_file($tokensFile)) {
+            $existing = json_decode((string) file_get_contents($tokensFile), true) ?: [];
+        }
+
+        $existing[] = ['name' => $name, 'hash' => $hashed];
+        file_put_contents($tokensFile, json_encode($existing, JSON_PRETTY_PRINT));
+
+        output('');
+        output("Also saved to {$tokensFile}");
+        output('');
+        output('Usage in API requests:');
+        output("  Authorization: Bearer {$token}");
+    },
+
+    'taxonomy:list' => function (array $params) {
+        $type = $params[0] ?? null;
+
+        if ($type === null) {
+            output('Usage: php bin/cms taxonomy:list <type>');
+            output('Types: category, tag');
+            return;
+        }
+
+        heading("Taxonomy Terms: {$type}");
+        output('This command requires a bootstrapped application with database access.');
+        output('Use the admin UI at /admin/taxonomy/' . $type);
+    },
+
+    'taxonomy:create' => function (array $params) {
+        $type = $params[0] ?? null;
+        $name = $params[1] ?? null;
+
+        if ($type === null || $name === null) {
+            output('Usage: php bin/cms taxonomy:create <type> <name>');
+            return;
+        }
+
+        heading("Creating {$type}: {$name}");
+        output('This command requires a bootstrapped application with database access.');
+        output('Use the admin UI at /admin/taxonomy/' . $type . '/create');
+    },
+
+    default => function ($command) {
+        output("Unknown command: {$command}");
+        output('Run: php bin/cms help');
+    },
+}($command, $params);

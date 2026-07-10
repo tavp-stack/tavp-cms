@@ -11,6 +11,7 @@ class Field
 {
     /**
      * @param array<string,mixed> $options extra options (select values, relation target, etc.)
+     * @param string[] $rules validation rules (e.g. ['required', 'max:200', 'unique'])
      */
     public function __construct(
         public readonly string $name,
@@ -19,6 +20,7 @@ class Field
         public readonly mixed $default = null,
         public readonly ?string $from = null,
         public readonly array $options = [],
+        public readonly array $rules = [],
     ) {
     }
 
@@ -30,16 +32,24 @@ class Field
     public static function fromArray(array $config): self
     {
         $type = FieldType::tryFrom((string) ($config['type'] ?? 'text')) ?? FieldType::Text;
+        $required = (bool) ($config['required'] ?? false);
+
+        // Merge explicit rules with required flag.
+        $rules = $config['rules'] ?? [];
+        if ($required && !in_array('required', $rules, true)) {
+            array_unshift($rules, 'required');
+        }
 
         return new self(
             name: (string) $config['name'],
             type: $type,
-            required: (bool) ($config['required'] ?? false),
+            required: $required,
             default: $config['default'] ?? null,
             from: $config['from'] ?? null,
             options: is_array($config['options'] ?? null)
                 ? $config['options']
                 : (isset($config['options']) ? [$config['options']] : []),
+            rules: $rules,
         );
     }
 
@@ -62,6 +72,7 @@ class Field
             'required' => $this->required,
             'default' => $this->default,
             'options' => $this->options,
+            'rules' => $this->rules,
         ];
     }
 }

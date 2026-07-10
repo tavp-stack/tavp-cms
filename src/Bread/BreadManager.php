@@ -5,24 +5,32 @@ declare(strict_types=1);
 namespace Tavp\Cms\Bread;
 
 use Tavp\Cms\Content\ContentType;
+use Tavp\Cms\Content\Validator;
+use Tavp\Cms\Content\ValidationException;
+use Tavp\Cms\Revisions\RevisionStore;
+use Tavp\Cms\Webhooks\WebhookManager;
 use Tavp\Cms\Storage\ContentStore;
 
 /**
  * The BREAD (Browse, Read, Edit, Add, Delete) manager.
  *
  * Holds the registry of content types and exposes the generic CRUD
- * operations that the admin (tavphub) and the front-end both use. New
- * content types can be registered at runtime — this is what makes custom
- * content types (Voyager-style) possible without per-type code.
+ * operations. Integrates validation, revisions, webhooks, and search
+ * as middleware on top of the storage layer.
  */
 class BreadManager
 {
     /** @var array<string,ContentType> */
     private array $types = [];
 
+    private Validator $validator;
+
     public function __construct(
-        private readonly ContentStore $store
+        private readonly ContentStore $store,
+        private readonly ?RevisionStore $revisions = null,
+        private readonly ?WebhookManager $webhooks = null,
     ) {
+        $this->validator = new Validator();
     }
 
     public function register(ContentType $type): void
@@ -89,34 +97,171 @@ class BreadManager
     }
 
     /**
-     * Add: create a record.
+     * Add: create a record. Validates, snapshots, fires webhook.
      *
      * @param array<string,mixed> $data
      * @return array<string,mixed>
+     * @throws ValidationException
      */
     public function add(string $type, array $data): array
     {
-        return $this->store->create($this->must($type), $this->applyDefaults($type, $data));
+        $contentType = $this->must($type);
+        $data = $this->applyDefaults($type, $data);
+
+        // Validate.
+        $errors = $this->validator->validate($contentType, $data);
+        if ($errors !== []) {
+            throw new ValidationException($errors);
+        }
+
+        $record = $this->store->create($contentType, $data);
+
+        // Revision snapshot.
+        if ($this->revisions !== null) {
+            $author = $_SESSION['cms_admin'] ?? null;
+            $this->revisions->snapshot($type, $record['id'], $record, $author, 'Created');
+        }
+
+        // Webhook.
+        if ($this->webhooks !== null) {
+            $this->webhooks->fire('content.created', [
+                'type' => $type,
+                'id' => $record['id'],
+                'data' => $record,
+            ]);
+        }
+
+        return $record;
     }
 
     /**
-     * Edit: update a record.
+     * Edit: update a record. Validates, snapshots old version, fires webhook.
      *
      * @param array<string,mixed> $data
      * @return array<string,mixed>
+     * @throws ValidationException
      */
     public function edit(string $type, string|int $id, array $data): array
     {
-        return $this->store->update($this->must($type), $id, $data);
+        $contentType = $this->must($type);
+        $existing = $this->store->find($contentType, $id);
+
+        if ($existing === null) {
+            throw new \InvalidArgumentException("Record not found: {$type}/{$id}");
+        }
+
+        // Validate.
+        $errors = $this->validator->validate($contentType, $data);
+        if ($errors !== []) {
+            throw new ValidationException($errors);
+        }
+
+        // Snapshot old version before overwriting.
+        if ($this->revisions !== null) {
+            $author = $_SESSION['cms_admin'] ?? null;
+            $this->revisions->snapshot($type, $id, $existing, $author, 'Before update');
+        }
+
+        $record = $this->store->update($contentType, $id, $data);
+
+        // Webhook.
+        if ($this->webhooks !== null) {
+            $this->webhooks->fire('content.updated', [
+                'type' => $type,
+                'id' => $id,
+                'data' => $record,
+                'previous' => $existing,
+            ]);
+        }
+
+        return $record;
     }
 
     /**
-     * Delete: remove a record.
+     * Delete: remove a record. Snapshots, fires webhook.
      */
     public function delete(string $type, string|int $id): bool
     {
-        return $this->store->delete($this->must($type), $id);
+        $contentType = $this->must($type);
+
+        // Snapshot before deleting.
+        if ($this->revisions !== null) {
+            $existing = $this->store->find($contentType, $id);
+            if ($existing !== null) {
+                $author = $_SESSION['cms_admin'] ?? null;
+                $this->revisions->snapshot($type, $id, $existing, $author, 'Before delete');
+            }
+        }
+
+        $result = $this->store->delete($contentType, $id);
+
+        // Webhook.
+        if ($this->webhooks !== null) {
+            $this->webhooks->fire('content.deleted', [
+                'type' => $type,
+                'id' => $id,
+            ]);
+        }
+
+        return $result;
     }
+
+    /**
+     * Restore a content record from a revision snapshot.
+     *
+     * @param array<string,mixed> $snapshotData
+     * @return array<string,mixed>
+     */
+    public function restore(string $type, string|int $id, array $snapshotData): array
+    {
+        $contentType = $this->must($type);
+        $existing = $this->store->find($contentType, $id);
+
+        if ($existing === null) {
+            throw new \InvalidArgumentException("Record not found: {$type}/{$id}");
+        }
+
+        // Snapshot the current state before restoring.
+        if ($this->revisions !== null) {
+            $author = $_SESSION['cms_admin'] ?? null;
+            $this->revisions->snapshot($type, $id, $existing, $author, 'Before rollback');
+        }
+
+        $record = $this->store->update($contentType, $id, $snapshotData);
+
+        // Webhook.
+        if ($this->webhooks !== null) {
+            $this->webhooks->fire('content.updated', [
+                'type' => $type,
+                'id' => $id,
+                'data' => $record,
+                'reason' => 'rollback',
+            ]);
+        }
+
+        return $record;
+    }
+
+    // --- Revision access ---------------------------------------------------
+
+    public function revisions(): ?RevisionStore
+    {
+        return $this->revisions;
+    }
+
+    /**
+     * @return array<int,array<string,mixed>>
+     */
+    public function history(string $type, string|int $id): array
+    {
+        if ($this->revisions === null) {
+            return [];
+        }
+
+        return $this->revisions->history($type, $id);
+    }
+
+    // --- Helpers -----------------------------------------------------------
 
     private function must(string $type): ContentType
     {

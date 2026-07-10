@@ -33,5 +33,20 @@ class AdminModule
         $router->get('/admin/c/{type}/{id}/edit', [ContentController::class, 'edit']);
         $router->post('/admin/c/{type}/{id}', [ContentController::class, 'update']);
         $router->post('/admin/c/{type}/{id}/delete', [ContentController::class, 'destroy']);
+
+        // Revisions
+        $router->get('/admin/c/{type}/{id}/revisions', [RevisionController::class, 'history']);
+        $router->post('/admin/c/{type}/{id}/rollback/{timestamp}', [RevisionController::class, 'rollback']);
+
+        // Search
+        $router->get('/admin/search', [SearchController::class, 'search']);
+
+        // Taxonomy
+        $router->get('/admin/taxonomy/{type}', [TaxonomyController::class, 'index']);
+        $router->get('/admin/taxonomy/{type}/create', [TaxonomyController::class, 'create']);
+        $router->post('/admin/taxonomy/{type}', [TaxonomyController::class, 'store']);
+        $router->get('/admin/taxonomy/{type}/{id}/edit', [TaxonomyController::class, 'edit']);
+        $router->post('/admin/taxonomy/{type}/{id}', [TaxonomyController::class, 'update']);
+        $router->post('/admin/taxonomy/{type}/{id}/delete', [TaxonomyController::class, 'destroy']);
     }
 }
