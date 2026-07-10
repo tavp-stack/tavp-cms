@@ -33,7 +33,7 @@ class ThemeManager
 
     public function viewsPath(): string
     {
-        return $this->path('templates');
+        return $this->path();
     }
 
     public function layoutsPath(): string
@@ -64,7 +64,7 @@ class ThemeManager
      */
     public function template(string $name): ?string
     {
-        $file = $this->viewsPath() . '/' . $name . '.volt';
+        $file = $this->path($name . '.volt');
 
         return is_file($file) ? $file : null;
     }
