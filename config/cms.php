@@ -42,7 +42,8 @@ return [
         // RBAC-lite: map an allowed e-mail to a role. Roles map to the
         // permissions below. Unknown e-mails default to "editor".
         'roles' => [
-            // 'admin@site.com' => 'admin',
+            'admin@tavp.web.id' => 'admin',
+            'editor@tavp.web.id' => 'editor',
         ],
         'permissions' => [
             'admin' => ['content.*', 'taxonomy.*', 'media.*', 'menu.*', 'settings.*', 'webhook.*', 'api.*'],
@@ -163,22 +164,9 @@ return [
     ],
 
     // ---------------------------------------------------------------------
-    // Analytics — page view tracking, fraud detection, experiments.
-    // Requires: tavp/tavp-analytics package.
-    // ---------------------------------------------------------------------
-    'analytics' => [
-        'enabled' => false,
-        'track_page_views' => true,
-        'track_events' => true,
-        'fraud_detection' => false,
-        'dashboard_enabled' => true,
-    ],
-
-    // ---------------------------------------------------------------------
     // Built-in content types. These are the defaults; more can be defined
     // from the admin UI (BREAD-style) and stored via the active driver.
-    // SEO fields (seo_title, seo_description) are auto-appended when
-    // cms.seo.enabled is true.
+    // "seo" fields are auto-appended when cms.seo.enabled is true.
     // ---------------------------------------------------------------------
     'content_types' => [
         'page' => [
@@ -192,14 +180,12 @@ return [
                 ['name' => 'body', 'type' => 'richtext'],
                 ['name' => 'status', 'type' => 'select', 'options' => ['draft', 'published'], 'default' => 'draft'],
                 ['name' => 'featured_image', 'type' => 'media'],
-                ['name' => 'seo_title', 'type' => 'text', 'help' => 'Override the <title> tag (max 60 chars)'],
-                ['name' => 'seo_description', 'type' => 'textarea', 'help' => 'Meta description for search engines (max 160 chars)'],
                 ['name' => 'categories', 'type' => 'relation', 'relation' => 'category', 'multiple' => true],
                 ['name' => 'tags', 'type' => 'relation', 'relation' => 'tag', 'multiple' => true],
             ],
         ],
         'post' => [
-            'label' => 'Posts',
+            'label' => 'Blog',
             'singular' => 'Post',
             'icon' => 'newspaper',
             'route' => '/blog/{slug}',
@@ -211,8 +197,6 @@ return [
                 ['name' => 'status', 'type' => 'select', 'options' => ['draft', 'published', 'scheduled'], 'default' => 'draft'],
                 ['name' => 'featured_image', 'type' => 'media'],
                 ['name' => 'published_at', 'type' => 'datetime'],
-                ['name' => 'seo_title', 'type' => 'text', 'help' => 'Override the <title> tag (max 60 chars)'],
-                ['name' => 'seo_description', 'type' => 'textarea', 'help' => 'Meta description for search engines (max 160 chars)'],
                 ['name' => 'categories', 'type' => 'relation', 'relation' => 'category', 'multiple' => true],
                 ['name' => 'tags', 'type' => 'relation', 'relation' => 'tag', 'multiple' => true],
             ],

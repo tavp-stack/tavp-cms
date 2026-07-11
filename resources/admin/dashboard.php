@@ -6,8 +6,47 @@ $iconMap = [
     'post' => 'article',
 ];
 ?>
+
+<!-- Welcome Header -->
+<div class="mb-8">
+  <h1 class="font-headline-xl text-headline-xl text-secondary mb-2">Welcome back!</h1>
+  <p class="font-body-md text-body-md text-on-surface-variant">Manage your website content and settings from here.</p>
+</div>
+
+<!-- Quick Actions -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+  <a href="/admin/c/page/create" class="bg-surface-container p-4 border border-outline-variant hover:border-secondary transition-colors flex items-center gap-3">
+    <span class="material-symbols-outlined text-secondary text-2xl">add_circle</span>
+    <div>
+      <p class="font-label-caps text-label-caps text-on-surface-variant">NEW PAGE</p>
+      <p class="font-code-sm text-code-sm text-on-surface-variant">Create a new page</p>
+    </div>
+  </a>
+  <a href="/admin/c/post/create" class="bg-surface-container p-4 border border-outline-variant hover:border-secondary transition-colors flex items-center gap-3">
+    <span class="material-symbols-outlined text-secondary text-2xl">edit_note</span>
+    <div>
+      <p class="font-label-caps text-label-caps text-on-surface-variant">NEW POST</p>
+      <p class="font-code-sm text-code-sm text-on-surface-variant">Write a blog post</p>
+    </div>
+  </a>
+  <a href="/admin/media" class="bg-surface-container p-4 border border-outline-variant hover:border-secondary transition-colors flex items-center gap-3">
+    <span class="material-symbols-outlined text-secondary text-2xl">add_photo_alternate</span>
+    <div>
+      <p class="font-label-caps text-label-caps text-on-surface-variant">UPLOAD MEDIA</p>
+      <p class="font-code-sm text-code-sm text-on-surface-variant">Add images or files</p>
+    </div>
+  </a>
+  <a href="/" target="_blank" class="bg-surface-container p-4 border border-outline-variant hover:border-secondary transition-colors flex items-center gap-3">
+    <span class="material-symbols-outlined text-secondary text-2xl">open_in_new</span>
+    <div>
+      <p class="font-label-caps text-label-caps text-on-surface-variant">VIEW SITE</p>
+      <p class="font-code-sm text-code-sm text-on-surface-variant">Open your website</p>
+    </div>
+  </a>
+</section>
+
 <!-- Metrics Overview -->
-<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-gutter">
+<section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
   <?php foreach ($__types as $name => $type): ?>
     <a href="/admin/c/<?= $this->e($name) ?>" class="bg-surface-container p-6 border border-outline-variant performance-card flex justify-between items-end hover:hard-step-shadow hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all duration-150">
       <div>
@@ -34,7 +73,7 @@ $iconMap = [
     $pageviews = 0; $visitors = 0; $realtime = 0; $fraud = 0;
   }
 ?>
-<section class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-gutter">
+<section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
   <div class="bg-surface-container p-6 border border-outline-variant performance-card">
     <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">PAGEVIEWS TODAY</p>
     <h3 class="font-headline-xl text-headline-xl"><?= (int) $pageviews ?></h3>
@@ -55,9 +94,9 @@ $iconMap = [
 <?php endif; ?>
 
 <!-- Main Grid -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
   <!-- Content Types List -->
-  <div class="lg:col-span-2 space-y-gutter">
+  <div class="lg:col-span-2 space-y-4">
     <div class="bg-surface-container-high border border-outline-variant p-6">
       <h3 class="font-headline-lg text-headline-lg text-secondary mb-6">Content Types</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -70,6 +109,39 @@ $iconMap = [
             <p class="font-code-sm text-code-sm text-on-surface-variant"><?= (int) ($counts[$name] ?? 0) ?> records</p>
           </a>
         <?php endforeach; ?>
+      </div>
+    </div>
+
+    <!-- Recent Content -->
+    <div class="bg-surface-container border border-outline-variant p-6">
+      <h3 class="font-headline-lg text-headline-lg text-secondary mb-6">Recent Content</h3>
+      <div class="space-y-3">
+        <?php
+        try {
+          $db = app()->getService('db');
+          $recent = $db->query("SELECT id, title, content_type, status, created_at FROM contents ORDER BY created_at DESC LIMIT 5")->fetchAll(\PDO::FETCH_ASSOC);
+          foreach ($recent as $item):
+        ?>
+          <a href="/admin/c/<?= $this->e($item['content_type']) ?>/<?= $this->e($item['id']) ?>/edit" class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant hover:border-secondary transition-colors">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-secondary"><?= $this->e($iconMap[$item['content_type']] ?? 'description') ?></span>
+              <div>
+                <p class="font-body-md text-body-md"><?= $this->e($item['title']) ?></p>
+                <p class="font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($item['content_type']) ?></p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="font-code-sm text-code-sm px-2 py-1 rounded <?= $item['status'] === 'published' ? 'bg-green-900/30 text-green-400' : 'bg-yellow-900/30 text-yellow-400' ?>">
+                <?= $this->e($item['status']) ?>
+              </span>
+            </div>
+          </a>
+        <?php
+          endforeach;
+        } catch (\Throwable $e) {
+          echo '<p class="font-code-sm text-code-sm text-on-surface-variant">No recent content</p>';
+        }
+        ?>
       </div>
     </div>
 
@@ -104,7 +176,7 @@ $iconMap = [
   </div>
 
   <!-- Right Sidebar -->
-  <div class="space-y-gutter">
+  <div class="space-y-4">
     <!-- API Info -->
     <?php if (config('cms.api.enabled', true)): ?>
       <div class="bg-surface-container border border-outline-variant p-6">

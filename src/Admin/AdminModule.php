@@ -85,5 +85,8 @@ class AdminModule
 
         // Analytics
         $router->get('/admin/analytics', [AnalyticsController::class, 'index']);
+
+        // BREAD Manager (admin only)
+        $router->get('/admin/bread', [BreadController::class, 'index']);
     }
 }
