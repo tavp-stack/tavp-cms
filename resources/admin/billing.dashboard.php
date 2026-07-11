@@ -1,63 +1,59 @@
-{% extends 'hub/layouts/admin.volt' %}
-
-{% block content %}
-<h1 class="text-2xl font-bold mb-6">Billing</h1>
+<?php /** @var array $subscriptions @var array $stats */ ?>
+<div class="flex justify-between items-center mb-gutter">
+  <h2 class="font-headline-xl text-headline-xl">Billing</h2>
+</div>
 
 <!-- Stats -->
-<div class="grid grid-cols-3 gap-4 mb-6">
-    <div class="rounded-lg bg-gray-900 border border-gray-800 p-5">
-        <div class="text-sm text-gray-400">Active Subscriptions</div>
-        <div class="text-3xl font-bold text-green-400">{{ stats['active'] }}</div>
-    </div>
-    <div class="rounded-lg bg-gray-900 border border-gray-800 p-5">
-        <div class="text-sm text-gray-400">Cancelled</div>
-        <div class="text-3xl font-bold text-gray-500">{{ stats['cancelled'] }}</div>
-    </div>
-    <div class="rounded-lg bg-gray-900 border border-gray-800 p-5">
-        <div class="text-sm text-gray-400">Total Revenue</div>
-        <div class="text-3xl font-bold text-yellow-400">${{ stats['total_revenue'] | number_format(2) }}</div>
-    </div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-gutter">
+  <div class="bg-surface-container p-6 border border-outline-variant performance-card">
+    <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">ACTIVE SUBSCRIPTIONS</p>
+    <h3 class="font-headline-xl text-headline-xl text-secondary"><?= (int) ($stats['active'] ?? 0) ?></h3>
+  </div>
+  <div class="bg-surface-container p-6 border border-outline-variant performance-card">
+    <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">CANCELLED</p>
+    <h3 class="font-headline-xl text-headline-xl"><?= (int) ($stats['cancelled'] ?? 0) ?></h3>
+  </div>
+  <div class="bg-surface-container p-6 border border-outline-variant performance-card">
+    <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">TOTAL REVENUE</p>
+    <h3 class="font-headline-xl text-headline-xl text-secondary">$<?= number_format((float) ($stats['total_revenue'] ?? 0), 2) ?></h3>
+  </div>
 </div>
 
-<!-- Subscriptions -->
-<div class="rounded-lg bg-gray-900 border border-gray-800 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-800">
-        <h2 class="text-lg font-semibold">Subscriptions</h2>
-    </div>
-    <table class="w-full">
-        <thead class="bg-gray-800">
-            <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">User</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Plan</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Gateway</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-800">
-            {% for sub in subscriptions %}
-                <tr class="hover:bg-gray-800/50">
-                    <td class="px-6 py-4 text-sm text-white">{{ sub['name'] | default('-') }} ({{ sub['email'] | default('-') }})</td>
-                    <td class="px-6 py-4 text-sm text-gray-300">{{ sub['plan'] }}</td>
-                    <td class="px-6 py-4">
-                        <span class="rounded-full px-2 py-1 text-xs {% if sub['status'] == 'active' %}bg-green-900 text-green-300{% else %}bg-gray-700 text-gray-400{% endif %}">{{ sub['status'] }}</span>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-400">{{ sub['gateway'] }}</td>
-                    <td class="px-6 py-4 text-sm">
-                        {% if sub['status'] == 'active' %}
-                            <form method="post" action="/admin/billing/subscriptions/{{ sub['id'] }}/cancel" class="inline">
-                                <button type="submit" class="text-red-400 hover:underline" onclick="return confirm('Cancel subscription?')">Cancel</button>
-                            </form>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-            {% if subscriptions is empty %}
-                <tr>
-                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">No subscriptions yet.</td>
-                </tr>
-            {% endif %}
-        </tbody>
-    </table>
+<!-- Subscriptions Table -->
+<div class="bg-surface-container border border-outline-variant overflow-hidden">
+  <div class="px-6 py-4 border-b border-outline-variant">
+    <h3 class="font-headline-lg text-headline-lg">Subscriptions</h3>
+  </div>
+  <table class="w-full text-body-md">
+    <thead class="bg-surface-container-high">
+      <tr>
+        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">User</th>
+        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Plan</th>
+        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Status</th>
+        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Gateway</th>
+        <th class="px-4 py-3 text-right font-label-caps text-label-caps text-on-surface-variant">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php if (empty($subscriptions)): ?>
+        <tr><td colspan="5" class="px-4 py-8 text-center text-on-surface-variant">No subscriptions yet.</td></tr>
+      <?php else: foreach ($subscriptions as $sub): ?>
+        <tr class="border-t border-outline-variant hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-4 py-3"><?= $this->e($sub['name'] ?? '-') ?> (<?= $this->e($sub['email'] ?? '-') ?>)</td>
+          <td class="px-4 py-3 font-code-sm text-code-sm"><?= $this->e($sub['plan'] ?? '') ?></td>
+          <td class="px-4 py-3">
+            <span class="font-label-caps text-label-caps px-2 py-1 rounded-full <?= ($sub['status'] ?? '') === 'active' ? 'bg-secondary/20 text-secondary' : 'bg-surface-container-high text-on-surface-variant' ?>"><?= $this->e($sub['status'] ?? '') ?></span>
+          </td>
+          <td class="px-4 py-3 font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($sub['gateway'] ?? '') ?></td>
+          <td class="px-4 py-3 text-right">
+            <?php if (($sub['status'] ?? '') === 'active'): ?>
+              <form method="post" action="/admin/billing/subscriptions/<?= $this->e($sub['id']) ?>/cancel" class="inline">
+                <button type="submit" class="text-error font-label-caps text-label-caps hover:underline" onclick="return confirm('Cancel subscription?')">Cancel</button>
+              </form>
+            <?php endif; ?>
+          </td>
+        </tr>
+      <?php endforeach; endif; ?>
+    </tbody>
+  </table>
 </div>
-{% endblock %}

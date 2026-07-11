@@ -1,37 +1,34 @@
-{% extends 'hub/layouts/admin.volt' %}
-
-{% block content %}
-<h1 class="text-2xl font-bold mb-6">Invoices</h1>
-
-<div class="rounded-lg bg-gray-900 border border-gray-800 overflow-hidden">
-    <table class="w-full">
-        <thead class="bg-gray-800">
-            <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">User</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Amount</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Gateway</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Date</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-800">
-            {% for inv in invoices %}
-                <tr class="hover:bg-gray-800/50">
-                    <td class="px-6 py-4 text-sm text-white">{{ inv['name'] | default('-') }} ({{ inv['email'] | default('-') }})</td>
-                    <td class="px-6 py-4 text-sm text-yellow-400">${{ inv['amount'] }} {{ inv['currency'] }}</td>
-                    <td class="px-6 py-4">
-                        <span class="rounded-full px-2 py-1 text-xs {% if inv['status'] == 'paid' %}bg-green-900 text-green-300{% else %}bg-yellow-900 text-yellow-300{% endif %}">{{ inv['status'] }}</span>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-400">{{ inv['gateway'] }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-400">{{ inv['created_at'] }}</td>
-                </tr>
-            {% endfor %}
-            {% if invoices is empty %}
-                <tr>
-                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">No invoices yet.</td>
-                </tr>
-            {% endif %}
-        </tbody>
-    </table>
+<?php /** @var array $invoices */ ?>
+<div class="flex justify-between items-center mb-gutter">
+  <h2 class="font-headline-xl text-headline-xl">Invoices</h2>
+  <a href="/admin/billing" class="text-secondary font-label-caps text-label-caps hover:underline">&larr; Back to Billing</a>
 </div>
-{% endblock %}
+
+<div class="bg-surface-container border border-outline-variant overflow-hidden">
+  <table class="w-full text-body-md">
+    <thead class="bg-surface-container-high">
+      <tr>
+        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">User</th>
+        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Amount</th>
+        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Status</th>
+        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Gateway</th>
+        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php if (empty($invoices)): ?>
+        <tr><td colspan="5" class="px-4 py-8 text-center text-on-surface-variant">No invoices yet.</td></tr>
+      <?php else: foreach ($invoices as $inv): ?>
+        <tr class="border-t border-outline-variant hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-4 py-3"><?= $this->e($inv['name'] ?? '-') ?> (<?= $this->e($inv['email'] ?? '-') ?>)</td>
+          <td class="px-4 py-3 text-secondary font-code-sm text-code-sm">$<?= $this->e($inv['amount'] ?? '0') ?> <?= $this->e($inv['currency'] ?? '') ?></td>
+          <td class="px-4 py-3">
+            <span class="font-label-caps text-label-caps px-2 py-1 rounded-full <?= ($inv['status'] ?? '') === 'paid' ? 'bg-secondary/20 text-secondary' : 'bg-yellow-900/30 text-yellow-400' ?>"><?= $this->e($inv['status'] ?? '') ?></span>
+          </td>
+          <td class="px-4 py-3 font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($inv['gateway'] ?? '') ?></td>
+          <td class="px-4 py-3 font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($inv['created_at'] ?? '') ?></td>
+        </tr>
+      <?php endforeach; endif; ?>
+    </tbody>
+  </table>
+</div>

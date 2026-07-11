@@ -115,6 +115,14 @@ tailwind.config = {
       <span class="material-symbols-outlined mr-3">settings</span>
       Settings
     </a>
+    <a href="/admin/teams" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
+      <span class="material-symbols-outlined mr-3">group</span>
+      Teams
+    </a>
+    <a href="/admin/billing" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
+      <span class="material-symbols-outlined mr-3">payments</span>
+      Billing
+    </a>
     <a href="/admin/analytics" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
       <span class="material-symbols-outlined mr-3">analytics</span>
       Analytics
