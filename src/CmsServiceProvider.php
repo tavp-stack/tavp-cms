@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tavp\Cms;
 
-use Tavp\Cms\Api\ApiController;
-use Tavp\Cms\Api\ApiTokenService;
 use Tavp\Cms\Bread\BreadManager;
 use Tavp\Cms\Cache\CachedContentStore;
 use Tavp\Cms\Publishing\PublishScheduler;
@@ -20,14 +18,12 @@ use Tavp\Cms\Taxonomy\TaxonomyManager;
 use Tavp\Cms\Theme\ThemeManager;
 use Tavp\Cms\Webhooks\DatabaseWebhookFactory;
 use Tavp\Cms\Webhooks\WebhookManager;
-use Tavp\Cms\Auth\RbacGuard;
 use Tavp\Core\Module\ServiceProvider;
 
 /**
  * Wires TAVP CMS into a TAVP application.
  *
- * v0.2.0 — adds taxonomy, revisions, search, caching, webhooks, headless API,
- * scheduled publishing, SEO/sitemap, and RBAC-lite.
+ * Uses tavpid for auth/RBAC — no duplication.
  */
 class CmsServiceProvider implements ServiceProvider
 {
@@ -35,8 +31,27 @@ class CmsServiceProvider implements ServiceProvider
     {
         $app = app();
 
-        // --- Storage layer (base + optional cache decorator) ----------------
+        // --- Storage layer ---------------------------------------------------
         $app->bind(ContentStore::class, fn () => $this->makeStore());
+
+        // --- Auth (via tavpid) -----------------------------------------------
+        $app->bind('tavpid.auth', function () {
+            $otp = new \Tavp\Tavpid\Auth\OtpService(
+                (int) config('cms.admin.otp_ttl_minutes', 10),
+            );
+            return new \Tavp\Tavpid\Auth\AuthService($otp, app('tavpid.user_provider'));
+        });
+
+        $app->bind('tavpid.user_provider', function () {
+            return new \Tavp\Cms\Auth\CmsUserProvider();
+        });
+
+        // --- RBAC (via tavpid) -----------------------------------------------
+        $app->bind('tavpid.rbac', function () {
+            $rbac = new \Tavp\Tavpid\Rbac\AccessControl();
+            $rbac->loadRoles((array) config('cms.admin.permissions', []));
+            return $rbac;
+        });
 
         // --- Taxonomy -------------------------------------------------------
         if (config('cms.taxonomy.enabled', true)) {
@@ -55,7 +70,7 @@ class CmsServiceProvider implements ServiceProvider
         }
 
         // --- Webhooks -------------------------------------------------------
-        if (config('cms.webhooks.enabled', true)) {
+        if (config('cms.webhooks.enabled', false)) {
             $app->bind(WebhookManager::class, function () {
                 $db = app('db');
                 return DatabaseWebhookFactory::buildDatabaseWebhooks(
@@ -65,13 +80,13 @@ class CmsServiceProvider implements ServiceProvider
             });
         }
 
-        // --- BREAD Manager (with revisions + webhooks) ----------------------
+        // --- BREAD Manager --------------------------------------------------
         $app->bind(BreadManager::class, function ($app) {
             $revisions = config('cms.revisions.enabled', true)
                 ? $app->getService(RevisionStore::class)
                 : null;
 
-            $webhooks = config('cms.webhooks.enabled', true)
+            $webhooks = config('cms.webhooks.enabled', false)
                 ? $app->getService(WebhookManager::class)
                 : null;
 
@@ -101,63 +116,33 @@ class CmsServiceProvider implements ServiceProvider
             (string) config('cms.theme.active', 'default'),
         ));
 
-        // --- API Token Service ----------------------------------------------
-        $app->bind(ApiTokenService::class, fn () => new ApiTokenService(
-            configTokens: (array) config('cms.api.tokens', []),
-            tokensFile: config('cms.api.tokens_file'),
-        ));
-
-        // --- RBAC Guard -----------------------------------------------------
-        $app->bind(RbacGuard::class, fn () => new RbacGuard(
-            roles: (array) config('cms.admin.roles', []),
-            permissions: (array) config('cms.admin.permissions', []),
-        ));
-
         // --- Publish Scheduler ----------------------------------------------
         $app->bind(PublishScheduler::class, function ($app) {
             return new PublishScheduler($app->getService(BreadManager::class));
         });
-
-        // --- Analytics (optional, if tavp-analytics is installed) -----------
-        if (config('cms.analytics.enabled', false) && class_exists(\Tavp\Analytics\AnalyticsManager::class)) {
-            $app->bind(\Tavp\Analytics\AnalyticsManager::class, fn () => new \Tavp\Analytics\AnalyticsManager());
-        }
     }
 
-    public function boot(): void
-    {
-        // Register CMS content types as BREAD resources in the tavphub admin.
-    }
+    public function boot(): void {}
 
     public function loadRoutes(): void
     {
         require __DIR__ . '/../routes/web.php';
 
-        // SEO sitemap route.
         if (config('cms.seo.enabled', true)) {
-            $sitemapPath = (string) config('cms.seo.sitemap_path', '/sitemap.xml');
-            $sitemapPath = '/' . ltrim($sitemapPath, '/');
-
+            $sitemapPath = '/' . ltrim((string) config('cms.seo.sitemap_path', '/sitemap.xml'), '/');
             if (isset($router)) {
                 $router->get($sitemapPath, [SitemapController::class, '__invoke']);
             }
         }
 
-        // Headless API routes.
         if (config('cms.api.enabled', true) && isset($router)) {
             \Tavp\Cms\Api\ApiModule::routes($router);
         }
     }
 
-    public function loadMigrations(): void
-    {
-        // Migrations live in database/migrations and are discovered by tavp-core.
-    }
+    public function loadMigrations(): void {}
 
-    public function loadViews(): void
-    {
-        // Theme views are resolved by the ViewFactory using the active theme path.
-    }
+    public function loadViews(): void {}
 
     private function makeStore(): ContentStore
     {
@@ -172,7 +157,6 @@ class CmsServiceProvider implements ServiceProvider
             ),
         };
 
-        // Wrap with cache decorator if enabled.
         if (config('cms.cache.enabled', true)) {
             return new CachedContentStore(
                 inner: $store,
