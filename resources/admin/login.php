@@ -1,26 +1,27 @@
 <?php /** @var string|null $error @var string $brand */ ?>
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html class="dark" lang="id">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sign in — <?= $this->e($brand) ?></title>
 <script src="https://cdn.tailwindcss.com"></script>
-<style>body{background:#0d131f;color:#dde2f3;font-family:Inter,system-ui,sans-serif}</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>body{background:#051424;color:#d4e4fa;font-family:'Inter',sans-serif}</style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-6">
 <div class="w-full max-w-sm">
-  <h1 class="text-2xl font-bold text-[#e6c446] mb-1"><?= $this->e($brand) ?> <span class="text-[#8f9097] text-base font-normal">admin</span></h1>
-  <p class="text-[#8f9097] text-sm mb-8">Sign in with a one-time code sent to your e-mail.</p>
+  <h1 class="text-2xl font-bold text-primary mb-1"><?= $this->e($brand) ?> <span class="text-on-surface-variant text-base font-normal">admin</span></h1>
+  <p class="text-on-surface-variant text-sm mb-8">Sign in with a one-time code sent to your e-mail.</p>
   <?php if ($error): ?>
-    <div class="mb-4 rounded border border-[#93000a] bg-[#93000a]/20 px-3 py-2 text-sm text-[#ffb4ab]"><?= $this->e($error) ?></div>
+    <div class="mb-4 rounded border border-error-container bg-error-container/20 px-3 py-2 text-sm text-error"><?= $this->e($error) ?></div>
   <?php endif; ?>
   <form method="post" action="/admin/login" class="space-y-4">
     <div>
       <label class="block text-sm mb-1">E-mail</label>
-      <input name="email" type="email" required autofocus class="w-full rounded bg-[#1a202c] border border-[#45474c] px-3 py-2 focus:border-[#e6c446] outline-none" placeholder="you@example.com">
+      <input name="email" type="email" required autofocus class="w-full rounded bg-surface-container border border-outline-variant/30 px-3 py-2 focus:border-primary-container outline-none transition-colors" placeholder="you@example.com">
     </div>
-    <button class="w-full rounded bg-[#e6c446] text-[#3b2f00] font-bold px-4 py-2 hover:opacity-90">Send code</button>
+    <button class="w-full rounded bg-primary-container text-on-primary font-bold px-4 py-3 hover:bg-primary transition-all duration-200 active:scale-95">Send code</button>
   </form>
 </div>
 </body>
