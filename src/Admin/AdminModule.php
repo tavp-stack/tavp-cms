@@ -69,6 +69,14 @@ class AdminModule
         $router->post('/admin/menus/{menuId}/items', [MenuController::class, 'addItem']);
         $router->post('/admin/menus/{menuId}/items/{itemId}/delete', [MenuController::class, 'deleteItem']);
 
+        // Users
+        $router->get('/admin/users', [UsersController::class, 'index']);
+        $router->get('/admin/users/create', [UsersController::class, 'create']);
+        $router->post('/admin/users', [UsersController::class, 'store']);
+        $router->get('/admin/users/{id}/edit', [UsersController::class, 'edit']);
+        $router->post('/admin/users/{id}', [UsersController::class, 'update']);
+        $router->post('/admin/users/{id}/delete', [UsersController::class, 'destroy']);
+
         // Teams
         $router->get('/admin/teams', [TeamController::class, 'index']);
         $router->get('/admin/teams/create', [TeamController::class, 'create']);

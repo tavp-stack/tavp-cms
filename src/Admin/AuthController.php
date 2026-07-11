@@ -42,9 +42,10 @@ class AuthController extends AdminController
     {
         $email = strtolower(trim((string) $this->request->input('email', '')));
 
-        // Check if email is allowed
+        // Check if the email is allowed: either in the config allowlist
+        // (built-in admins) or registered in the users table by an admin.
         $allowed = array_map('strtolower', (array) config('cms.admin.emails', []));
-        if (!in_array($email, $allowed, true)) {
+        if (!in_array($email, $allowed, true) && !$this->isRegisteredUser($email)) {
             return $this->partial('login', [
                 'error' => 'That e-mail is not allowed to sign in.',
                 'brand' => config('cms.admin.brand', 'TAVP'),
@@ -68,6 +69,23 @@ class AuthController extends AdminController
         session_write_close();
 
         return $this->redirect('/admin/verify');
+    }
+
+    /**
+     * Whether an e-mail belongs to a user account managed in the database.
+     */
+    private function isRegisteredUser(string $email): bool
+    {
+        try {
+            $rows = app('db')->fetchAll(
+                'SELECT id FROM users WHERE email = :email LIMIT 1',
+                \PDO::FETCH_ASSOC,
+                ['email' => $email]
+            );
+            return !empty($rows);
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     private function sendOtpEmail(string $email, string $code): void

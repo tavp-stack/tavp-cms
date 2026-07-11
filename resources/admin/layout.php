@@ -133,7 +133,7 @@ tailwind.config = {
         ['href' => '/admin/menus', 'icon' => 'menu', 'label' => 'Menus', 'desc' => 'Navigation menus'],
         ['href' => '/admin/media', 'icon' => 'image', 'label' => 'Media', 'desc' => 'Upload files'],
         ['href' => '/admin/settings', 'icon' => 'settings', 'label' => 'Settings', 'desc' => 'Site configuration'],
-        ['href' => '/admin/teams', 'icon' => 'group', 'label' => 'Users', 'desc' => 'Manage accounts'],
+        ['href' => '/admin/users', 'icon' => 'group', 'label' => 'Users', 'desc' => 'Manage accounts'],
         ['href' => '/admin/analytics', 'icon' => 'analytics', 'label' => 'Analytics', 'desc' => 'Traffic insights'],
     ];
     ?>
