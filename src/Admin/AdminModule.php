@@ -84,4 +84,3 @@ class AdminModule
         $router->post('/admin/billing/subscriptions/{id}/cancel', [BillingController::class, 'cancelSubscription']);
     }
 }
-}
