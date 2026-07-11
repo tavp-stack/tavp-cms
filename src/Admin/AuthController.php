@@ -145,7 +145,11 @@ class AuthController extends AdminController
             return $this->redirect('/admin/login');
         }
 
-        if (!$this->otp->verifyOtp($otp['email'] ?? '', $code, $otp)) {
+        // Verify OTP against session hash
+        $expectedHash = $otp['hash'] ?? '';
+        $submittedHash = $this->otp->hash($code);
+
+        if (!hash_equals($expectedHash, $submittedHash)) {
             return $this->partial('verify', [
                 'identifier' => $otp['email'] ?? '',
                 'error' => 'Invalid or expired code. Please try again.',
