@@ -56,11 +56,43 @@ class AdminAuth
             'expires' => time() + (int) config('cms.admin.otp_ttl_minutes', 10) * 60,
         ];
 
+        $brand = config('cms.admin.brand', 'TAVP');
+        $ttl = (int) config('cms.admin.otp_ttl_minutes', 10);
+
+        $html = '<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { margin: 0; padding: 0; background-color: #0d131f; font-family: Inter, system-ui, sans-serif; }
+  .container { max-width: 480px; margin: 0 auto; padding: 40px 24px; }
+  .card { background-color: #1a202c; border: 1px solid #45474c; border-radius: 0.5rem; padding: 32px; }
+  .code { font-family: JetBrains Mono, monospace; font-size: 32px; font-weight: 600; color: #e6c446; letter-spacing: 0.1em; text-align: center; padding: 24px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="text-align: center; margin-bottom: 32px;">
+    <span style="font-size: 24px; font-weight: 700; color: #e6c446;">' . $brand . '</span>
+    <span style="font-size: 14px; color: #8f9097; margin-left: 8px;">admin</span>
+  </div>
+  <div class="card">
+    <h1 style="color: #dde2f3; font-size: 20px; font-weight: 600; margin: 0 0 8px 0;">Sign-in Code</h1>
+    <p style="color: #8f9097; font-size: 14px; margin: 0 0 24px 0;">Use the code below to sign in to your admin panel.</p>
+    <div class="code">' . $code . '</div>
+    <p style="color: #8f9097; font-size: 12px; text-align: center; margin: 16px 0 0 0;">This code expires in ' . $ttl . ' minutes.</p>
+  </div>
+  <p style="color: #45474c; font-size: 12px; text-align: center; margin-top: 24px;">If you did not request this code, you can safely ignore this email.</p>
+</div>
+</body>
+</html>';
+
         $this->mailer()->send(
             $email,
-            'Your ' . config('cms.admin.brand', 'TAVP') . ' sign-in code',
-            "Your sign-in code is: {$code}\n\nIt expires in "
-                . (int) config('cms.admin.otp_ttl_minutes', 10) . " minutes."
+            "Your {$brand} sign-in code",
+            "Your sign-in code is: {$code}\n\nIt expires in {$ttl} minutes.",
+            $html
         );
 
         return true;
