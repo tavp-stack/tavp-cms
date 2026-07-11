@@ -121,13 +121,9 @@ tailwind.config = {
         <span class="material-symbols-outlined text-sm">person</span>
       </div>
       <div class="flex-1 min-w-0">
-        <?php
-          $user = $__auth->user();
-          $userName = is_object($user) ? ($user->email ?? $user->name ?? 'User') : (string) ($user ?? 'User');
-        ?>
-        <p class="font-label-caps text-label-caps truncate"><?= $this->e($userName) ?></p>
-        <?php if ($__rbac !== null && is_object($user)): ?>
-          <p class="font-code-sm text-code-sm text-on-surface-variant text-[10px]">Role: <?= $this->e($__rbac->role($user->email ?? '')) ?></p>
+        <p class="font-label-caps text-label-caps truncate"><?= $this->e($__auth_email ?? 'User') ?></p>
+        <?php if ($__rbac !== null && !empty($__auth_email)): ?>
+          <p class="font-code-sm text-code-sm text-on-surface-variant text-[10px]">Role: <?= $this->e($__rbac->role($__auth_email)) ?></p>
         <?php endif; ?>
       </div>
       <form method="post" action="/admin/logout">

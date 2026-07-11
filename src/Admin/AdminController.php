@@ -7,35 +7,33 @@ namespace Tavp\Cms\Admin;
 use Tavp\Cms\Bread\BreadManager;
 use Tavp\Core\Controllers\BaseController;
 use Tavp\Core\Http\Response;
-use Tavp\Tavpid\Auth\SessionAuth;
 use Tavp\Tavpid\Rbac\AccessControl;
 
 /**
  * Base for all admin controllers.
  *
- * Uses tavpid for auth and RBAC. No duplication.
+ * Uses session-based auth and RBAC.
  */
 abstract class AdminController extends BaseController
 {
-    protected ?SessionAuth $sessionAuth = null;
     protected ?AccessControl $rbac = null;
 
     public function __construct()
     {
         parent::__construct();
-        $this->initAuth();
+        $this->ensureSession();
+        $this->initRbac();
     }
 
-    private function initAuth(): void
+    private function ensureSession(): void
     {
-        try {
-            $authService = app()->getService('tavpid.auth');
-            $userProvider = app()->getService('tavpid.user_provider');
-            $this->sessionAuth = new SessionAuth($authService, $userProvider);
-        } catch (\Throwable) {
-            // Fallback: no auth configured
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
+    }
 
+    private function initRbac(): void
+    {
         try {
             $this->rbac = app()->getService('tavpid.rbac');
         } catch (\Throwable) {
@@ -68,7 +66,7 @@ abstract class AdminController extends BaseController
      */
     protected function guard(): ?Response
     {
-        if ($this->sessionAuth === null || !$this->sessionAuth->check()) {
+        if (empty($_SESSION['cms_admin'])) {
             return $this->redirect('/admin/login');
         }
 
@@ -76,11 +74,19 @@ abstract class AdminController extends BaseController
     }
 
     /**
+     * Get the current admin user email.
+     */
+    protected function adminUser(): ?string
+    {
+        return $_SESSION['cms_admin'] ?? null;
+    }
+
+    /**
      * Render an admin template wrapped in the admin layout.
      */
     protected function admin(string $template, array $data = []): string
     {
-        $data['__auth'] = $this->sessionAuth;
+        $data['__auth_email'] = $this->adminUser();
         $data['__types'] = $this->safeTypes();
         $data['__brand'] = (string) config('cms.admin.brand', 'TAVP');
         $data['__rbac'] = $this->rbac;
