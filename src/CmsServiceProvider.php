@@ -61,9 +61,11 @@ class CmsServiceProvider implements ServiceProvider
 
         // --- Taxonomy -------------------------------------------------------
         if (config('cms.taxonomy.enabled', true)) {
+            // Load the factory function file (not auto-loaded by Composer).
+            require_once __DIR__ . '/Taxonomy/DatabaseTaxonomyFactory.php';
             $app->bind(TaxonomyManager::class, function () use ($app) {
                 $db = $app->getService('db');
-                return \Tavp\Cms\Taxonomy\buildDatabaseTaxonomy($db);
+                return buildDatabaseTaxonomy($db);
             });
         }
 
@@ -77,9 +79,10 @@ class CmsServiceProvider implements ServiceProvider
 
         // --- Webhooks -------------------------------------------------------
         if (config('cms.webhooks.enabled', false)) {
+            require_once __DIR__ . '/Webhooks/DatabaseWebhookFactory.php';
             $app->bind(WebhookManager::class, function () use ($app) {
                 $db = $app->getService('db');
-                return \Tavp\Cms\Webhooks\buildDatabaseWebhooks(
+                return buildDatabaseWebhooks(
                     $db,
                     (int) config('cms.webhooks.timeout', 5),
                 );
