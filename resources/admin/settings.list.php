@@ -1,54 +1,39 @@
-{% extends 'hub/layouts/admin.volt' %}
-
-{% block content %}
-<div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold">Settings</h1>
+<?php /** @var array $settings */ ?>
+<div class="flex justify-between items-center mb-gutter">
+  <h2 class="font-headline-xl text-headline-xl">Settings</h2>
 </div>
 
-<form method="post" action="{{ config('hub.admin_prefix', '/admin') }}/settings" class="space-y-8 max-w-2xl">
-    <input type="hidden" name="group" value="general">
+<form method="post" action="/admin/settings" class="space-y-6 max-w-2xl">
+  <div class="bg-surface-container border border-outline-variant p-6">
+    <h3 class="font-headline-lg text-headline-lg mb-4">Site Settings</h3>
 
-    <div class="rounded-lg bg-gray-900 border border-gray-800 p-6">
-        <h2 class="text-lg font-semibold mb-4">General</h2>
+    <?php if (empty($settings)): ?>
+      <p class="text-on-surface-variant">No settings configured.</p>
+    <?php else: ?>
+      <div class="space-y-4">
+        <?php foreach ($settings as $setting): ?>
+          <div>
+            <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2"><?= $this->e(ucwords(str_replace('_', ' ', $setting['key'] ?? ''))) ?></label>
+            <?php if (($setting['type'] ?? 'text') === 'textarea'): ?>
+              <textarea name="<?= $this->e($setting['key'] ?? '') ?>" rows="3"
+                class="w-full bg-surface-container-low border border-outline-variant rounded px-4 py-3 text-on-surface focus:border-secondary outline-none transition-colors font-body-md"><?= $this->e($setting['value'] ?? '') ?></textarea>
+            <?php elseif (($setting['type'] ?? 'text') === 'select'): ?>
+              <select name="<?= $this->e($setting['key'] ?? '') ?>"
+                class="w-full bg-surface-container-low border border-outline-variant rounded px-4 py-3 text-on-surface focus:border-secondary outline-none transition-colors">
+                <option value="1"<?= ($setting['value'] ?? '') === '1' ? ' selected' : '' ?>>Active</option>
+                <option value="0"<?= ($setting['value'] ?? '') === '0' ? ' selected' : '' ?>>Inactive</option>
+              </select>
+            <?php else: ?>
+              <input type="text" name="<?= $this->e($setting['key'] ?? '') ?>" value="<?= $this->e($setting['value'] ?? '') ?>"
+                class="w-full bg-surface-container-low border border-outline-variant rounded px-4 py-3 text-on-surface focus:border-secondary outline-none transition-colors">
+            <?php endif; ?>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+  </div>
 
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">Site Name</label>
-                <input type="text" name="settings[name]" value="{{ settings['general.name'] | default('') }}"
-                    class="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">Site Description</label>
-                <textarea name="settings[description]" rows="3"
-                    class="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">{{ settings['general.description'] | default('') }}</textarea>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">Site URL</label>
-                <input type="url" name="settings[url]" value="{{ settings['general.url'] | default('') }}"
-                    class="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
-            </div>
-        </div>
-    </div>
-
-    <div class="rounded-lg bg-gray-900 border border-gray-800 p-6">
-        <h2 class="text-lg font-semibold mb-4">SEO</h2>
-
-        <div class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">Default Title Suffix</label>
-                <input type="text" name="settings[seo_title_suffix]" value="{{ settings['seo.title_suffix'] | default('') }}" placeholder="— My Site"
-                    class="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">Default Meta Description</label>
-                <textarea name="settings[seo_meta_description]" rows="2"
-                    class="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">{{ settings['seo.meta_description'] | default('') }}</textarea>
-            </div>
-        </div>
-    </div>
-
-    <div class="flex gap-3">
-        <button type="submit" class="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700">Save Settings</button>
-    </div>
+  <div class="flex gap-3">
+    <button type="submit" class="bg-secondary text-on-secondary font-label-caps text-label-caps py-3 px-8 hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">SAVE SETTINGS</button>
+  </div>
 </form>
-{% endblock %}
