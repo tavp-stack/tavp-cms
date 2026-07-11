@@ -48,5 +48,24 @@ class AdminModule
         $router->get('/admin/taxonomy/{type}/{id}/edit', [TaxonomyController::class, 'edit']);
         $router->post('/admin/taxonomy/{type}/{id}', [TaxonomyController::class, 'update']);
         $router->post('/admin/taxonomy/{type}/{id}/delete', [TaxonomyController::class, 'destroy']);
+
+        // Settings
+        $router->get('/admin/settings', [SettingsController::class, 'index']);
+        $router->post('/admin/settings', [SettingsController::class, 'update']);
+
+        // Media
+        $router->get('/admin/media', [MediaController::class, 'index']);
+        $router->post('/admin/media/upload', [MediaController::class, 'upload']);
+        $router->post('/admin/media/{id}/delete', [MediaController::class, 'destroy']);
+
+        // Menus
+        $router->get('/admin/menus', [MenuController::class, 'index']);
+        $router->get('/admin/menus/create', [MenuController::class, 'create']);
+        $router->post('/admin/menus', [MenuController::class, 'store']);
+        $router->get('/admin/menus/{id}/edit', [MenuController::class, 'edit']);
+        $router->post('/admin/menus/{id}', [MenuController::class, 'update']);
+        $router->post('/admin/menus/{id}/delete', [MenuController::class, 'destroy']);
+        $router->post('/admin/menus/{menuId}/items', [MenuController::class, 'addItem']);
+        $router->post('/admin/menus/{menuId}/items/{itemId}/delete', [MenuController::class, 'deleteItem']);
     }
 }
