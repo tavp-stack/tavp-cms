@@ -1,7 +1,21 @@
 <?php /** @var array $media */ ?>
+<?php $__flashSuccess = $_SESSION['cms_flash']['success'] ?? null; $__flashError = $_SESSION['cms_flash']['error'] ?? null; unset($_SESSION['cms_flash']); ?>
 <div class="flex justify-between items-center mb-gutter">
   <h2 class="font-headline-xl text-headline-xl">Media</h2>
 </div>
+
+<?php if ($__flashSuccess): ?>
+  <div class="mb-6 bg-secondary-container/20 border border-secondary/30 p-4 rounded flex items-center gap-2">
+    <span class="material-symbols-outlined text-secondary">check_circle</span>
+    <span class="text-body-md"><?= $this->e($__flashSuccess) ?></span>
+  </div>
+<?php endif; ?>
+<?php if ($__flashError): ?>
+  <div class="mb-6 bg-error-container/20 border border-error/30 p-4 rounded flex items-center gap-2">
+    <span class="material-symbols-outlined text-error">error</span>
+    <span class="text-body-md"><?= $this->e($__flashError) ?></span>
+  </div>
+<?php endif; ?>
 
 <!-- Upload Form -->
 <div class="bg-surface-container border border-outline-variant p-6 mb-gutter">

@@ -19,7 +19,10 @@ class TaxonomyController extends AdminController
         }
 
         $taxonomy = $this->taxonomy();
-        $terms = $taxonomy->all($type);
+        $terms = array_map(
+            static fn ($term) => $term instanceof \Tavp\Cms\Taxonomy\Term ? $term->toArray() : $term,
+            $taxonomy->all($type)
+        );
 
         return $this->admin('taxonomy_list', [
             'terms' => $terms,
@@ -68,6 +71,10 @@ class TaxonomyController extends AdminController
 
         if ($term === null) {
             return $this->redirect("/admin/taxonomy/{$type}");
+        }
+
+        if ($term instanceof \Tavp\Cms\Taxonomy\Term) {
+            $term = $term->toArray();
         }
 
         return $this->admin('taxonomy_form', [

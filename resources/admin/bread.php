@@ -47,7 +47,7 @@
           <?php foreach (array_slice($type->fields, 0, 5) as $field): ?>
             <div class="flex items-center justify-between p-2 bg-surface-container-low rounded">
               <span class="font-code-sm text-code-sm"><?= $this->e($field->name) ?></span>
-              <span class="font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($field->type) ?></span>
+              <span class="font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($field->type->value) ?></span>
             </div>
           <?php endforeach; ?>
           <?php if (count($type->fields) > 5): ?>

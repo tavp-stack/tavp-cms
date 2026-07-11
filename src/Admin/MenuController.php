@@ -17,7 +17,7 @@ class MenuController extends AdminController
             return $r;
         }
 
-        $menus = $this->db()->query('SELECT * FROM menus ORDER BY name', []);
+        $menus = $this->db()->query('SELECT * FROM menus ORDER BY name', [])->fetchAll(\PDO::FETCH_ASSOC);
 
         return $this->admin('menu.list', [
             'menus' => $menus,
@@ -62,8 +62,8 @@ class MenuController extends AdminController
             return $r;
         }
 
-        $menu = $this->db()->query('SELECT * FROM menus WHERE id = ?', [$id])[0] ?? null;
-        $items = $this->db()->query('SELECT * FROM menu_items WHERE menu_id = ? ORDER BY sort_order', [$id]);
+        $menu = $this->db()->query('SELECT * FROM menus WHERE id = ?', [$id])->fetchAll(\PDO::FETCH_ASSOC)[0] ?? null;
+        $items = $this->db()->query('SELECT * FROM menu_items WHERE menu_id = ? ORDER BY sort_order', [$id])->fetchAll(\PDO::FETCH_ASSOC);
 
         return $this->admin('menu.form', [
             'menu' => $menu ?? [],
