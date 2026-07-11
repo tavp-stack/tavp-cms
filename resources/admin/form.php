@@ -30,7 +30,8 @@
     <div>
       <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2"><?= $this->e($field['label']) ?><?= !empty($field['required']) ? ' <span class="text-error">*</span>' : '' ?></label>
       <?php if ($control === 'textarea' || $control === 'editor' || $control === 'block-editor'): ?>
-        <textarea name="<?= $this->e($name) ?>" rows="<?= $control === 'textarea' ? 3 : 10 ?>" class="w-full bg-surface-container border <?= $fieldErrors ? 'border-error' : 'border-outline-variant' ?> rounded px-4 py-3 focus:border-secondary outline-none font-code-sm text-code-sm"><?= $this->e(is_scalar($value) ? $value : '') ?></textarea>
+        <?php $isRich = ($control === 'editor' || $control === 'block-editor'); ?>
+        <textarea name="<?= $this->e($name) ?>"<?= $isRich ? ' data-md-editor="1"' : '' ?> rows="<?= $control === 'textarea' ? 3 : 10 ?>" class="w-full bg-surface-container border <?= $fieldErrors ? 'border-error' : 'border-outline-variant' ?> rounded px-4 py-3 focus:border-secondary outline-none font-code-sm text-code-sm<?= $isRich ? ' hidden' : '' ?>"><?= $this->e(is_scalar($value) ? $value : '') ?></textarea>
       <?php elseif ($control === 'select'): ?>
         <select name="<?= $this->e($name) ?>" class="w-full bg-surface-container border <?= $fieldErrors ? 'border-error' : 'border-outline-variant' ?> rounded px-4 py-3 focus:border-secondary outline-none font-body-md">
           <?php foreach (($field['options'] ?? []) as $opt): ?>
@@ -51,3 +52,43 @@
     <a href="/admin/c/<?= $this->e($type->name) ?>" class="border border-outline-variant font-label-caps text-label-caps py-3 px-8 hover:bg-surface-container-high transition-colors">CANCEL</a>
   </div>
 </form>
+
+<?php $__richEditors = array_filter($type->formSchema(), fn ($f) => in_array($f['control'], ['editor', 'block-editor'], true)); ?>
+<?php if (!empty($__richEditors)): ?>
+  <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
+  <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/theme/toastui-editor-dark.min.css">
+  <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('textarea[data-md-editor]').forEach(function (textarea) {
+        var holder = document.createElement('div');
+        textarea.parentNode.insertBefore(holder, textarea.nextSibling);
+
+        var editor = new toastui.Editor({
+          el: holder,
+          height: '480px',
+          theme: 'dark',
+          initialEditType: 'wysiwyg',
+          previewStyle: 'tab',
+          usageStatistics: false,
+          initialValue: textarea.value,
+          toolbarItems: [
+            ['heading', 'bold', 'italic', 'strike'],
+            ['hr', 'quote'],
+            ['ul', 'ol', 'task'],
+            ['table', 'link'],
+            ['code', 'codeblock'],
+            ['scrollSync'],
+          ],
+        });
+
+        var form = textarea.closest('form');
+        if (form) {
+          form.addEventListener('submit', function () {
+            textarea.value = editor.getMarkdown();
+          });
+        }
+      });
+    });
+  </script>
+<?php endif; ?>
