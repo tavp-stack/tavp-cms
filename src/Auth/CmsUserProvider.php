@@ -47,13 +47,15 @@ class CmsUserProvider implements UserProvider
     public function create(string $identifier): object
     {
         $db = app('db');
-
-        // Use raw SQL to avoid Phalcon adapter column count issues
-        $stmt = $db->prepare(
-            "INSERT INTO users (name, email, created_at, updated_at) VALUES (?, ?, ?, ?)"
-        );
         $now = date('Y-m-d H:i:s');
-        $stmt->execute([$identifier, $identifier, $now, $now]);
+
+        $db->insert('users', [
+            'name' => $identifier,
+            'email' => $identifier,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
         $id = $db->lastInsertId();
 
         return (object) ['id' => $id, 'email' => $identifier, 'name' => $identifier];

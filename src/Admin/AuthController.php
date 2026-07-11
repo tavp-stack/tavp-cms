@@ -18,6 +18,11 @@ class AuthController extends AdminController
             return $this->redirect('/admin');
         }
 
+        // Clear pending OTP session when going back to login
+        if ($this->sessionAuth !== null) {
+            $this->sessionAuth->clearPending();
+        }
+
         return $this->partial('login', [
             'error' => null,
             'brand' => config('cms.admin.brand', 'TAVP'),
