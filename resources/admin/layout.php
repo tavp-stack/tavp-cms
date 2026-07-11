@@ -110,6 +110,9 @@ tailwind.config = {
         ['href' => '/admin/c/page', 'match' => '/admin/c/page', 'icon' => 'description', 'label' => 'Pages'],
         ['href' => '/admin/c/post', 'match' => '/admin/c/post', 'icon' => 'article', 'label' => 'Blog'],
         ['href' => $singleEdit('contact'), 'match' => '/admin/c/contact', 'icon' => 'mail', 'label' => 'Contact'],
+        ['href' => $singleEdit('get_started'), 'match' => '/admin/c/get_started', 'icon' => 'rocket_launch', 'label' => 'Get Started'],
+        ['href' => $singleEdit('performance'), 'match' => '/admin/c/performance', 'icon' => 'speed', 'label' => 'Performance'],
+        ['href' => $singleEdit('documentation'), 'match' => '/admin/c/documentation', 'icon' => 'menu_book', 'label' => 'Documentation'],
         ['href' => '/admin/taxonomy/category', 'match' => '/admin/taxonomy/category', 'icon' => 'category', 'label' => 'Categories'],
         ['href' => '/admin/taxonomy/tag', 'match' => '/admin/taxonomy/tag', 'icon' => 'sell', 'label' => 'Tags'],
     ];
