@@ -51,12 +51,12 @@ tailwind.config = {
 
 <!-- Sidebar -->
 <aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container border-r border-outline-variant flex flex-col z-50 overflow-hidden">
-  <div class="px-component-padding-x pt-gutter pb-4">
+  <div class="px-6 pt-6 pb-4">
     <h1 class="font-headline-lg text-headline-lg font-bold text-secondary tracking-tight"><?= $this->e($__brand) ?> <span class="text-on-surface-variant font-normal text-body-md opacity-60">admin</span></h1>
     <p class="font-code-sm text-code-sm text-on-surface-variant opacity-60">v1.0</p>
   </div>
 
-  <nav class="flex-1 overflow-y-auto px-component-padding-x space-y-1 pb-4">
+  <nav class="flex-1 overflow-y-auto px-4 space-y-1 pb-4">
     <a href="/admin" class="flex items-center px-4 py-3 text-secondary border-r-2 border-secondary bg-primary-container/10 font-body-md text-body-md transition-all duration-200">
       <span class="material-symbols-outlined mr-3">dashboard</span>
       Dashboard
@@ -112,7 +112,7 @@ tailwind.config = {
   </nav>
 
   <!-- Bottom section: New Post + User Info -->
-  <div class="px-component-padding-x pb-gutter pt-2 border-t border-outline-variant">
+  <div class="px-4 pb-6 pt-2 border-t border-outline-variant">
     <a href="/admin/c/home/create" class="w-full bg-secondary text-on-secondary py-3 px-4 rounded font-label-caps text-label-caps hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all text-center block mb-4">
       + NEW POST
     </a>
@@ -139,7 +139,7 @@ tailwind.config = {
 
 <!-- Main Content -->
 <main class="ml-64 min-h-screen bg-background">
-  <div class="max-w-[1280px] mx-auto p-gutter">
+  <div class="max-w-[1280px] mx-auto px-10 py-8">
     <?= $content ?>
   </div>
 </main>
