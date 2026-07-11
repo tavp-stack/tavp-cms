@@ -67,5 +67,8 @@ class AdminModule
         $router->post('/admin/menus/{id}/delete', [MenuController::class, 'destroy']);
         $router->post('/admin/menus/{menuId}/items', [MenuController::class, 'addItem']);
         $router->post('/admin/menus/{menuId}/items/{itemId}/delete', [MenuController::class, 'deleteItem']);
+
+        // Analytics
+        $router->get('/admin/analytics', [AnalyticsController::class, 'index']);
     }
 }

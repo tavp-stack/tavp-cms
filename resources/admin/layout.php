@@ -115,6 +115,10 @@ tailwind.config = {
       <span class="material-symbols-outlined mr-3">settings</span>
       Settings
     </a>
+    <a href="/admin/analytics" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
+      <span class="material-symbols-outlined mr-3">analytics</span>
+      Analytics
+    </a>
   </nav>
 
   <div class="mt-auto pt-6">
