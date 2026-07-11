@@ -25,6 +25,7 @@ class AdminModule
 
         // Dashboard
         $router->get('/admin', [DashboardController::class, 'index']);
+        $router->get('/admin/home', [DashboardController::class, 'home']);
 
         // Content BREAD (create before {id} so the literal segment wins)
         $router->get('/admin/c/{type}', [ContentController::class, 'index']);

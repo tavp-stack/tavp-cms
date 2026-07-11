@@ -81,27 +81,21 @@ tailwind.config = {
 
   <!-- Navigation -->
   <nav class="flex-1 overflow-y-auto px-3 space-y-1 pb-4">
-    <a href="/admin" class="flex items-center gap-3 px-3 py-2.5 text-secondary bg-primary-container/10 rounded transition-all duration-200" :class="sidebarCollapsed ? 'justify-center' : ''">
+    <?php $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'; ?>
+    <a href="/admin" class="flex items-center gap-3 px-3 py-2.5 rounded transition-all duration-200 <?= $currentPath === '/admin' ? 'text-secondary bg-primary-container/10' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high' ?>" :class="sidebarCollapsed ? 'justify-center' : ''">
       <span class="material-symbols-outlined text-xl">dashboard</span>
       <span x-show="!sidebarCollapsed" x-transition class="font-body-md text-body-md whitespace-nowrap">Dashboard</span>
+    </a>
+    <a href="/admin/home" class="flex items-center gap-3 px-3 py-2.5 rounded transition-all duration-200 <?= str_starts_with($currentPath, '/admin/home') ? 'text-secondary bg-primary-container/10' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high' ?>" :class="sidebarCollapsed ? 'justify-center' : ''">
+      <span class="material-symbols-outlined text-xl">home</span>
+      <span x-show="!sidebarCollapsed" x-transition class="font-body-md text-body-md whitespace-nowrap">Home</span>
     </a>
 
     <div x-show="!sidebarCollapsed" class="pt-4 pb-1 px-3 text-on-surface-variant/40">
       <span class="font-label-caps text-label-caps uppercase tracking-widest">Content</span>
     </div>
     <?php
-    $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
-    // Resolve the single Home record so "Home Page" edits it directly
-    // (storage-agnostic: works for both database and flat-file drivers).
-    $homeHref = '/admin/c/home';
-    try {
-      $homeRecords = app()->getService(\Tavp\Cms\Bread\BreadManager::class)->browse('home');
-      if (!empty($homeRecords[0]['id'])) {
-        $homeHref = '/admin/c/home/' . $homeRecords[0]['id'] . '/edit';
-      }
-    } catch (\Throwable $e) {}
     $contentMenus = [
-        ['href' => $homeHref, 'match' => '/admin/c/home', 'icon' => 'home', 'label' => 'Home Page'],
         ['href' => '/admin/c/page', 'match' => '/admin/c/page', 'icon' => 'description', 'label' => 'Pages'],
         ['href' => '/admin/c/post', 'match' => '/admin/c/post', 'icon' => 'article', 'label' => 'Blog'],
         ['href' => '/admin/taxonomy/category', 'match' => '/admin/taxonomy/category', 'icon' => 'category', 'label' => 'Categories'],

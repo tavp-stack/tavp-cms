@@ -14,11 +14,28 @@ class DashboardController extends AdminController
             return $r;
         }
 
+        return $this->admin('dashboard', ['counts' => $this->counts()]);
+    }
+
+    public function home(): string|Response
+    {
+        if ($r = $this->guard()) {
+            return $r;
+        }
+
+        return $this->admin('home', ['counts' => $this->counts()]);
+    }
+
+    /**
+     * @return array<string,int>
+     */
+    private function counts(): array
+    {
         $counts = [];
         foreach ($this->bread()->types() as $name => $type) {
             $counts[$name] = count($this->bread()->browse($name));
         }
 
-        return $this->admin('dashboard', ['counts' => $counts]);
+        return $counts;
     }
 }
