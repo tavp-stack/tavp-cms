@@ -119,15 +119,17 @@ $iconMap = [
         <?php
         try {
           $db = app()->getService('db');
-          $recent = $db->query("SELECT id, title, content_type, status, created_at FROM contents ORDER BY created_at DESC LIMIT 5")->fetchAll(\PDO::FETCH_ASSOC);
+          $recent = $db->query("SELECT id, type, slug, status, data, created_at FROM contents ORDER BY created_at DESC LIMIT 5")->fetchAll(\PDO::FETCH_ASSOC);
           foreach ($recent as $item):
+            $data = json_decode($item['data'] ?? '{}', true);
+            $title = $data['title'] ?? $item['slug'];
         ?>
-          <a href="/admin/c/<?= $this->e($item['content_type']) ?>/<?= $this->e($item['id']) ?>/edit" class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant hover:border-secondary transition-colors">
+          <a href="/admin/c/<?= $this->e($item['type']) ?>/<?= $this->e($item['id']) ?>/edit" class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant hover:border-secondary transition-colors">
             <div class="flex items-center gap-3">
-              <span class="material-symbols-outlined text-secondary"><?= $this->e($iconMap[$item['content_type']] ?? 'description') ?></span>
+              <span class="material-symbols-outlined text-secondary"><?= $this->e($iconMap[$item['type']] ?? 'description') ?></span>
               <div>
-                <p class="font-body-md text-body-md"><?= $this->e($item['title']) ?></p>
-                <p class="font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($item['content_type']) ?></p>
+                <p class="font-body-md text-body-md"><?= $this->e($title) ?></p>
+                <p class="font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($item['type']) ?></p>
               </div>
             </div>
             <div class="text-right">

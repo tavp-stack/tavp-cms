@@ -101,7 +101,11 @@ tailwind.config = {
     $pages = [];
     try {
       $db = app()->getService('db');
-      $pages = $db->query("SELECT id, title, slug FROM contents WHERE content_type = 'page' AND status = 'published' ORDER BY title")->fetchAll(\PDO::FETCH_ASSOC);
+      $rows = $db->query("SELECT id, data, slug FROM contents WHERE type = 'page' AND status = 'published' ORDER BY slug")->fetchAll(\PDO::FETCH_ASSOC);
+      foreach ($rows as $row) {
+        $data = json_decode($row['data'] ?? '{}', true);
+        $pages[] = ['id' => $row['id'], 'title' => $data['title'] ?? $row['slug'], 'slug' => $row['slug']];
+      }
     } catch (\Throwable $e) {}
     ?>
     <div x-data="{ open: false }" x-show="!sidebarCollapsed" x-transition>
@@ -139,7 +143,11 @@ tailwind.config = {
     $posts = [];
     try {
       $db = app()->getService('db');
-      $posts = $db->query("SELECT id, title, slug FROM contents WHERE content_type = 'post' ORDER BY created_at DESC LIMIT 10")->fetchAll(\PDO::FETCH_ASSOC);
+      $rows = $db->query("SELECT id, data, slug FROM contents WHERE type = 'post' ORDER BY created_at DESC LIMIT 10")->fetchAll(\PDO::FETCH_ASSOC);
+      foreach ($rows as $row) {
+        $data = json_decode($row['data'] ?? '{}', true);
+        $posts[] = ['id' => $row['id'], 'title' => $data['title'] ?? $row['slug'], 'slug' => $row['slug']];
+      }
     } catch (\Throwable $e) {}
     ?>
     <div x-data="{ open: false }" x-show="!sidebarCollapsed" x-transition>
