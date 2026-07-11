@@ -1,31 +1,54 @@
-<?php /** @var array $teams */ ?>
-<div class="flex justify-between items-center mb-gutter">
-  <h2 class="font-headline-xl text-headline-xl">Teams</h2>
-  <a href="/admin/teams/create" class="bg-secondary text-on-secondary font-label-caps text-label-caps py-3 px-6 hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">+ NEW TEAM</a>
+<?php
+/** @var array $teams */
+
+$db = app('db');
+$users = $db->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll(\PDO::FETCH_ASSOC);
+?>
+
+<div class="flex justify-between items-center mb-8">
+  <div>
+    <h1 class="font-headline-xl text-headline-xl text-secondary">Users</h1>
+    <p class="font-body-md text-body-md text-on-surface-variant mt-1">Manage registered accounts</p>
+  </div>
 </div>
 
+<!-- Users List -->
 <div class="bg-surface-container border border-outline-variant overflow-hidden">
   <table class="w-full text-body-md">
     <thead class="bg-surface-container-high">
       <tr>
-        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Name</th>
-        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Owner ID</th>
-        <th class="px-4 py-3 text-right font-label-caps text-label-caps text-on-surface-variant">Actions</th>
+        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">User</th>
+        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Email</th>
+        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Role</th>
+        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Joined</th>
       </tr>
     </thead>
     <tbody>
-      <?php if (empty($teams)): ?>
-        <tr><td colspan="3" class="px-4 py-8 text-center text-on-surface-variant">No teams yet.</td></tr>
-      <?php else: foreach ($teams as $team): ?>
+      <?php if (empty($users)): ?>
+        <tr><td colspan="4" class="px-4 py-8 text-center text-on-surface-variant">No users yet.</td></tr>
+      <?php else: foreach ($users as $user): ?>
+        <?php
+          $role = 'editor';
+          if ($__rbac !== null) {
+            $role = $__rbac->role($user['email']);
+          }
+        ?>
         <tr class="border-t border-outline-variant hover:bg-surface-container-high/50 transition-colors">
-          <td class="px-4 py-3"><?= $this->e($team['name'] ?? '') ?></td>
-          <td class="px-4 py-3 font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($team['owner_id'] ?? '') ?></td>
-          <td class="px-4 py-3 text-right">
-            <a href="/admin/teams/<?= $this->e($team['id']) ?>/edit" class="text-secondary font-label-caps text-label-caps hover:underline mr-3">Edit</a>
-            <form method="post" action="/admin/teams/<?= $this->e($team['id']) ?>/delete" class="inline">
-              <button type="submit" class="text-error font-label-caps text-label-caps hover:underline" onclick="return confirm('Delete team?')">Delete</button>
-            </form>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+                <span class="material-symbols-outlined text-sm text-secondary">person</span>
+              </div>
+              <span class="font-body-md"><?= $this->e($user['name'] ?? 'Unknown') ?></span>
+            </div>
           </td>
+          <td class="px-4 py-3 font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($user['email']) ?></td>
+          <td class="px-4 py-3">
+            <span class="font-code-sm text-code-sm px-2 py-1 rounded <?= $role === 'admin' ? 'bg-secondary/20 text-secondary' : 'bg-surface-container-high text-on-surface-variant' ?>">
+              <?= $this->e($role) ?>
+            </span>
+          </td>
+          <td class="px-4 py-3 font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($user['created_at'] ?? '') ?></td>
         </tr>
       <?php endforeach; endif; ?>
     </tbody>

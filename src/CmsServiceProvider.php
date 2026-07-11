@@ -49,6 +49,12 @@ class CmsServiceProvider implements ServiceProvider
         // --- RBAC (via tavpid) -----------------------------------------------
         $app->bind('tavpid.rbac', function () {
             $rbac = new \Tavp\Tavpid\Rbac\AccessControl();
+            // Load email-to-role mapping
+            $emailRoles = (array) config('cms.admin.roles', []);
+            foreach ($emailRoles as $email => $role) {
+                $rbac->setUserRole($email, $role);
+            }
+            // Load role permissions
             $rbac->loadRoles((array) config('cms.admin.permissions', []));
             return $rbac;
         });
