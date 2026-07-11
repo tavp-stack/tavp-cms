@@ -24,10 +24,24 @@ unset($_SESSION['cms_flash']);
   <table class="w-full text-body-md">
     <thead class="bg-surface-container-high">
       <tr>
-        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">User</th>
-        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Email</th>
-        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Role</th>
-        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Joined</th>
+        <?php
+        $sortCols = [
+          'name' => ['label' => 'User', 'icon' => 'person'],
+          'email' => ['label' => 'Email', 'icon' => 'mail'],
+          'role' => ['label' => 'Role', 'icon' => 'badge'],
+          'created_at' => ['label' => 'Joined', 'icon' => 'event'],
+        ];
+        foreach ($sortCols as $col => $meta):
+          $isActive = $sort === $col;
+          $nextDir = ($isActive && $dir === 'ASC') ? 'DESC' : 'ASC';
+          $arrow = $isActive ? ($dir === 'ASC' ? ' ↑' : ' ↓') : '';
+        ?>
+          <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">
+            <a href="/admin/users?sort=<?= $col ?>&dir=<?= $nextDir ?>" class="hover:text-secondary transition-colors">
+              <?= $this->e($meta['label']) ?><?= $arrow ?>
+            </a>
+          </th>
+        <?php endforeach; ?>
         <th class="px-4 py-3 text-right font-label-caps text-label-caps text-on-surface-variant">Actions</th>
       </tr>
     </thead>

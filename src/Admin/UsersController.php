@@ -24,14 +24,23 @@ class UsersController extends AdminController
             return $this->redirect('/admin');
         }
 
+        // Sorting
+        $allowedSort = ['name', 'email', 'role', 'created_at'];
+        $sort = $this->request->input('sort', 'created_at');
+        $dir = strtoupper((string) $this->request->input('dir', 'DESC'));
+        if (!in_array($sort, $allowedSort, true)) { $sort = 'created_at'; }
+        if (!in_array($dir, ['ASC', 'DESC'], true)) { $dir = 'DESC'; }
+
         $users = $this->db()->fetchAll(
-            'SELECT * FROM users ORDER BY created_at DESC',
+            "SELECT * FROM users ORDER BY {$sort} {$dir}",
             \PDO::FETCH_ASSOC
         );
 
         return $this->admin('users.list', [
             'users' => $users,
             'currentEmail' => strtolower((string) $this->adminUser()),
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 
