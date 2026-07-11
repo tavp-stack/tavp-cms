@@ -6,145 +6,141 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= $this->e($__brand) ?> Admin</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script>
 tailwind.config = {
   darkMode: "class",
   theme: {
     extend: {
       colors: {
-        "background": "#051424",
-        "on-background": "#d4e4fa",
-        "surface": "#051424",
-        "surface-container-lowest": "#010f1f",
-        "surface-container-low": "#0d1c2d",
-        "surface-container": "#122131",
-        "surface-container-high": "#1c2b3c",
-        "surface-container-highest": "#273647",
-        "on-surface": "#d4e4fa",
-        "on-surface-variant": "#d1c6ab",
-        "primary": "#ffecb9",
-        "on-primary": "#3c2f00",
-        "primary-container": "#facc15",
-        "on-primary-container": "#6c5700",
-        "secondary": "#bec6e0",
-        "on-secondary": "#283044",
-        "secondary-container": "#3f465c",
-        "on-secondary-container": "#adb4ce",
-        "tertiary": "#e6edff",
-        "on-tertiary-container": "#4f5a6e",
-        "outline": "#9a9078",
-        "outline-variant": "#4d4632",
-        "error": "#ffb4ab",
-        "on-error": "#690005"
+        "background": "#0d131f",
+        "on-background": "#dde2f3",
+        "surface": "#0d131f",
+        "surface-container-lowest": "#080e1a",
+        "surface-container-low": "#161c27",
+        "surface-container": "#1a202c",
+        "surface-container-high": "#242a36",
+        "surface-container-highest": "#2f3542",
+        "on-surface": "#dde2f3",
+        "on-surface-variant": "#c5c6cd",
+        "primary": "#bdc7dc",
+        "on-primary": "#273141",
+        "primary-container": "#2d3748",
+        "secondary": "#e6c446",
+        "on-secondary": "#3b2f00",
+        "secondary-container": "#ac8e0a",
+        "tertiary": "#bcc7dd",
+        "on-tertiary-container": "#95a0b5",
+        "outline": "#8f9097",
+        "outline-variant": "#45474c",
+        "error": "#ffb4ab"
       },
       fontFamily: {
-        "sans": ["Inter"],
-        "mono": ["JetBrains Mono"]
+        "headline-xl": ["Geist"], "headline-lg": ["Geist"],
+        "body-md": ["Inter"], "code-sm": ["JetBrains Mono"], "label-caps": ["JetBrains Mono"]
+      },
+      fontSize: {
+        "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+        "code-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
       }
     }
   }
 }
 </script>
 <style>
-  .kinetic-shadow { box-shadow: 20px 20px 40px rgba(0, 0, 0, 0.4); }
-  .kinetic-hover:hover { transform: translate(-4px, -4px); box-shadow: 24px 24px 48px rgba(0, 0, 0, 0.5); }
-  .glass-sidebar { background: rgba(1, 15, 31, 0.85); backdrop-filter: blur(16px); }
-  .active-glow { background: linear-gradient(90deg, rgba(238, 194, 0, 0.1) 0%, transparent 100%); }
-  body { background-color: #051424; color: #d4e4fa; font-family: 'Inter', sans-serif; }
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .hard-step-shadow { box-shadow: 2px 2px 0px 0px #000000; }
+  .performance-card { border-top: 2px solid #e6c446; }
+  body { background-color: #0d131f; color: #dde2f3; font-family: 'Inter', sans-serif; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #1a202c; }
+  ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #e6c446; }
 </style>
 </head>
-<body class="antialiased overflow-x-hidden">
+<body class="overflow-x-hidden" x-data="{ mobileMenu: false }">
 
 <!-- Sidebar -->
-<aside class="fixed left-0 top-0 h-full w-64 glass-sidebar border-r border-outline-variant/10 z-50 flex flex-col py-8 px-4">
-  <div class="mb-10 px-4">
-    <h1 class="text-xl font-bold text-primary tracking-tighter flex items-center gap-2">
-      <?= $this->e($__brand) ?> <span class="text-on-surface-variant font-normal text-sm opacity-60">admin</span>
-    </h1>
-    <p class="text-xs text-on-surface-variant/50 mt-1 uppercase tracking-widest font-mono">Kinetic CMS v1.0</p>
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container border-r border-outline-variant flex flex-col py-gutter px-component-padding-x z-50">
+  <div class="mb-10">
+    <h1 class="font-headline-lg text-headline-lg font-bold text-secondary tracking-tight"><?= $this->e($__brand) ?> <span class="text-on-surface-variant font-normal text-body-md opacity-60">admin</span></h1>
+    <p class="font-code-sm text-code-sm text-on-surface-variant opacity-60">v1.0</p>
   </div>
 
   <nav class="flex-1 space-y-1">
-    <div class="px-4 py-2">
-      <span class="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest">General</span>
-    </div>
-    <a href="/admin" class="flex items-center gap-3 px-4 py-3 text-primary font-bold border-r-2 border-primary active-glow transition-all duration-150">
-      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
-      <span class="text-sm">Dashboard</span>
-    </a>
-    <a href="/admin/search" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-150 group">
-      <span class="material-symbols-outlined">search</span>
-      <span class="text-sm">Search</span>
+    <a href="/admin" class="flex items-center px-4 py-3 text-secondary border-r-2 border-secondary bg-primary-container/10 font-body-md text-body-md transition-all duration-200">
+      <span class="material-symbols-outlined mr-3">dashboard</span>
+      Dashboard
     </a>
 
-    <div class="px-4 py-6 mt-4">
-      <span class="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest">Content</span>
+    <div class="pt-4 pb-1 px-4 text-on-surface-variant/40">
+      <span class="font-label-caps text-label-caps uppercase tracking-widest">Content</span>
     </div>
     <?php foreach ($__types as $name => $t): ?>
-      <a href="/admin/c/<?= $this->e($name) ?>" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-150 group">
-        <span class="material-symbols-outlined"><?= $this->e($t->icon ?? 'description') ?></span>
-        <span class="text-sm"><?= $this->e($t->label) ?></span>
+      <a href="/admin/c/<?= $this->e($name) ?>" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
+        <span class="material-symbols-outlined mr-3"><?= $this->e($t->icon ?? 'description') ?></span>
+        <?= $this->e($t->label) ?>
       </a>
     <?php endforeach; ?>
 
     <?php if (config('cms.taxonomy.enabled', true)): ?>
-      <div class="px-4 py-6 mt-4">
-        <span class="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest">Klasifikasi</span>
+      <div class="pt-4 pb-1 px-4 text-on-surface-variant/40">
+        <span class="font-label-caps text-label-caps uppercase tracking-widest">Klasifikasi</span>
       </div>
-      <a href="/admin/taxonomy/category" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-150 group">
-        <span class="material-symbols-outlined">account_tree</span>
-        <span class="text-sm">Kategori</span>
+      <a href="/admin/taxonomy/category" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
+        <span class="material-symbols-outlined mr-3">category</span>
+        Kategori
       </a>
-      <a href="/admin/taxonomy/tag" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-150 group">
-        <span class="material-symbols-outlined">sell</span>
-        <span class="text-sm">Tag</span>
+      <a href="/admin/taxonomy/tag" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
+        <span class="material-symbols-outlined mr-3">sell</span>
+        Tag
       </a>
     <?php endif; ?>
 
-    <div class="px-4 py-6 mt-4">
-      <span class="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest">Site</span>
+    <div class="pt-4 pb-1 px-4 text-on-surface-variant/40">
+      <span class="font-label-caps text-label-caps uppercase tracking-widest">Site</span>
     </div>
-    <a href="/admin/menus" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-150 group">
-      <span class="material-symbols-outlined">menu</span>
-      <span class="text-sm">Menu</span>
+    <a href="/admin/menus" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
+      <span class="material-symbols-outlined mr-3">menu</span>
+      Menu
     </a>
-    <a href="/admin/media" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-150 group">
-      <span class="material-symbols-outlined">image</span>
-      <span class="text-sm">Media</span>
+    <a href="/admin/media" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
+      <span class="material-symbols-outlined mr-3">image</span>
+      Media
     </a>
-    <a href="/admin/settings" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all duration-150 group">
-      <span class="material-symbols-outlined">settings</span>
-      <span class="text-sm">Settings</span>
+    <a href="/admin/settings" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
+      <span class="material-symbols-outlined mr-3">settings</span>
+      Settings
     </a>
   </nav>
 
-  <div class="mt-auto pt-8 border-t border-outline-variant/10 px-4">
-    <div class="flex flex-col gap-1 mb-6">
-      <?php if ($__rbac !== null): ?>
-        <span class="text-xs text-on-surface-variant/60">Role: <?= $this->e($__rbac->role((string) $__auth->user())) ?></span>
-      <?php endif; ?>
-      <span class="text-sm text-on-surface truncate"><?= $this->e($__auth->user()) ?></span>
+  <div class="mt-auto pt-6">
+    <a href="/admin/c/home/create" class="w-full bg-secondary text-on-secondary py-3 px-4 rounded font-label-caps text-label-caps hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all text-center block">
+      + NEW POST
+    </a>
+    <div class="mt-6 flex items-center space-x-3 px-2">
+      <div class="w-8 h-8 rounded-full bg-primary-container overflow-hidden border border-outline-variant flex items-center justify-center">
+        <span class="material-symbols-outlined text-sm">person</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-label-caps text-label-caps truncate"><?= $this->e($__auth->user()) ?></p>
+        <?php if ($__rbac !== null): ?>
+          <p class="font-code-sm text-code-sm text-on-surface-variant text-[10px]">Role: <?= $this->e($__rbac->role((string) $__auth->user())) ?></p>
+        <?php endif; ?>
+      </div>
+      <form method="post" action="/admin/logout">
+        <button class="text-on-surface-variant hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">logout</span></button>
+      </form>
     </div>
-    <form method="post" action="/admin/logout">
-      <button class="flex items-center gap-2 text-error hover:text-error/80 font-bold transition-colors">
-        <span class="material-symbols-outlined text-[20px]">logout</span>
-        <span class="text-sm">Sign out</span>
-      </button>
-    </form>
   </div>
 </aside>
 
 <!-- Main Content -->
-<main class="ml-64 min-h-screen p-10 relative">
-  <!-- Subtle Background -->
-  <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-    <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full"></div>
-    <div class="absolute top-[20%] -right-[5%] w-[30%] h-[50%] bg-surface-container-highest/20 blur-[100px] rounded-full"></div>
-  </div>
-  <div class="max-w-[1280px] mx-auto relative z-10">
+<main class="ml-64 min-h-screen bg-background">
+  <div class="max-w-[1280px] mx-auto p-gutter">
     <?= $content ?>
   </div>
 </main>

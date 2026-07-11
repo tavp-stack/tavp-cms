@@ -1,13 +1,15 @@
 <?php /** @var \Tavp\Cms\Content\ContentType $type @var array $record @var string $action @var string $heading */ ?>
-<header class="mb-8">
-  <a href="/admin/c/<?= $this->e($type->name) ?>" class="text-sm text-on-surface-variant hover:underline">&larr; Back to <?= $this->e($type->label) ?></a>
-  <h2 class="text-2xl font-bold text-on-surface mt-2"><?= $this->e($heading) ?></h2>
-</header>
+<div class="flex items-center gap-4 mb-gutter">
+  <a href="/admin/c/<?= $this->e($type->name) ?>" class="text-on-surface-variant hover:text-secondary transition-colors">
+    <span class="material-symbols-outlined">arrow_back</span>
+  </a>
+  <h2 class="font-headline-xl text-headline-xl"><?= $this->e($heading) ?></h2>
+</div>
 
 <?php if (!empty($__errors)): ?>
-  <div class="mb-6 rounded border border-error bg-error/10 p-4">
-    <p class="text-sm font-bold text-error mb-2">Please fix the following errors:</p>
-    <ul class="list-disc list-inside text-sm text-error space-y-1">
+  <div class="mb-6 bg-error-container/20 border border-error/30 p-4 rounded">
+    <p class="font-label-caps text-label-caps text-error mb-2">ERRORS</p>
+    <ul class="list-disc list-inside text-body-md text-error space-y-1">
       <?php foreach ($__errors as $field => $errs): ?>
         <?php foreach ($errs as $err): ?>
           <li><strong><?= $this->e(ucfirst($field)) ?>:</strong> <?= $this->e($err) ?></li>
@@ -26,22 +28,17 @@
       $fieldErrors = $__errors[$name] ?? [];
     ?>
     <div>
-      <label class="block text-sm mb-1"><?= $this->e($field['label']) ?><?= !empty($field['required']) ? ' <span class="text-error">*</span>' : '' ?></label>
+      <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2"><?= $this->e($field['label']) ?><?= !empty($field['required']) ? ' <span class="text-error">*</span>' : '' ?></label>
       <?php if ($control === 'textarea' || $control === 'editor' || $control === 'block-editor'): ?>
-        <textarea name="<?= $this->e($name) ?>" rows="<?= $control === 'textarea' ? 3 : 10 ?>" class="w-full rounded bg-surface-container border <?= $fieldErrors ? 'border-error' : 'border-outline-variant/30' ?> px-3 py-2 focus:border-primary-container outline-none transition-colors font-mono text-sm"><?= $this->e(is_scalar($value) ? $value : '') ?></textarea>
+        <textarea name="<?= $this->e($name) ?>" rows="<?= $control === 'textarea' ? 3 : 10 ?>" class="w-full bg-surface-container border <?= $fieldErrors ? 'border-error' : 'border-outline-variant' ?> rounded px-4 py-3 focus:border-secondary outline-none font-code-sm text-code-sm"><?= $this->e(is_scalar($value) ? $value : '') ?></textarea>
       <?php elseif ($control === 'select'): ?>
-        <select name="<?= $this->e($name) ?>" class="w-full rounded bg-surface-container border <?= $fieldErrors ? 'border-error' : 'border-outline-variant/30' ?> px-3 py-2 focus:border-primary-container outline-none transition-colors">
+        <select name="<?= $this->e($name) ?>" class="w-full bg-surface-container border <?= $fieldErrors ? 'border-error' : 'border-outline-variant' ?> rounded px-4 py-3 focus:border-secondary outline-none font-body-md">
           <?php foreach (($field['options'] ?? []) as $opt): ?>
             <option value="<?= $this->e($opt) ?>"<?= ((string) $value === (string) $opt) ? ' selected' : '' ?>><?= $this->e(ucfirst($opt)) ?></option>
           <?php endforeach; ?>
         </select>
-      <?php elseif ($control === 'toggle'): ?>
-        <select name="<?= $this->e($name) ?>" class="w-full rounded bg-surface-container border <?= $fieldErrors ? 'border-error' : 'border-outline-variant/30' ?> px-3 py-2 focus:border-primary-container outline-none transition-colors">
-          <option value="1"<?= $value ? ' selected' : '' ?>>Yes</option>
-          <option value="0"<?= !$value ? ' selected' : '' ?>>No</option>
-        </select>
       <?php else: ?>
-        <input name="<?= $this->e($name) ?>" type="<?= $control === 'datetime' ? 'datetime-local' : ($control === 'date' ? 'date' : ($control === 'number' ? 'number' : 'text')) ?>" value="<?= $this->e(is_scalar($value) ? $value : '') ?>" class="w-full rounded bg-surface-container border <?= $fieldErrors ? 'border-error' : 'border-outline-variant/30' ?> px-3 py-2 focus:border-primary-container outline-none transition-colors">
+        <input name="<?= $this->e($name) ?>" type="<?= $control === 'datetime' ? 'datetime-local' : ($control === 'date' ? 'date' : ($control === 'number' ? 'number' : 'text')) ?>" value="<?= $this->e(is_scalar($value) ? $value : '') ?>" class="w-full bg-surface-container border <?= $fieldErrors ? 'border-error' : 'border-outline-variant' ?> rounded px-4 py-3 focus:border-secondary outline-none font-body-md">
       <?php endif; ?>
       <?php if (!empty($fieldErrors)): ?>
         <p class="text-xs text-error mt-1"><?= $this->e(implode(' ', $fieldErrors)) ?></p>
@@ -49,8 +46,8 @@
     </div>
   <?php endforeach; ?>
 
-  <div class="flex gap-3 pt-2">
-    <button class="bg-primary-container text-on-primary font-bold px-6 py-3 rounded hover:bg-primary transition-all duration-200 active:scale-95 kinetic-shadow">Save</button>
-    <a href="/admin/c/<?= $this->e($type->name) ?>" class="border border-outline-variant/30 px-6 py-3 rounded hover:bg-surface-container-highest transition-colors">Cancel</a>
+  <div class="flex gap-4 pt-4">
+    <button class="bg-secondary text-on-secondary font-label-caps text-label-caps py-3 px-8 hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">SAVE</button>
+    <a href="/admin/c/<?= $this->e($type->name) ?>" class="border border-outline-variant font-label-caps text-label-caps py-3 px-8 hover:bg-surface-container-high transition-colors">CANCEL</a>
   </div>
 </form>

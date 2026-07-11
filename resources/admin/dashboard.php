@@ -1,89 +1,104 @@
 <?php /** @var array $counts @var array $__types */ ?>
-
-<!-- Header -->
-<header class="flex justify-between items-end mb-8">
-  <div>
-    <h2 class="text-2xl font-bold text-on-surface mb-2">Dashboard</h2>
-    <?php if (config('cms.seo.enabled', true)): ?>
-      <a class="text-sm text-primary-container hover:text-primary flex items-center gap-1 group transition-colors" href="<?= $this->e(config('cms.seo.sitemap_path', '/sitemap.xml')) ?>" target="_blank">
-        View Sitemap
-        <span class="material-symbols-outlined text-[14px] transition-transform group-hover:translate-x-1">arrow_forward</span>
-      </a>
-    <?php endif; ?>
-  </div>
-  <a href="/admin/c/home/create" class="bg-primary-container text-on-primary font-bold px-6 py-3 rounded hover:bg-primary transition-all duration-200 active:scale-95 flex items-center gap-2 kinetic-shadow">
-    <span class="material-symbols-outlined text-[20px]">add</span>
-    <span>New Entry</span>
-  </a>
-</header>
-
-<!-- Content Type Cards -->
-<section class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-  <?php foreach ($__types as $name => $type): ?>
-    <a href="/admin/c/<?= $this->e($name) ?>" class="bg-surface-container-lowest kinetic-shadow kinetic-hover transition-all duration-300 p-8 flex flex-col group">
-      <span class="text-4xl font-bold text-primary-fixed mb-2"><?= (int) ($counts[$name] ?? 0) ?></span>
-      <h3 class="text-lg font-semibold text-on-surface mb-6"><?= $this->e($type->label) ?></h3>
-      <div class="mt-auto">
-        <span class="text-on-surface-variant group-hover:text-primary transition-colors flex items-center gap-1">
-          Manage <?= $this->e(strtolower($type->label)) ?>
-          <span class="material-symbols-outlined text-[18px] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">trending_flat</span>
-        </span>
+<!-- Metrics Overview -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-gutter">
+  <?php $i = 0; foreach ($__types as $name => $type): ?>
+    <a href="/admin/c/<?= $this->e($name) ?>" class="bg-surface-container p-6 border border-outline-variant performance-card flex justify-between items-end hover:hard-step-shadow hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all duration-150">
+      <div>
+        <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">TOTAL <?= strtoupper($this->e($type->label)) ?></p>
+        <h2 class="font-headline-xl text-headline-xl"><?= (int) ($counts[$name] ?? 0) ?></h2>
+      </div>
+      <div class="text-right">
+        <span class="material-symbols-outlined text-secondary text-2xl"><?= $this->e($type->icon ?? 'description') ?></span>
       </div>
     </a>
   <?php endforeach; ?>
 </section>
 
-<!-- Klasifikasi Section -->
-<?php if (config('cms.taxonomy.enabled', true)): ?>
-  <section class="mb-10">
-    <h3 class="text-lg font-semibold text-on-surface mb-6 flex items-center gap-2">
-      Klasifikasi
-      <span class="w-12 h-[1px] bg-outline-variant/30"></span>
-    </h3>
-    <div class="flex flex-wrap gap-4">
-      <a href="/admin/taxonomy/category" class="bg-surface-container-low border border-outline-variant/20 px-8 py-3 text-sm font-mono text-on-surface-variant hover:border-primary-container/50 hover:text-on-surface transition-all duration-200 uppercase tracking-widest kinetic-shadow">
-        Kategori
-      </a>
-      <a href="/admin/taxonomy/tag" class="bg-surface-container-low border border-outline-variant/20 px-8 py-3 text-sm font-mono text-on-surface-variant hover:border-primary-container/50 hover:text-on-surface transition-all duration-200 uppercase tracking-widest kinetic-shadow">
-        Tag
-      </a>
+<!-- Main Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+  <!-- Content Types List -->
+  <div class="lg:col-span-2 space-y-gutter">
+    <div class="bg-surface-container-high border border-outline-variant p-6">
+      <h3 class="font-headline-lg text-headline-lg text-secondary mb-6">Content Types</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <?php foreach ($__types as $name => $type): ?>
+          <a href="/admin/c/<?= $this->e($name) ?>" class="bg-surface-container p-4 border border-outline-variant hover:border-secondary transition-colors">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="material-symbols-outlined text-secondary"><?= $this->e($type->icon ?? 'description') ?></span>
+              <span class="font-label-caps text-label-caps"><?= $this->e($type->label) ?></span>
+            </div>
+            <p class="font-code-sm text-code-sm text-on-surface-variant"><?= (int) ($counts[$name] ?? 0) ?> records</p>
+          </a>
+        <?php endforeach; ?>
+      </div>
     </div>
-  </section>
-<?php endif; ?>
 
-<!-- Quick Links -->
-<section class="mb-10">
-  <h3 class="text-lg font-semibold text-on-surface mb-6 flex items-center gap-2">
-    Site Management
-    <span class="w-12 h-[1px] bg-outline-variant/30"></span>
-  </h3>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <a href="/admin/menus" class="bg-surface-container-low border border-outline-variant/20 px-6 py-4 hover:border-primary-container/50 transition-all duration-200 flex items-center gap-3 kinetic-shadow">
-      <span class="material-symbols-outlined text-primary-container">menu</span>
-      <span class="text-sm font-medium">Menu</span>
-    </a>
-    <a href="/admin/media" class="bg-surface-container-low border border-outline-variant/20 px-6 py-4 hover:border-primary-container/50 transition-all duration-200 flex items-center gap-3 kinetic-shadow">
-      <span class="material-symbols-outlined text-primary-container">image</span>
-      <span class="text-sm font-medium">Media</span>
-    </a>
-    <a href="/admin/settings" class="bg-surface-container-low border border-outline-variant/20 px-6 py-4 hover:border-primary-container/50 transition-all duration-200 flex items-center gap-3 kinetic-shadow">
-      <span class="material-symbols-outlined text-primary-container">settings</span>
-      <span class="text-sm font-medium">Settings</span>
-    </a>
+    <?php if (config('cms.taxonomy.enabled', true)): ?>
+      <div class="bg-surface-container border border-outline-variant p-6">
+        <h3 class="font-headline-lg text-headline-lg text-secondary mb-6">Klasifikasi</h3>
+        <div class="flex gap-4">
+          <a href="/admin/taxonomy/category" class="bg-surface-container-low border border-outline-variant px-6 py-3 font-label-caps text-label-caps text-on-surface-variant hover:border-secondary transition-colors">Kategori</a>
+          <a href="/admin/taxonomy/tag" class="bg-surface-container-low border border-outline-variant px-6 py-3 font-label-caps text-label-caps text-on-surface-variant hover:border-secondary transition-colors">Tag</a>
+        </div>
+      </div>
+    <?php endif; ?>
+
+    <!-- Quick Links -->
+    <div class="bg-surface-container border border-outline-variant p-6">
+      <h3 class="font-headline-lg text-headline-lg text-secondary mb-6">Site Management</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <a href="/admin/menus" class="bg-surface-container-low border border-outline-variant p-4 hover:border-secondary transition-colors flex items-center gap-3">
+          <span class="material-symbols-outlined text-secondary">menu</span>
+          <span class="font-label-caps text-label-caps">Menu</span>
+        </a>
+        <a href="/admin/media" class="bg-surface-container-low border border-outline-variant p-4 hover:border-secondary transition-colors flex items-center gap-3">
+          <span class="material-symbols-outlined text-secondary">image</span>
+          <span class="font-label-caps text-label-caps">Media</span>
+        </a>
+        <a href="/admin/settings" class="bg-surface-container-low border border-outline-variant p-4 hover:border-secondary transition-colors flex items-center gap-3">
+          <span class="material-symbols-outlined text-secondary">settings</span>
+          <span class="font-label-caps text-label-caps">Settings</span>
+        </a>
+      </div>
+    </div>
   </div>
-</section>
 
-<!-- API Info -->
-<?php if (config('cms.api.enabled', true)): ?>
-  <section>
-    <h3 class="text-lg font-semibold text-on-surface mb-6 flex items-center gap-2">
-      Headless API
-      <span class="w-12 h-[1px] bg-outline-variant/30"></span>
-    </h3>
-    <div class="bg-surface-container-lowest kinetic-shadow p-6 border border-outline-variant/20">
-      <p class="text-sm text-on-surface-variant mb-2">REST API endpoint:</p>
-      <code class="text-primary-container text-sm font-mono">/<?= $this->e(config('cms.api.prefix', 'api/cms')) ?></code>
-      <p class="text-xs text-on-surface-variant mt-2">See documentation for authentication and usage details.</p>
+  <!-- Right Sidebar -->
+  <div class="space-y-gutter">
+    <!-- API Info -->
+    <?php if (config('cms.api.enabled', true)): ?>
+      <div class="bg-surface-container border border-outline-variant p-6">
+        <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">HEADLESS API</p>
+        <code class="text-secondary font-code-sm text-code-sm">/<?= $this->e(config('cms.api.prefix', 'api/cms')) ?></code>
+        <p class="font-code-sm text-code-sm text-on-surface-variant mt-2">REST API endpoint</p>
+      </div>
+    <?php endif; ?>
+
+    <!-- Sitemap -->
+    <?php if (config('cms.seo.enabled', true)): ?>
+      <div class="bg-surface-container border border-outline-variant p-6">
+        <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">SITEMAP</p>
+        <a href="<?= $this->e(config('cms.seo.sitemap_path', '/sitemap.xml')) ?>" target="_blank" class="text-secondary font-code-sm text-code-sm hover:underline">/sitemap.xml</a>
+      </div>
+    <?php endif; ?>
+
+    <!-- System Status -->
+    <div class="bg-surface-container border border-outline-variant p-6">
+      <p class="font-label-caps text-label-caps text-on-surface-variant mb-4">SYSTEM STATUS</p>
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="font-code-sm text-code-sm text-on-surface-variant">Storage</span>
+          <span class="font-code-sm text-code-sm text-secondary"><?= $this->e(config('cms.storage', 'database')) ?></span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="font-code-sm text-code-sm text-on-surface-variant">Cache</span>
+          <span class="font-code-sm text-code-sm text-secondary"><?= config('cms.cache.enabled', true) ? 'ON' : 'OFF' ?></span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="font-code-sm text-code-sm text-on-surface-variant">PHP</span>
+          <span class="font-code-sm text-code-sm text-secondary"><?= PHP_VERSION ?></span>
+        </div>
+      </div>
     </div>
-  </section>
-<?php endif; ?>
+  </div>
+</div>
