@@ -22,6 +22,52 @@ class MediaLibrary
     }
 
     /**
+     * Get all media records.
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    public function all(): array
+    {
+        try {
+            $db = app('db');
+            $result = $db->query("SELECT * FROM media ORDER BY created_at DESC", []);
+            $rows = $result->fetchAll();
+            return $rows;
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * Find a media record by ID.
+     */
+    public function find(int $id): ?array
+    {
+        try {
+            $db = app('db');
+            $result = $db->query("SELECT * FROM media WHERE id = ? LIMIT 1", [$id]);
+            $rows = $result->fetchAll();
+            return !empty($rows) ? $rows[0] : null;
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Delete a media record.
+     */
+    public function delete(int $id): bool
+    {
+        try {
+            $db = app('db');
+            $db->delete('media', ['id' => $id]);
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
      * Validate + store an uploaded file.
      *
      * @param array{name:string,tmp_name:string,size:int,type:string} $file

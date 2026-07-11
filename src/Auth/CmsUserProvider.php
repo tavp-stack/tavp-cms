@@ -18,12 +18,14 @@ class CmsUserProvider implements UserProvider
     {
         try {
             $db = app('db');
-            $rows = $db->query(
+            $result = $db->query(
                 "SELECT * FROM users WHERE email = ? OR phone = ? LIMIT 1",
                 [$identifier, $identifier]
             );
 
-            return $rows[0] ?? null;
+            $rows = $result->fetchAll();
+
+            return !empty($rows) ? (object) $rows[0] : null;
         } catch (\Throwable) {
             return null;
         }
@@ -33,9 +35,10 @@ class CmsUserProvider implements UserProvider
     {
         try {
             $db = app('db');
-            $rows = $db->query("SELECT * FROM users WHERE id = ? LIMIT 1", [$id]);
+            $result = $db->query("SELECT * FROM users WHERE id = ? LIMIT 1", [$id]);
+            $rows = $result->fetchAll();
 
-            return $rows[0] ?? null;
+            return !empty($rows) ? (object) $rows[0] : null;
         } catch (\Throwable) {
             return null;
         }
@@ -44,12 +47,14 @@ class CmsUserProvider implements UserProvider
     public function create(string $identifier): object
     {
         $db = app('db');
-        $id = $db->insert('users', [
-            'name' => $identifier,
-            'email' => $identifier,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ]);
+
+        // Use raw SQL to avoid Phalcon adapter column count issues
+        $stmt = $db->prepare(
+            "INSERT INTO users (name, email, created_at, updated_at) VALUES (?, ?, ?, ?)"
+        );
+        $now = date('Y-m-d H:i:s');
+        $stmt->execute([$identifier, $identifier, $now, $now]);
+        $id = $db->lastInsertId();
 
         return (object) ['id' => $id, 'email' => $identifier, 'name' => $identifier];
     }

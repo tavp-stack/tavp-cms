@@ -120,6 +120,45 @@ class CmsServiceProvider implements ServiceProvider
         $app->bind(PublishScheduler::class, function ($app) {
             return new PublishScheduler($app->getService(BreadManager::class));
         });
+
+        // --- Media Library --------------------------------------------------
+        $app->bind(\Tavp\Cms\Media\MediaLibrary::class, fn () => new \Tavp\Cms\Media\MediaLibrary(
+            config: (array) config('cms.media', []),
+            persist: function (array $data) {
+                $db = app('db');
+                $db->insert('media', $data);
+                return $db->lastInsertId();
+            },
+        ));
+
+        // --- Settings -------------------------------------------------------
+        $app->bind(\Tavp\Cms\Settings\Settings::class, function () {
+            return new \Tavp\Cms\Settings\Settings(
+                loader: function () {
+                    $db = app('db');
+                    $result = $db->query("SELECT `group`, `key`, value FROM settings", []);
+                    $rows = $result->fetchAll();
+                    $settings = [];
+                    foreach ($rows as $row) {
+                        $settings[$row['group'] . '.' . $row['key']] = $row['value'];
+                    }
+                    return $settings;
+                },
+                writer: function (string $key, mixed $value) {
+                    $db = app('db');
+                    $parts = explode('.', $key, 2);
+                    $group = $parts[0] ?? 'general';
+                    $keyName = $parts[1] ?? $key;
+                    $result = $db->query("SELECT id FROM settings WHERE `group` = ? AND `key` = ?", [$group, $keyName]);
+                    $rows = $result->fetchAll();
+                    if (!empty($rows)) {
+                        $db->update('settings', ['value' => $value], ['`group`' => $group, '`key`' => $keyName]);
+                    } else {
+                        $db->insert('settings', ['`group`' => $group, '`key`' => $keyName, 'value' => $value, 'type' => 'text', 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')]);
+                    }
+                },
+            );
+        });
     }
 
     public function boot(): void {}

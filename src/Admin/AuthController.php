@@ -41,7 +41,35 @@ class AuthController extends AdminController
             ]);
         }
 
+        // Send the OTP email
+        $this->sendOtpEmail($email, $result['code']);
+
         return $this->redirect('/admin/verify');
+    }
+
+    private function sendOtpEmail(string $email, string $code): void
+    {
+        try {
+            $mailer = new \Tavp\Core\Auth\MailService([
+                'driver' => config('cms.mail.driver', 'smtp'),
+                'host' => config('cms.mail.host', '127.0.0.1'),
+                'port' => (int) config('cms.mail.port', 1025),
+                'username' => config('cms.mail.username', ''),
+                'password' => config('cms.mail.password', ''),
+                'from' => config('cms.mail.from', 'noreply@tavp.web.id'),
+            ]);
+
+            $brand = config('cms.admin.brand', 'TAVP');
+            $ttl = (int) config('cms.admin.otp_ttl_minutes', 10);
+
+            $mailer->send(
+                $email,
+                "Your {$brand} sign-in code",
+                "Your sign-in code is: {$code}\n\nIt expires in {$ttl} minutes."
+            );
+        } catch (\Throwable) {
+            // Email failed — don't block the flow
+        }
     }
 
     public function showVerify(): string|Response
