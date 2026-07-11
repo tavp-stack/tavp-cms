@@ -53,6 +53,12 @@ class CmsServiceProvider implements ServiceProvider
             return $rbac;
         });
 
+        // --- Token Service (via tavpid) -------------------------------------
+        $app->bind('tavpid.token', function () {
+            $secret = (string) config('app.key', 'tavp-secret-key-change-me');
+            return new \Tavp\Tavpid\Auth\TokenService($secret);
+        });
+
         // --- Taxonomy -------------------------------------------------------
         if (config('cms.taxonomy.enabled', true)) {
             $app->bind(TaxonomyManager::class, function () {

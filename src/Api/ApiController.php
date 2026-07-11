@@ -8,6 +8,7 @@ use Tavp\Cms\Bread\BreadManager;
 use Tavp\Cms\Taxonomy\TaxonomyManager;
 use Tavp\Core\Controllers\BaseController;
 use Tavp\Core\Http\Response;
+use Tavp\Tavpid\Auth\TokenService;
 
 /**
  * Headless REST API controller.
@@ -25,13 +26,12 @@ use Tavp\Core\Http\Response;
  *   GET    /api/cms/taxonomy/{type}             — list taxonomy terms
  *   POST   /api/cms/taxonomy                    — create taxonomy term
  *
- * Auth: Bearer token via Authorization header.
+ * Auth: Bearer token via Authorization header (uses tavpid TokenService).
  */
 class ApiController extends BaseController
 {
     public function __construct(
         private readonly BreadManager $bread,
-        private readonly ApiTokenService $tokens,
         private readonly ?TaxonomyManager $taxonomy = null,
     ) {
         parent::__construct();
@@ -258,9 +258,18 @@ class ApiController extends BaseController
 
     private function guard(): bool
     {
-        $token = ApiTokenService::extractToken();
+        $token = TokenService::extractToken();
 
-        return $this->tokens->verify($token);
+        if ($token === null) {
+            return false;
+        }
+
+        try {
+            $tokenService = app()->getService('tavpid.token');
+            return $tokenService->isAccessToken($token);
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /**
