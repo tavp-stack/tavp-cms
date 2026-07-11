@@ -61,9 +61,9 @@ class CmsServiceProvider implements ServiceProvider
 
         // --- Taxonomy -------------------------------------------------------
         if (config('cms.taxonomy.enabled', true)) {
-            $app->bind(TaxonomyManager::class, function () {
-                $db = app('db');
-                return DatabaseTaxonomyFactory::buildDatabaseTaxonomy($db);
+            $app->bind(TaxonomyManager::class, function () use ($app) {
+                $db = $app->getService('db');
+                return \Tavp\Cms\Taxonomy\buildDatabaseTaxonomy($db);
             });
         }
 
@@ -77,9 +77,9 @@ class CmsServiceProvider implements ServiceProvider
 
         // --- Webhooks -------------------------------------------------------
         if (config('cms.webhooks.enabled', false)) {
-            $app->bind(WebhookManager::class, function () {
-                $db = app('db');
-                return DatabaseWebhookFactory::buildDatabaseWebhooks(
+            $app->bind(WebhookManager::class, function () use ($app) {
+                $db = $app->getService('db');
+                return \Tavp\Cms\Webhooks\buildDatabaseWebhooks(
                     $db,
                     (int) config('cms.webhooks.timeout', 5),
                 );

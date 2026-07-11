@@ -5,6 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= $this->e($__brand) ?> Admin</title>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script>
@@ -45,88 +46,104 @@ tailwind.config = {
   ::-webkit-scrollbar-track { background: #1a202c; }
   ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: #e6c446; }
+  .sidebar-collapsed .nav-label { display: none; }
+  .sidebar-collapsed .nav-section { display: none; }
+  .sidebar-collapsed .sidebar-header-text { display: none; }
+  .sidebar-collapsed .sidebar-bottom-text { display: none; }
+  .sidebar-collapsed { width: 64px; }
+  .sidebar-collapsed + main { margin-left: 64px; }
 </style>
 </head>
-<body class="overflow-x-hidden">
+<body class="overflow-x-hidden" x-data="{ sidebarCollapsed: false }">
 
 <!-- Sidebar -->
-<aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container border-r border-outline-variant flex flex-col z-50 overflow-hidden">
-  <div class="px-6 pt-6 pb-4">
-    <h1 class="font-headline-lg text-headline-lg font-bold text-secondary tracking-tight"><?= $this->e($__brand) ?> <span class="text-on-surface-variant font-normal text-body-md opacity-60">admin</span></h1>
-    <p class="font-code-sm text-code-sm text-on-surface-variant opacity-60">v1.0</p>
+<aside class="h-screen fixed left-0 top-0 bg-surface-container border-r border-outline-variant flex flex-col z-50 overflow-hidden transition-all duration-300"
+       :class="sidebarCollapsed ? 'w-[68px]' : 'w-64'">
+
+  <!-- Header -->
+  <div class="px-4 pt-6 pb-4 flex items-center justify-between">
+    <div class="flex items-center gap-2 min-w-0">
+      <div class="w-8 h-8 bg-secondary rounded flex items-center justify-center shrink-0">
+        <span class="font-headline-lg text-on-secondary text-sm font-bold">T</span>
+      </div>
+      <div x-show="!sidebarCollapsed" x-transition class="min-w-0">
+        <h1 class="font-headline-lg text-headline-lg font-bold text-secondary tracking-tight truncate"><?= $this->e($__brand) ?></h1>
+        <p class="font-code-sm text-code-sm text-on-surface-variant opacity-60">admin v1.0</p>
+      </div>
+    </div>
+    <button @click="sidebarCollapsed = !sidebarCollapsed" class="text-on-surface-variant hover:text-secondary transition-colors shrink-0" :title="sidebarCollapsed ? 'Expand' : 'Minimize'">
+      <span class="material-symbols-outlined text-xl" x-text="sidebarCollapsed ? 'chevron_right' : 'chevron_left'"></span>
+    </button>
   </div>
 
-  <nav class="flex-1 overflow-y-auto px-4 space-y-1 pb-4">
-    <a href="/admin" class="flex items-center px-4 py-3 text-secondary border-r-2 border-secondary bg-primary-container/10 font-body-md text-body-md transition-all duration-200">
-      <span class="material-symbols-outlined mr-3">dashboard</span>
-      Dashboard
+  <!-- Navigation -->
+  <nav class="flex-1 overflow-y-auto px-3 space-y-1 pb-4">
+    <a href="/admin" class="flex items-center gap-3 px-3 py-2.5 text-secondary bg-primary-container/10 rounded transition-all duration-200" :class="sidebarCollapsed ? 'justify-center' : ''">
+      <span class="material-symbols-outlined text-xl">dashboard</span>
+      <span x-show="!sidebarCollapsed" x-transition class="font-body-md text-body-md whitespace-nowrap">Dashboard</span>
     </a>
 
-    <div class="pt-4 pb-1 px-4 text-on-surface-variant/40">
+    <div x-show="!sidebarCollapsed" class="pt-4 pb-1 px-3 text-on-surface-variant/40">
       <span class="font-label-caps text-label-caps uppercase tracking-widest">Content</span>
     </div>
     <?php foreach ($__types as $name => $t): ?>
-      <a href="/admin/c/<?= $this->e($name) ?>" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
-        <span class="material-symbols-outlined mr-3">description</span>
-        <?= $this->e($t->label) ?>
+      <a href="/admin/c/<?= $this->e($name) ?>" class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200" :class="sidebarCollapsed ? 'justify-center' : ''">
+        <span class="material-symbols-outlined text-xl">description</span>
+        <span x-show="!sidebarCollapsed" x-transition class="font-body-md text-body-md whitespace-nowrap"><?= $this->e($t->label) ?></span>
       </a>
     <?php endforeach; ?>
 
     <?php if (config('cms.taxonomy.enabled', true)): ?>
-      <div class="pt-4 pb-1 px-4 text-on-surface-variant/40">
+      <div x-show="!sidebarCollapsed" class="pt-4 pb-1 px-3 text-on-surface-variant/40">
         <span class="font-label-caps text-label-caps uppercase tracking-widest">Klasifikasi</span>
       </div>
-      <a href="/admin/taxonomy/category" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
-        <span class="material-symbols-outlined mr-3">category</span>
-        Kategori
+      <a href="/admin/taxonomy/category" class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200" :class="sidebarCollapsed ? 'justify-center' : ''">
+        <span class="material-symbols-outlined text-xl">category</span>
+        <span x-show="!sidebarCollapsed" x-transition class="font-body-md text-body-md whitespace-nowrap">Kategori</span>
       </a>
-      <a href="/admin/taxonomy/tag" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
-        <span class="material-symbols-outlined mr-3">sell</span>
-        Tag
+      <a href="/admin/taxonomy/tag" class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200" :class="sidebarCollapsed ? 'justify-center' : ''">
+        <span class="material-symbols-outlined text-xl">sell</span>
+        <span x-show="!sidebarCollapsed" x-transition class="font-body-md text-body-md whitespace-nowrap">Tag</span>
       </a>
     <?php endif; ?>
 
-    <div class="pt-4 pb-1 px-4 text-on-surface-variant/40">
+    <div x-show="!sidebarCollapsed" class="pt-4 pb-1 px-3 text-on-surface-variant/40">
       <span class="font-label-caps text-label-caps uppercase tracking-widest">Site</span>
     </div>
-    <a href="/admin/menus" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
-      <span class="material-symbols-outlined mr-3">menu</span>
-      Menu
-    </a>
-    <a href="/admin/media" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
-      <span class="material-symbols-outlined mr-3">image</span>
-      Media
-    </a>
-    <a href="/admin/settings" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
-      <span class="material-symbols-outlined mr-3">settings</span>
-      Settings
-    </a>
-    <a href="/admin/teams" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
-      <span class="material-symbols-outlined mr-3">group</span>
-      Teams
-    </a>
-    <a href="/admin/analytics" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
-      <span class="material-symbols-outlined mr-3">analytics</span>
-      Analytics
-    </a>
+    <?php
+    $siteMenus = [
+        ['href' => '/admin/menus', 'icon' => 'menu', 'label' => 'Menu'],
+        ['href' => '/admin/media', 'icon' => 'image', 'label' => 'Media'],
+        ['href' => '/admin/settings', 'icon' => 'settings', 'label' => 'Settings'],
+        ['href' => '/admin/teams', 'icon' => 'group', 'label' => 'Teams'],
+        ['href' => '/admin/analytics', 'icon' => 'analytics', 'label' => 'Analytics'],
+    ];
+    ?>
+    <?php foreach ($siteMenus as $m): ?>
+      <a href="<?= $this->e($m['href']) ?>" class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200" :class="sidebarCollapsed ? 'justify-center' : ''">
+        <span class="material-symbols-outlined text-xl"><?= $this->e($m['icon']) ?></span>
+        <span x-show="!sidebarCollapsed" x-transition class="font-body-md text-body-md whitespace-nowrap"><?= $this->e($m['label']) ?></span>
+      </a>
+    <?php endforeach; ?>
   </nav>
 
-  <!-- Bottom section: New Post + User Info -->
-  <div class="px-4 pb-6 pt-2 border-t border-outline-variant">
-    <a href="/admin/c/home/create" class="w-full bg-secondary text-on-secondary py-3 px-4 rounded font-label-caps text-label-caps hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all text-center block mb-4">
-      + NEW POST
+  <!-- Bottom section -->
+  <div class="px-3 pb-4 pt-2 border-t border-outline-variant">
+    <a href="/admin/c/home/create" class="w-full bg-secondary text-on-secondary py-2.5 px-3 rounded font-label-caps text-label-caps hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all text-center block mb-3" :class="sidebarCollapsed ? 'px-0 text-xs' : ''">
+      <span x-show="!sidebarCollapsed" x-transition>+ NEW POST</span>
+      <span x-show="sidebarCollapsed" x-transition class="material-symbols-outlined text-xl">add</span>
     </a>
-    <div class="flex items-center space-x-3 px-2">
-      <div class="w-8 h-8 rounded-full bg-primary-container overflow-hidden border border-outline-variant flex items-center justify-center shrink-0">
+    <div class="flex items-center gap-2 px-2" :class="sidebarCollapsed ? 'justify-center' : ''">
+      <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center shrink-0">
         <span class="material-symbols-outlined text-sm">person</span>
       </div>
-      <div class="flex-1 min-w-0">
+      <div x-show="!sidebarCollapsed" x-transition class="flex-1 min-w-0">
         <p class="font-label-caps text-label-caps truncate"><?= $this->e($__auth_email ?? 'User') ?></p>
         <?php if ($__rbac !== null && !empty($__auth_email)): ?>
           <p class="font-code-sm text-code-sm text-on-surface-variant text-[10px]">Role: <?= $this->e($__rbac->role($__auth_email)) ?></p>
         <?php endif; ?>
       </div>
-      <form method="post" action="/admin/logout">
+      <form method="post" action="/admin/logout" class="shrink-0">
         <button class="text-on-surface-variant hover:text-error transition-colors"><span class="material-symbols-outlined text-sm">logout</span></button>
       </form>
     </div>
@@ -134,7 +151,7 @@ tailwind.config = {
 </aside>
 
 <!-- Main Content -->
-<main class="ml-64 min-h-screen bg-background">
+<main class="min-h-screen bg-background transition-all duration-300" :class="sidebarCollapsed ? 'ml-[68px]' : 'ml-64'">
   <div class="max-w-[1280px] mx-auto px-10 py-8">
     <?= $content ?>
   </div>

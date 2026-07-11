@@ -51,12 +51,11 @@ abstract class AdminController extends BaseController
      */
     protected function can(string $permission): bool
     {
-        if ($this->rbac === null || $this->sessionAuth === null || !$this->sessionAuth->check()) {
+        if ($this->rbac === null || empty($_SESSION['cms_admin'])) {
             return true; // no RBAC configured = allow all
         }
 
-        $user = $this->sessionAuth->user();
-        $email = $user->email ?? $user['email'] ?? '';
+        $email = $_SESSION['cms_admin'];
 
         return $this->rbac->can([$this->rbac->role($email)], $permission);
     }
