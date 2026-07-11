@@ -1,45 +1,48 @@
 <?php /** Analytics Dashboard */ ?>
 <div class="flex justify-between items-center mb-gutter">
   <h2 class="font-headline-xl text-headline-xl">Analytics</h2>
-  <a href="/analytics" target="_blank" class="text-secondary font-label-caps text-label-caps hover:underline">View Full Dashboard &rarr;</a>
+  <a href="/admin/analytics" class="text-secondary font-label-caps text-label-caps hover:underline">Refresh</a>
 </div>
 
 <!-- Stats Cards -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-gutter">
   <div class="bg-surface-container p-6 border border-outline-variant performance-card">
     <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">PAGEVIEWS TODAY</p>
-    <h3 class="font-headline-xl text-headline-xl" id="stat-pageviews">--</h3>
+    <h3 class="font-headline-xl text-headline-xl">0</h3>
+    <p class="font-code-sm text-code-sm text-on-surface-variant mt-2">Tracker not yet installed</p>
   </div>
   <div class="bg-surface-container p-6 border border-outline-variant performance-card">
     <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">UNIQUE VISITORS</p>
-    <h3 class="font-headline-xl text-headline-xl" id="stat-visitors">--</h3>
+    <h3 class="font-headline-xl text-headline-xl">0</h3>
   </div>
   <div class="bg-surface-container p-6 border border-outline-variant performance-card">
     <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">REAL-TIME</p>
-    <h3 class="font-headline-xl text-headline-xl text-secondary" id="stat-realtime">--</h3>
+    <h3 class="font-headline-xl text-headline-xl text-secondary">0</h3>
   </div>
   <div class="bg-surface-container p-6 border border-outline-variant performance-card">
     <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">FRAUD EVENTS</p>
-    <h3 class="font-headline-xl text-headline-xl text-error" id="stat-fraud">--</h3>
+    <h3 class="font-headline-xl text-headline-xl text-error">0</h3>
   </div>
 </div>
 
-<!-- Quick Info -->
+<!-- How to Enable -->
 <div class="bg-surface-container border border-outline-variant p-6">
-  <h3 class="font-headline-lg text-headline-lg text-secondary mb-4">Analytics Integration</h3>
-  <p class="font-body-md text-on-surface-variant mb-4">TAVP Analytics is integrated. Track page views, user behavior, and fraud detection.</p>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div class="bg-surface-container-low p-4 border border-outline-variant">
-      <p class="font-label-caps text-label-caps text-on-surface-variant mb-1">STATUS</p>
-      <p class="font-code-sm text-secondary">Active</p>
-    </div>
-    <div class="bg-surface-container-low p-4 border border-outline-variant">
-      <p class="font-label-caps text-label-caps text-on-surface-variant mb-1">TRACKER</p>
-      <code class="font-code-sm text-secondary">/js/tracker.js</code>
-    </div>
-    <div class="bg-surface-container-low p-4 border border-outline-variant">
-      <p class="font-label-caps text-label-caps text-on-surface-variant mb-1">API</p>
-      <code class="font-code-sm text-secondary">/api/analytics</code>
-    </div>
+  <h3 class="font-headline-lg text-headline-lg text-secondary mb-4">How to Enable Analytics</h3>
+  <p class="font-body-md text-on-surface-variant mb-4">Add the tracker script to your layout to start collecting data.</p>
+
+  <div class="bg-surface-container-low border border-outline-variant rounded p-4 mb-4">
+    <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">STEP 1: Add tracker to layout</p>
+    <code class="font-code-sm text-code-sm text-secondary">&lt;script src="/js/tracker.js" defer&gt;&lt;/script&gt;</code>
+  </div>
+
+  <div class="bg-surface-container-low border border-outline-variant rounded p-4 mb-4">
+    <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">STEP 2: Configure in .env</p>
+    <code class="font-code-sm text-code-sm text-secondary">ANALYTICS_ENABLED=true</code>
+  </div>
+
+  <div class="bg-surface-container-low border border-outline-variant rounded p-4">
+    <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">API ENDPOINT</p>
+    <code class="font-code-sm text-code-sm text-secondary">/api/analytics</code>
+    <p class="font-code-sm text-code-sm text-on-surface-variant mt-1">Track page views and events via POST requests.</p>
   </div>
 </div>
