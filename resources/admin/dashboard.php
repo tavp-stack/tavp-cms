@@ -22,24 +22,34 @@ $iconMap = [
 </section>
 
 <!-- Analytics Summary -->
-<?php if (config('cms.analytics.enabled', false)): ?>
+<?php if (config('analytics.enabled', false)):
+  try {
+    $db = app('db');
+    $today = date('Y-m-d');
+    $pageviews = $db->query("SELECT COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) = ?", [$today])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
+    $visitors = $db->query("SELECT COUNT(DISTINCT session_id) as cnt FROM analytics_page_visits WHERE DATE(created_at) = ?", [$today])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
+    $realtime = $db->query("SELECT COUNT(*) as cnt FROM analytics_sessions WHERE last_activity_at >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)")->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
+    $fraud = $db->query("SELECT COUNT(*) as cnt FROM analytics_fraud_events WHERE DATE(created_at) = ?", [$today])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
+  } catch (\Throwable $e) {
+    $pageviews = 0; $visitors = 0; $realtime = 0; $fraud = 0;
+  }
+?>
 <section class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-gutter">
   <div class="bg-surface-container p-6 border border-outline-variant performance-card">
     <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">PAGEVIEWS TODAY</p>
-    <h3 class="font-headline-xl text-headline-xl">0</h3>
-    <p class="font-code-sm text-code-sm text-on-surface-variant mt-1">Install tracker to start</p>
+    <h3 class="font-headline-xl text-headline-xl"><?= (int) $pageviews ?></h3>
   </div>
   <div class="bg-surface-container p-6 border border-outline-variant performance-card">
     <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">UNIQUE VISITORS</p>
-    <h3 class="font-headline-xl text-headline-xl">0</h3>
+    <h3 class="font-headline-xl text-headline-xl"><?= (int) $visitors ?></h3>
   </div>
   <div class="bg-surface-container p-6 border border-outline-variant performance-card">
     <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">REAL-TIME</p>
-    <h3 class="font-headline-xl text-headline-xl text-secondary">0</h3>
+    <h3 class="font-headline-xl text-headline-xl text-secondary"><?= (int) $realtime ?></h3>
   </div>
   <div class="bg-surface-container p-6 border border-outline-variant performance-card">
     <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">FRAUD EVENTS</p>
-    <h3 class="font-headline-xl text-headline-xl text-error">0</h3>
+    <h3 class="font-headline-xl text-headline-xl text-error"><?= (int) $fraud ?></h3>
   </div>
 </section>
 <?php endif; ?>
