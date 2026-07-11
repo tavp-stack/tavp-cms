@@ -95,9 +95,21 @@ tailwind.config = {
       <span class="font-label-caps text-label-caps uppercase tracking-widest">Content</span>
     </div>
     <?php
+    // Resolve the edit URL of a single-record page type (home, contact, ...).
+    $singleEdit = function (string $type): string {
+        try {
+            $recs = app()->getService(\Tavp\Cms\Bread\BreadManager::class)->browse($type);
+            if (!empty($recs[0]['id'])) {
+                return '/admin/c/' . $type . '/' . $recs[0]['id'] . '/edit';
+            }
+        } catch (\Throwable $e) {}
+        return '/admin/c/' . $type . '/create';
+    };
     $contentMenus = [
+        ['href' => $singleEdit('home'), 'match' => '/admin/c/home', 'icon' => 'cottage', 'label' => 'Landing Page'],
         ['href' => '/admin/c/page', 'match' => '/admin/c/page', 'icon' => 'description', 'label' => 'Pages'],
         ['href' => '/admin/c/post', 'match' => '/admin/c/post', 'icon' => 'article', 'label' => 'Blog'],
+        ['href' => $singleEdit('contact'), 'match' => '/admin/c/contact', 'icon' => 'mail', 'label' => 'Contact'],
         ['href' => '/admin/taxonomy/category', 'match' => '/admin/taxonomy/category', 'icon' => 'category', 'label' => 'Categories'],
         ['href' => '/admin/taxonomy/tag', 'match' => '/admin/taxonomy/tag', 'icon' => 'sell', 'label' => 'Tags'],
     ];

@@ -161,18 +161,18 @@ class CachedContentStore implements ContentStore
     {
         $prefix = ':' . $type . ':';
 
-        foreach ($this->memoryCache as $key => &$entry) {
+        foreach (array_keys($this->memoryCache) as $key) {
             if (str_contains($key, $prefix)) {
                 unset($this->memoryCache[$key]);
             }
         }
-        unset($entry);
 
-        $dir = rtrim($this->cachePath, '/') . '/' . $type;
+        // Cache files are stored flat with ':' replaced by '_', e.g.
+        // "all_contact_<hash>.cache". Match those, not a per-type subdir.
+        $base = rtrim($this->cachePath, '/');
 
-        if (is_dir($dir)) {
-            $files = glob($dir . '/*.cache') ?: [];
-            foreach ($files as $file) {
+        foreach (['all', 'find', 'slug'] as $op) {
+            foreach (glob($base . '/' . $op . '_' . $type . '_*.cache') ?: [] as $file) {
                 @unlink($file);
             }
         }
