@@ -13,32 +13,18 @@ tailwind.config = {
   theme: {
     extend: {
       colors: {
-        "background": "#0d131f",
-        "on-background": "#dde2f3",
-        "surface": "#0d131f",
-        "surface-container-lowest": "#080e1a",
-        "surface-container-low": "#161c27",
-        "surface-container": "#1a202c",
-        "surface-container-high": "#242a36",
-        "surface-container-highest": "#2f3542",
-        "on-surface": "#dde2f3",
-        "on-surface-variant": "#c5c6cd",
-        "primary": "#bdc7dc",
-        "on-primary": "#273141",
-        "primary-container": "#2d3748",
-        "secondary": "#e6c446",
-        "on-secondary": "#3b2f00",
-        "secondary-container": "#ac8e0a",
-        "tertiary": "#bcc7dd",
-        "on-tertiary-container": "#95a0b5",
-        "outline": "#8f9097",
-        "outline-variant": "#45474c",
-        "error": "#ffb4ab"
+        "background": "#0d131f", "on-background": "#dde2f3",
+        "surface": "#0d131f", "surface-container-lowest": "#080e1a",
+        "surface-container-low": "#161c27", "surface-container": "#1a202c",
+        "surface-container-high": "#242a36", "surface-container-highest": "#2f3542",
+        "on-surface": "#dde2f3", "on-surface-variant": "#c5c6cd",
+        "primary": "#bdc7dc", "on-primary": "#273141",
+        "primary-container": "#2d3748", "secondary": "#e6c446",
+        "on-secondary": "#3b2f00", "secondary-container": "#ac8e0a",
+        "tertiary": "#bcc7dd", "on-tertiary-container": "#95a0b5",
+        "outline": "#8f9097", "outline-variant": "#45474c", "error": "#ffb4ab"
       },
-      fontFamily: {
-        "headline-xl": ["Geist"], "headline-lg": ["Geist"],
-        "body-md": ["Inter"], "code-sm": ["JetBrains Mono"], "label-caps": ["JetBrains Mono"]
-      },
+      fontFamily: { "headline-xl": ["Geist"], "headline-lg": ["Geist"], "body-md": ["Inter"], "code-sm": ["JetBrains Mono"], "label-caps": ["JetBrains Mono"] },
       fontSize: {
         "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
         "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
@@ -61,16 +47,16 @@ tailwind.config = {
   ::-webkit-scrollbar-thumb:hover { background: #e6c446; }
 </style>
 </head>
-<body class="overflow-x-hidden" x-data="{ mobileMenu: false }">
+<body class="overflow-x-hidden">
 
 <!-- Sidebar -->
-<aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container border-r border-outline-variant flex flex-col py-gutter px-component-padding-x z-50">
-  <div class="mb-10">
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container border-r border-outline-variant flex flex-col z-50 overflow-hidden">
+  <div class="px-component-padding-x pt-gutter pb-4">
     <h1 class="font-headline-lg text-headline-lg font-bold text-secondary tracking-tight"><?= $this->e($__brand) ?> <span class="text-on-surface-variant font-normal text-body-md opacity-60">admin</span></h1>
     <p class="font-code-sm text-code-sm text-on-surface-variant opacity-60">v1.0</p>
   </div>
 
-  <nav class="flex-1 space-y-1">
+  <nav class="flex-1 overflow-y-auto px-component-padding-x space-y-1 pb-4">
     <a href="/admin" class="flex items-center px-4 py-3 text-secondary border-r-2 border-secondary bg-primary-container/10 font-body-md text-body-md transition-all duration-200">
       <span class="material-symbols-outlined mr-3">dashboard</span>
       Dashboard
@@ -81,7 +67,7 @@ tailwind.config = {
     </div>
     <?php foreach ($__types as $name => $t): ?>
       <a href="/admin/c/<?= $this->e($name) ?>" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
-        <span class="material-symbols-outlined mr-3"><?= $this->e($t->icon ?? 'description') ?></span>
+        <span class="material-symbols-outlined mr-3">description</span>
         <?= $this->e($t->label) ?>
       </a>
     <?php endforeach; ?>
@@ -119,22 +105,19 @@ tailwind.config = {
       <span class="material-symbols-outlined mr-3">group</span>
       Teams
     </a>
-    <a href="/admin/billing" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
-      <span class="material-symbols-outlined mr-3">payments</span>
-      Billing
-    </a>
     <a href="/admin/analytics" class="flex items-center px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 font-body-md text-body-md">
       <span class="material-symbols-outlined mr-3">analytics</span>
       Analytics
     </a>
   </nav>
 
-  <div class="mt-auto pt-6">
-    <a href="/admin/c/home/create" class="w-full bg-secondary text-on-secondary py-3 px-4 rounded font-label-caps text-label-caps hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all text-center block">
+  <!-- Bottom section: New Post + User Info -->
+  <div class="px-component-padding-x pb-gutter pt-2 border-t border-outline-variant">
+    <a href="/admin/c/home/create" class="w-full bg-secondary text-on-secondary py-3 px-4 rounded font-label-caps text-label-caps hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all text-center block mb-4">
       + NEW POST
     </a>
-    <div class="mt-6 flex items-center space-x-3 px-2">
-      <div class="w-8 h-8 rounded-full bg-primary-container overflow-hidden border border-outline-variant flex items-center justify-center">
+    <div class="flex items-center space-x-3 px-2">
+      <div class="w-8 h-8 rounded-full bg-primary-container overflow-hidden border border-outline-variant flex items-center justify-center shrink-0">
         <span class="material-symbols-outlined text-sm">person</span>
       </div>
       <div class="flex-1 min-w-0">

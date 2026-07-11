@@ -1,14 +1,21 @@
 <?php /** @var array $counts @var array $__types */ ?>
+<?php
+$iconMap = [
+    'home' => 'home',
+    'page' => 'description',
+    'post' => 'article',
+];
+?>
 <!-- Metrics Overview -->
 <section class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-gutter">
-  <?php $i = 0; foreach ($__types as $name => $type): ?>
+  <?php foreach ($__types as $name => $type): ?>
     <a href="/admin/c/<?= $this->e($name) ?>" class="bg-surface-container p-6 border border-outline-variant performance-card flex justify-between items-end hover:hard-step-shadow hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all duration-150">
       <div>
         <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">TOTAL <?= strtoupper($this->e($type->label)) ?></p>
         <h2 class="font-headline-xl text-headline-xl"><?= (int) ($counts[$name] ?? 0) ?></h2>
       </div>
       <div class="text-right">
-        <span class="material-symbols-outlined text-secondary text-2xl"><?= $this->e($type->icon ?? 'description') ?></span>
+        <span class="material-symbols-outlined text-secondary text-2xl"><?= $this->e($iconMap[$name] ?? 'description') ?></span>
       </div>
     </a>
   <?php endforeach; ?>
@@ -24,7 +31,7 @@
         <?php foreach ($__types as $name => $type): ?>
           <a href="/admin/c/<?= $this->e($name) ?>" class="bg-surface-container p-4 border border-outline-variant hover:border-secondary transition-colors">
             <div class="flex items-center gap-3 mb-2">
-              <span class="material-symbols-outlined text-secondary"><?= $this->e($type->icon ?? 'description') ?></span>
+              <span class="material-symbols-outlined text-secondary"><?= $this->e($iconMap[$name] ?? 'description') ?></span>
               <span class="font-label-caps text-label-caps"><?= $this->e($type->label) ?></span>
             </div>
             <p class="font-code-sm text-code-sm text-on-surface-variant"><?= (int) ($counts[$name] ?? 0) ?> records</p>
