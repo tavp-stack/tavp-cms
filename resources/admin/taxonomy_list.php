@@ -5,9 +5,8 @@
     <h1 class="text-2xl font-bold"><?= $this->e($label) ?></h1>
     <p class="text-sm text-on-surface-variant">Manage <?= $this->e(strtolower($label)) ?>.</p>
   </div>
-  <a href="/admin/taxonomy/<?= $this->e($termType) ?>/create" class="bg-primary-container text-on-primary font-bold px-4 py-2 rounded hover:bg-primary transition-all duration-200 active:scale-95 flex items-center gap-2 kinetic-shadow">
-    <span class="material-symbols-outlined text-[20px]">add</span>
-    <span>New <?= $this->e($label) ?></span>
+  <a href="/admin/taxonomy/<?= $this->e($termType) ?>/create" class="bg-secondary text-on-secondary py-3 px-6 rounded font-label-caps text-label-caps hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">
+    + NEW <?= strtoupper($this->e($label)) ?>
   </a>
 </div>
 

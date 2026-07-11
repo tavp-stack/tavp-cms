@@ -40,7 +40,7 @@ class DatabaseStore implements ContentStore
         }
 
         $sql = 'SELECT * FROM contents WHERE ' . implode(' AND ', $where) . ' ORDER BY id DESC';
-        $rows = $db->query($sql, $bind);
+        $rows = $db->fetchAll($sql, \PDO::FETCH_ASSOC, $bind);
 
         return array_map([$this, 'hydrate'], $rows);
     }
@@ -48,8 +48,9 @@ class DatabaseStore implements ContentStore
     public function find(ContentType $type, string|int $id): ?array
     {
         $db = ($this->connection)();
-        $rows = $db->query(
+        $rows = $db->fetchAll(
             'SELECT * FROM contents WHERE type = :type AND id = :id LIMIT 1',
+            \PDO::FETCH_ASSOC,
             ['type' => $type->name, 'id' => $id]
         );
 
@@ -59,8 +60,9 @@ class DatabaseStore implements ContentStore
     public function findBySlug(ContentType $type, string $slug): ?array
     {
         $db = ($this->connection)();
-        $rows = $db->query(
+        $rows = $db->fetchAll(
             'SELECT * FROM contents WHERE type = :type AND slug = :slug LIMIT 1',
+            \PDO::FETCH_ASSOC,
             ['type' => $type->name, 'slug' => $slug]
         );
 
@@ -76,14 +78,21 @@ class DatabaseStore implements ContentStore
         $db = ($this->connection)();
         $record = $this->splitColumns($type, $data);
 
-        $id = $db->insert('contents', [
-            'type' => $type->name,
-            'slug' => $record['slug'],
-            'status' => $record['status'],
-            'data' => json_encode($record['data']),
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ]);
+        $now = date('Y-m-d H:i:s');
+        $db->execute(
+            'INSERT INTO contents (type, slug, status, data, created_at, updated_at) '
+            . 'VALUES (:type, :slug, :status, :data, :created_at, :updated_at)',
+            [
+                'type' => $type->name,
+                'slug' => $record['slug'],
+                'status' => $record['status'],
+                'data' => json_encode($record['data']),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]
+        );
+
+        $id = $db->lastInsertId();
 
         return $this->find($type, $id) ?? [];
     }
@@ -97,12 +106,18 @@ class DatabaseStore implements ContentStore
         $db = ($this->connection)();
         $record = $this->splitColumns($type, $data);
 
-        $db->update('contents', [
-            'slug' => $record['slug'],
-            'status' => $record['status'],
-            'data' => json_encode($record['data']),
-            'updated_at' => date('Y-m-d H:i:s'),
-        ], ['id' => $id, 'type' => $type->name]);
+        $db->execute(
+            'UPDATE contents SET slug = :slug, status = :status, data = :data, updated_at = :updated_at '
+            . 'WHERE id = :id AND type = :type',
+            [
+                'slug' => $record['slug'],
+                'status' => $record['status'],
+                'data' => json_encode($record['data']),
+                'updated_at' => date('Y-m-d H:i:s'),
+                'id' => $id,
+                'type' => $type->name,
+            ]
+        );
 
         return $this->find($type, $id) ?? [];
     }
@@ -111,7 +126,10 @@ class DatabaseStore implements ContentStore
     {
         $db = ($this->connection)();
 
-        return $db->delete('contents', ['id' => $id, 'type' => $type->name]);
+        return $db->execute(
+            'DELETE FROM contents WHERE id = :id AND type = :type',
+            ['id' => $id, 'type' => $type->name]
+        );
     }
 
     /**
