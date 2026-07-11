@@ -7,32 +7,48 @@ namespace Tavp\Cms\Taxonomy;
 /**
  * Builds a TaxonomyManager wired to the database.
  *
- * Call buildDatabaseTaxonomy() in your CmsServiceProvider and pass app('db').
+ * Works with the raw Phalcon PDO adapter bound as the "db" service:
+ *  - query($sql, $bind) returns a Result (use ->fetchAll() / ->fetch()).
+ *  - execute($sql, $bind) runs writes.
+ *  - lastInsertId() returns the last auto-increment id.
  */
 function buildDatabaseTaxonomy(object $db): TaxonomyManager
 {
-    $list = static function (string $type, string $orderBy) use ($db): array {
-        $sql = 'SELECT * FROM taxonomy_terms WHERE type = :type ORDER BY ' . $orderBy;
-        return $db->query($sql, ['type' => $type]);
+    $fetchAll = static function (string $sql, array $bind) use ($db): array {
+        $result = $db->query($sql, $bind);
+        return $result ? $result->fetchAll(\Phalcon\Db\Enum::FETCH_ASSOC) : [];
     };
 
-    $create = static function (string $type, string $name, string $slug) use ($db): array {
-        $now = date('Y-m-d H:i:s');
-        $db->insert('taxonomy_terms', [
-            'type' => $type,
-            'name' => $name,
-            'slug' => $slug,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
+    $fetchOne = static function (string $sql, array $bind) use ($db): ?array {
+        $result = $db->query($sql, $bind);
+        $row = $result ? $result->fetch(\Phalcon\Db\Enum::FETCH_ASSOC) : false;
+        return is_array($row) ? $row : null;
+    };
 
-        return $db->query(
+    $list = static function (string $type, string $orderBy) use ($fetchAll): array {
+        $allowed = ['name', 'sort', 'created_at', 'updated_at'];
+        $order = in_array($orderBy, $allowed, true) ? $orderBy : 'name';
+        return $fetchAll(
+            'SELECT * FROM taxonomy_terms WHERE type = :type ORDER BY ' . $order,
+            ['type' => $type]
+        );
+    };
+
+    $create = static function (string $type, string $name, string $slug) use ($db, $fetchOne): array {
+        $now = date('Y-m-d H:i:s');
+        $db->execute(
+            'INSERT INTO taxonomy_terms (type, name, slug, created_at, updated_at)
+             VALUES (:type, :name, :slug, :created_at, :updated_at)',
+            ['type' => $type, 'name' => $name, 'slug' => $slug, 'created_at' => $now, 'updated_at' => $now]
+        );
+
+        return $fetchOne(
             'SELECT * FROM taxonomy_terms WHERE slug = :slug AND type = :type LIMIT 1',
             ['slug' => $slug, 'type' => $type]
-        )[0] ?? [];
+        ) ?? [];
     };
 
-    $update = static function (int $id, array $data) use ($db): array {
+    $update = static function (int $id, array $data) use ($db, $fetchOne): array {
         $sets = [];
         $bind = ['id' => $id];
 
@@ -46,62 +62,57 @@ function buildDatabaseTaxonomy(object $db): TaxonomyManager
         $sets[] = 'updated_at = :updated_at';
         $bind['updated_at'] = date('Y-m-d H:i:s');
 
-        if ($sets !== []) {
-            $db->update('taxonomy_terms', array_fill(0, count($sets), 1), array_combine($sets, array_values($bind)));
-        }
+        $db->execute(
+            'UPDATE taxonomy_terms SET ' . implode(', ', $sets) . ' WHERE id = :id',
+            $bind
+        );
 
-        return $db->query('SELECT * FROM taxonomy_terms WHERE id = :id LIMIT 1', ['id' => $id])[0] ?? [];
+        return $fetchOne('SELECT * FROM taxonomy_terms WHERE id = :id LIMIT 1', ['id' => $id]) ?? [];
     };
 
     $delete = static function (int $id) use ($db): bool {
-        return $db->delete('taxonomy_terms', ['id' => $id]);
+        return (bool) $db->execute('DELETE FROM taxonomy_terms WHERE id = :id', ['id' => $id]);
     };
 
-    $findById = static function (int $id) use ($db): ?array {
-        $rows = $db->query('SELECT * FROM taxonomy_terms WHERE id = :id LIMIT 1', ['id' => $id]);
-        return $rows[0] ?? null;
+    $findById = static function (int $id) use ($fetchOne): ?array {
+        return $fetchOne('SELECT * FROM taxonomy_terms WHERE id = :id LIMIT 1', ['id' => $id]);
     };
 
-    $findBySlug = static function (string $type, string $slug) use ($db): ?array {
-        $rows = $db->query(
+    $findBySlug = static function (string $type, string $slug) use ($fetchOne): ?array {
+        return $fetchOne(
             'SELECT * FROM taxonomy_terms WHERE type = :type AND slug = :slug LIMIT 1',
             ['type' => $type, 'slug' => $slug]
         );
-        return $rows[0] ?? null;
     };
 
-    $attach = static function (int $contentId, int $termId, string $contentType) use ($db): void {
-        $termType = ($db->query(
-            'SELECT type FROM taxonomy_terms WHERE id = :id LIMIT 1',
-            ['id' => $termId]
-        )[0] ?? ['type' => 'tag'])['type'];
+    $attach = static function (int $contentId, int $termId, string $contentType) use ($db, $fetchOne): void {
+        $term = $fetchOne('SELECT type FROM taxonomy_terms WHERE id = :id LIMIT 1', ['id' => $termId]);
+        $termType = $term['type'] ?? 'tag';
 
-        $exists = $db->query(
+        $exists = $fetchOne(
             'SELECT COUNT(*) AS cnt FROM content_taxonomy WHERE content_id = :cid AND term_id = :tid AND content_type = :ct',
             ['cid' => $contentId, 'tid' => $termId, 'ct' => $contentType]
         );
-        if (($exists[0]['cnt'] ?? 0) > 0) {
+        if ((int) ($exists['cnt'] ?? 0) > 0) {
             return;
         }
 
-        $db->insert('content_taxonomy', [
-            'content_id' => $contentId,
-            'content_type' => $contentType,
-            'term_id' => $termId,
-            'term_type' => $termType,
-        ]);
+        $db->execute(
+            'INSERT INTO content_taxonomy (content_id, content_type, term_id, term_type)
+             VALUES (:cid, :ct, :tid, :tt)',
+            ['cid' => $contentId, 'ct' => $contentType, 'tid' => $termId, 'tt' => $termType]
+        );
     };
 
     $detach = static function (int $contentId, int $termId, string $contentType) use ($db): void {
-        $db->delete('content_taxonomy', [
-            'content_id' => $contentId,
-            'term_id' => $termId,
-            'content_type' => $contentType,
-        ]);
+        $db->execute(
+            'DELETE FROM content_taxonomy WHERE content_id = :cid AND term_id = :tid AND content_type = :ct',
+            ['cid' => $contentId, 'tid' => $termId, 'ct' => $contentType]
+        );
     };
 
-    $termsFor = static function (int $contentId, string $termType) use ($db): array {
-        return $db->query(
+    $termsFor = static function (int $contentId, string $termType) use ($fetchAll): array {
+        return $fetchAll(
             'SELECT t.* FROM taxonomy_terms t
              JOIN content_taxonomy ct ON ct.term_id = t.id
              WHERE ct.content_id = :cid AND ct.term_type = :tt
@@ -110,8 +121,8 @@ function buildDatabaseTaxonomy(object $db): TaxonomyManager
         );
     };
 
-    $contentForTerm = static function (int $termId, string $contentType, string $column) use ($db): array {
-        return $db->query(
+    $contentForTerm = static function (int $termId, string $contentType, string $column) use ($fetchAll): array {
+        return $fetchAll(
             'SELECT content_id FROM content_taxonomy WHERE term_id = :tid AND content_type = :ct',
             ['tid' => $termId, 'ct' => $contentType]
         );

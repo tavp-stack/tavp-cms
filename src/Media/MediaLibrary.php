@@ -60,7 +60,7 @@ class MediaLibrary
     {
         try {
             $db = app('db');
-            $db->delete('media', ['id' => $id]);
+            $db->execute('DELETE FROM media WHERE id = :id', ['id' => $id]);
             return true;
         } catch (\Throwable) {
             return false;
@@ -88,14 +88,18 @@ class MediaLibrary
 
         $this->moveUploaded($file['tmp_name'], $target);
 
-        return ($this->persist)([
+        $record = [
             'name' => pathinfo($file['name'], PATHINFO_FILENAME),
             'file_name' => $fileName,
             'mime_type' => $file['type'],
             'path' => $relative,
             'disk' => (string) ($this->config['disk'] ?? 'public'),
             'size' => (int) $file['size'],
-        ]);
+        ];
+
+        $record['id'] = (int) ($this->persist)($record);
+
+        return $record;
     }
 
     /**

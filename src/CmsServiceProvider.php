@@ -71,7 +71,7 @@ class CmsServiceProvider implements ServiceProvider
             require_once __DIR__ . '/Taxonomy/DatabaseTaxonomyFactory.php';
             $app->bind(TaxonomyManager::class, function () use ($app) {
                 $db = $app->getService('db');
-                return buildDatabaseTaxonomy($db);
+                return \Tavp\Cms\Taxonomy\buildDatabaseTaxonomy($db);
             });
         }
 
@@ -141,8 +141,13 @@ class CmsServiceProvider implements ServiceProvider
             config: (array) config('cms.media', []),
             persist: function (array $data) {
                 $db = app('db');
-                $db->insert('media', $data);
-                return $db->lastInsertId();
+                $now = date('Y-m-d H:i:s');
+                $db->execute(
+                    'INSERT INTO media (name, file_name, mime_type, path, disk, size, created_at, updated_at)
+                     VALUES (:name, :file_name, :mime_type, :path, :disk, :size, :created_at, :updated_at)',
+                    array_merge($data, ['created_at' => $now, 'updated_at' => $now])
+                );
+                return (int) $db->lastInsertId();
             },
         ));
 
@@ -164,12 +169,20 @@ class CmsServiceProvider implements ServiceProvider
                     $parts = explode('.', $key, 2);
                     $group = $parts[0] ?? 'general';
                     $keyName = $parts[1] ?? $key;
-                    $result = $db->query("SELECT id FROM settings WHERE `group` = ? AND `key` = ?", [$group, $keyName]);
+                    $now = date('Y-m-d H:i:s');
+                    $result = $db->query("SELECT id FROM settings WHERE `group` = :group AND `key` = :key", ['group' => $group, 'key' => $keyName]);
                     $rows = $result->fetchAll();
                     if (!empty($rows)) {
-                        $db->update('settings', ['value' => $value], ['`group`' => $group, '`key`' => $keyName]);
+                        $db->execute(
+                            "UPDATE settings SET value = :value, updated_at = :updated_at WHERE `group` = :group AND `key` = :key",
+                            ['value' => $value, 'updated_at' => $now, 'group' => $group, 'key' => $keyName]
+                        );
                     } else {
-                        $db->insert('settings', ['`group`' => $group, '`key`' => $keyName, 'value' => $value, 'type' => 'text', 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')]);
+                        $db->execute(
+                            "INSERT INTO settings (`group`, `key`, value, type, created_at, updated_at)
+                             VALUES (:group, :key, :value, 'text', :created_at, :updated_at)",
+                            ['group' => $group, 'key' => $keyName, 'value' => $value, 'created_at' => $now, 'updated_at' => $now]
+                        );
                     }
                 },
             );

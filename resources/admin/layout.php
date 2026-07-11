@@ -89,129 +89,32 @@ tailwind.config = {
     <div x-show="!sidebarCollapsed" class="pt-4 pb-1 px-3 text-on-surface-variant/40">
       <span class="font-label-caps text-label-caps uppercase tracking-widest">Content</span>
     </div>
-
-    <!-- Home Page -->
-    <a href="/admin/c/home" class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200" :class="sidebarCollapsed ? 'justify-center' : ''">
-      <span class="material-symbols-outlined text-xl">home</span>
-      <span x-show="!sidebarCollapsed" x-transition class="font-body-md text-body-md whitespace-nowrap">Home Page</span>
-    </a>
-
-    <!-- Pages with dropdown -->
     <?php
-    $frontendPages = [
-      ['slug' => 'get-started', 'title' => 'Get Started', 'icon' => 'rocket_launch'],
-      ['slug' => 'performance', 'title' => 'Performance', 'icon' => 'speed'],
-      ['slug' => 'documentation', 'title' => 'Documentation', 'icon' => 'docs'],
-      ['slug' => 'contact', 'title' => 'Contact', 'icon' => 'mail'],
-      ['slug' => 'blog', 'title' => 'Blog', 'icon' => 'article'],
+    $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+    // Resolve the single Home record so "Home Page" edits it directly
+    // (storage-agnostic: works for both database and flat-file drivers).
+    $homeHref = '/admin/c/home';
+    try {
+      $homeRecords = app()->getService(\Tavp\Cms\Bread\BreadManager::class)->browse('home');
+      if (!empty($homeRecords[0]['id'])) {
+        $homeHref = '/admin/c/home/' . $homeRecords[0]['id'] . '/edit';
+      }
+    } catch (\Throwable $e) {}
+    $contentMenus = [
+        ['href' => $homeHref, 'match' => '/admin/c/home', 'icon' => 'home', 'label' => 'Home Page'],
+        ['href' => '/admin/c/page', 'match' => '/admin/c/page', 'icon' => 'description', 'label' => 'Pages'],
+        ['href' => '/admin/c/post', 'match' => '/admin/c/post', 'icon' => 'article', 'label' => 'Blog'],
+        ['href' => '/admin/taxonomy/category', 'match' => '/admin/taxonomy/category', 'icon' => 'category', 'label' => 'Categories'],
+        ['href' => '/admin/taxonomy/tag', 'match' => '/admin/taxonomy/tag', 'icon' => 'sell', 'label' => 'Tags'],
     ];
-    $dbPages = [];
-    try {
-      $db = app()->getService('db');
-      $rows = $db->query("SELECT id, data, slug FROM contents WHERE type = 'page' ORDER BY slug")->fetchAll(\PDO::FETCH_ASSOC);
-      foreach ($rows as $row) {
-        $data = json_decode($row['data'] ?? '{}', true);
-        $dbPages[] = ['id' => $row['id'], 'title' => $data['title'] ?? $row['slug'], 'slug' => $row['slug']];
-      }
-    } catch (\Throwable $e) {}
+    foreach ($contentMenus as $m):
+      $active = str_starts_with($currentPath, $m['match']);
     ?>
-    <div x-data="{ open: false }" x-show="!sidebarCollapsed" x-transition>
-      <button @click="open = !open" class="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200">
-        <div class="flex items-center gap-3">
-          <span class="material-symbols-outlined text-xl">description</span>
-          <span class="font-body-md text-body-md whitespace-nowrap">Pages</span>
-        </div>
-        <span class="material-symbols-outlined text-sm transition-transform" :class="open ? 'rotate-180' : ''">expand_more</span>
-      </button>
-      <div x-show="open" x-transition x-cloak class="mt-1 space-y-0.5 bg-surface-container-low/50 rounded-lg py-1">
-        <a href="/admin/c/page" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200">
-          <span class="material-symbols-outlined text-base">list</span>
-          <span class="font-body-md text-body-md">All Pages</span>
-        </a>
-        <a href="/admin/c/page/create" class="flex items-center gap-3 px-4 py-2 text-secondary hover:bg-surface-container-high rounded transition-colors duration-200">
-          <span class="material-symbols-outlined text-base">add_circle</span>
-          <span class="font-body-md text-body-md font-medium">Add New Page</span>
-        </a>
-        <div class="border-t border-outline-variant my-1"></div>
-        <p class="px-4 py-1 text-on-surface-variant/40 font-label-caps text-label-caps uppercase tracking-widest">Frontend Pages</p>
-        <?php foreach ($frontendPages as $fp): ?>
-          <a href="/<?= $this->e($fp['slug']) ?>" target="_blank" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200">
-            <span class="material-symbols-outlined text-base"><?= $this->e($fp['icon']) ?></span>
-            <span class="font-body-md text-body-md"><?= $this->e($fp['title']) ?></span>
-            <span class="material-symbols-outlined text-xs ml-auto opacity-50">open_in_new</span>
-          </a>
-        <?php endforeach; ?>
-        <?php if (!empty($dbPages)): ?>
-          <div class="border-t border-outline-variant my-1"></div>
-          <p class="px-4 py-1 text-on-surface-variant/40 font-label-caps text-label-caps uppercase tracking-widest">Database Pages</p>
-          <?php foreach ($dbPages as $page): ?>
-            <a href="/admin/c/page/<?= $this->e($page['id']) ?>/edit" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200">
-              <span class="material-symbols-outlined text-base">edit</span>
-              <span class="font-body-md text-body-md"><?= $this->e($page['title']) ?></span>
-            </a>
-          <?php endforeach; ?>
-        <?php endif; ?>
-      </div>
-    </div>
-    <!-- Pages collapsed state -->
-    <a x-show="sidebarCollapsed" href="/admin/c/page" class="flex items-center justify-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200">
-      <span class="material-symbols-outlined text-xl">description</span>
-    </a>
-
-    <!-- Blog with dropdown -->
-    <?php
-    $posts = [];
-    try {
-      $db = app()->getService('db');
-      $rows = $db->query("SELECT id, data, slug, status FROM contents WHERE type = 'post' ORDER BY created_at DESC LIMIT 10")->fetchAll(\PDO::FETCH_ASSOC);
-      foreach ($rows as $row) {
-        $data = json_decode($row['data'] ?? '{}', true);
-        $posts[] = ['id' => $row['id'], 'title' => $data['title'] ?? $row['slug'], 'slug' => $row['slug'], 'status' => $row['status']];
-      }
-    } catch (\Throwable $e) {}
-    ?>
-    <div x-data="{ open: false }" x-show="!sidebarCollapsed" x-transition>
-      <button @click="open = !open" class="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200">
-        <div class="flex items-center gap-3">
-          <span class="material-symbols-outlined text-xl">article</span>
-          <span class="font-body-md text-body-md whitespace-nowrap">Blog</span>
-        </div>
-        <span class="material-symbols-outlined text-sm transition-transform" :class="open ? 'rotate-180' : ''">expand_more</span>
-      </button>
-      <div x-show="open" x-transition x-cloak class="mt-1 space-y-0.5 bg-surface-container-low/50 rounded-lg py-1">
-        <a href="/admin/c/post" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200">
-          <span class="material-symbols-outlined text-base">list</span>
-          <span class="font-body-md text-body-md">All Posts</span>
-        </a>
-        <a href="/admin/c/post/create" class="flex items-center gap-3 px-4 py-2 text-secondary hover:bg-surface-container-high rounded transition-colors duration-200">
-          <span class="material-symbols-outlined text-base">add_circle</span>
-          <span class="font-body-md text-body-md font-medium">Add New Post</span>
-        </a>
-        <div class="border-t border-outline-variant my-1"></div>
-        <a href="/admin/taxonomy/category" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200">
-          <span class="material-symbols-outlined text-base">category</span>
-          <span class="font-body-md text-body-md">Categories</span>
-        </a>
-        <a href="/admin/taxonomy/tag" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200">
-          <span class="material-symbols-outlined text-base">sell</span>
-          <span class="font-body-md text-body-md">Tags</span>
-        </a>
-        <?php if (!empty($posts)): ?>
-          <div class="border-t border-outline-variant my-1"></div>
-          <p class="px-4 py-1 text-on-surface-variant/40 font-label-caps text-label-caps uppercase tracking-widest">Recent Posts</p>
-          <?php foreach ($posts as $post): ?>
-            <a href="/admin/c/post/<?= $this->e($post['id']) ?>/edit" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200">
-              <span class="material-symbols-outlined text-base"><?= $post['status'] === 'published' ? 'check_circle' : 'edit' ?></span>
-              <span class="font-body-md text-body-md truncate"><?= $this->e($post['title']) ?></span>
-            </a>
-          <?php endforeach; ?>
-        <?php endif; ?>
-      </div>
-    </div>
-    <!-- Blog collapsed state -->
-    <a x-show="sidebarCollapsed" href="/admin/c/post" class="flex items-center justify-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200">
-      <span class="material-symbols-outlined text-xl">article</span>
-    </a>
+      <a href="<?= $this->e($m['href']) ?>" class="flex items-center gap-3 px-3 py-2.5 rounded transition-colors duration-200 <?= $active ? 'text-secondary bg-primary-container/10' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high' ?>" :class="sidebarCollapsed ? 'justify-center' : ''">
+        <span class="material-symbols-outlined text-xl"><?= $this->e($m['icon']) ?></span>
+        <span x-show="!sidebarCollapsed" x-transition class="font-body-md text-body-md whitespace-nowrap"><?= $this->e($m['label']) ?></span>
+      </a>
+    <?php endforeach; ?>
 
     <div x-show="!sidebarCollapsed" class="pt-4 pb-1 px-3 text-on-surface-variant/40">
       <span class="font-label-caps text-label-caps uppercase tracking-widest">Site</span>
@@ -225,8 +128,8 @@ tailwind.config = {
         ['href' => '/admin/analytics', 'icon' => 'analytics', 'label' => 'Analytics', 'desc' => 'Traffic insights'],
     ];
     ?>
-    <?php foreach ($siteMenus as $m): ?>
-      <a href="<?= $this->e($m['href']) ?>" class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded transition-colors duration-200" :class="sidebarCollapsed ? 'justify-center' : ''" title="<?= $this->e($m['desc']) ?>">
+    <?php foreach ($siteMenus as $m): $active = str_starts_with($currentPath, $m['href']); ?>
+      <a href="<?= $this->e($m['href']) ?>" class="flex items-center gap-3 px-3 py-2.5 rounded transition-colors duration-200 <?= $active ? 'text-secondary bg-primary-container/10' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high' ?>" :class="sidebarCollapsed ? 'justify-center' : ''" title="<?= $this->e($m['desc']) ?>">
         <span class="material-symbols-outlined text-xl"><?= $this->e($m['icon']) ?></span>
         <span x-show="!sidebarCollapsed" x-transition class="font-body-md text-body-md whitespace-nowrap"><?= $this->e($m['label']) ?></span>
       </a>
