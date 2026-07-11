@@ -123,6 +123,21 @@ abstract class AdminController extends BaseController
         $_SESSION['cms_old'] = $old;
     }
 
+    protected function flash(string $key, string $value): void
+    {
+        $_SESSION['cms_flash'][$key] = $value;
+    }
+
+    protected function getFlash(string $key): ?string
+    {
+        return $_SESSION['cms_flash'][$key] ?? null;
+    }
+
+    protected function clearFlash(): void
+    {
+        unset($_SESSION['cms_flash']);
+    }
+
     private function safeTypes(): array
     {
         try {
