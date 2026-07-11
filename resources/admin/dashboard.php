@@ -21,6 +21,29 @@ $iconMap = [
   <?php endforeach; ?>
 </section>
 
+<!-- Analytics Summary -->
+<?php if (config('cms.analytics.enabled', false)): ?>
+<section class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-gutter">
+  <div class="bg-surface-container p-6 border border-outline-variant performance-card">
+    <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">PAGEVIEWS TODAY</p>
+    <h3 class="font-headline-xl text-headline-xl">0</h3>
+    <p class="font-code-sm text-code-sm text-on-surface-variant mt-1">Install tracker to start</p>
+  </div>
+  <div class="bg-surface-container p-6 border border-outline-variant performance-card">
+    <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">UNIQUE VISITORS</p>
+    <h3 class="font-headline-xl text-headline-xl">0</h3>
+  </div>
+  <div class="bg-surface-container p-6 border border-outline-variant performance-card">
+    <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">REAL-TIME</p>
+    <h3 class="font-headline-xl text-headline-xl text-secondary">0</h3>
+  </div>
+  <div class="bg-surface-container p-6 border border-outline-variant performance-card">
+    <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">FRAUD EVENTS</p>
+    <h3 class="font-headline-xl text-headline-xl text-error">0</h3>
+  </div>
+</section>
+<?php endif; ?>
+
 <!-- Main Grid -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
   <!-- Content Types List -->
