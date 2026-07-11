@@ -82,5 +82,8 @@ class AdminModule
         $router->get('/admin/billing', [BillingController::class, 'index']);
         $router->get('/admin/billing/invoices', [BillingController::class, 'invoices']);
         $router->post('/admin/billing/subscriptions/{id}/cancel', [BillingController::class, 'cancelSubscription']);
+
+        // Analytics
+        $router->get('/admin/analytics', [AnalyticsController::class, 'index']);
     }
 }
