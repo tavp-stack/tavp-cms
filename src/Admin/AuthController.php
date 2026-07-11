@@ -4,24 +4,33 @@ declare(strict_types=1);
 
 namespace Tavp\Cms\Admin;
 
+use Tavp\Core\Auth\MailService;
+use Tavp\Core\Auth\OtpService;
 use Tavp\Core\Http\Response;
-use Tavp\Tavpid\Auth\SessionAuth;
 
 /**
- * Admin auth — login/logout via tavpid SessionAuth.
+ * Admin auth — login/logout via session + OTP.
  */
 class AuthController extends AdminController
 {
+    private OtpService $otp;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->otp = new OtpService(
+            (int) config('cms.admin.otp_ttl_minutes', 10),
+        );
+    }
+
     public function showLogin(): string|Response
     {
-        if ($this->sessionAuth !== null && $this->sessionAuth->check()) {
+        if (!empty($_SESSION['cms_admin'])) {
             return $this->redirect('/admin');
         }
 
-        // Clear pending OTP session when going back to login
-        if ($this->sessionAuth !== null) {
-            $this->sessionAuth->clearPending();
-        }
+        // Clear pending OTP session
+        unset($_SESSION['cms_otp']);
 
         return $this->partial('login', [
             'error' => null,
@@ -31,23 +40,29 @@ class AuthController extends AdminController
 
     public function sendOtp(): string|Response
     {
-        $email = (string) $this->request->input('email', '');
+        $email = strtolower(trim((string) $this->request->input('email', '')));
 
-        if ($this->sessionAuth === null) {
-            return $this->redirect('/admin/login');
-        }
-
-        $result = $this->sessionAuth->requestCode($email);
-
-        if ($result === false) {
+        // Check if email is allowed
+        $allowed = array_map('strtolower', (array) config('cms.admin.emails', []));
+        if (!in_array($email, $allowed, true)) {
             return $this->partial('login', [
                 'error' => 'That e-mail is not allowed to sign in.',
                 'brand' => config('cms.admin.brand', 'TAVP'),
             ]);
         }
 
+        // Generate OTP
+        $code = $this->otp->createOtp($email, 'email');
+        $hash = $this->otp->hash($code);
+
+        $_SESSION['cms_otp'] = [
+            'email' => $email,
+            'hash' => $hash,
+            'expires' => time() + (int) config('cms.admin.otp_ttl_minutes', 10) * 60,
+        ];
+
         // Send the OTP email
-        $this->sendOtpEmail($email, $result['code']);
+        $this->sendOtpEmail($email, $code);
 
         return $this->redirect('/admin/verify');
     }
@@ -55,7 +70,7 @@ class AuthController extends AdminController
     private function sendOtpEmail(string $email, string $code): void
     {
         try {
-            $mailer = new \Tavp\Core\Auth\MailService([
+            $mailer = new MailService([
                 'driver' => config('cms.mail.driver', 'smtp'),
                 'host' => config('cms.mail.host', '127.0.0.1'),
                 'port' => (int) config('cms.mail.port', 1025),
@@ -67,10 +82,39 @@ class AuthController extends AdminController
             $brand = config('cms.admin.brand', 'TAVP');
             $ttl = (int) config('cms.admin.otp_ttl_minutes', 10);
 
+            $html = '<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 0; background-color: #0d131f; font-family: Inter, system-ui, sans-serif; }
+  .container { max-width: 480px; margin: 0 auto; padding: 40px 24px; }
+  .card { background-color: #1a202c; border: 1px solid #45474c; border-radius: 0.5rem; padding: 32px; }
+  .code { font-family: JetBrains Mono, monospace; font-size: 32px; font-weight: 600; color: #e6c446; letter-spacing: 0.1em; text-align: center; padding: 24px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="text-align: center; margin-bottom: 32px;">
+    <span style="font-size: 24px; font-weight: 700; color: #e6c446;">' . $brand . '</span>
+    <span style="font-size: 14px; color: #8f9097; margin-left: 8px;">admin</span>
+  </div>
+  <div class="card">
+    <h1 style="color: #dde2f3; font-size: 20px; font-weight: 600; margin: 0 0 8px 0;">Sign-in Code</h1>
+    <p style="color: #8f9097; font-size: 14px; margin: 0 0 24px 0;">Use the code below to sign in to your admin panel.</p>
+    <div class="code">' . $code . '</div>
+    <p style="color: #8f9097; font-size: 12px; text-align: center; margin: 16px 0 0 0;">This code expires in ' . $ttl . ' minutes.</p>
+  </div>
+  <p style="color: #45474c; font-size: 12px; text-align: center; margin-top: 24px;">If you did not request this code, you can safely ignore this email.</p>
+</div>
+</body>
+</html>';
+
             $mailer->send(
                 $email,
                 "Your {$brand} sign-in code",
-                "Your sign-in code is: {$code}\n\nIt expires in {$ttl} minutes."
+                "Your sign-in code is: {$code}\n\nIt expires in {$ttl} minutes.",
+                $html
             );
         } catch (\Throwable) {
             // Email failed — don't block the flow
@@ -79,14 +123,14 @@ class AuthController extends AdminController
 
     public function showVerify(): string|Response
     {
-        $identifier = $this->sessionAuth?->pendingIdentifier();
+        $otp = $_SESSION['cms_otp'] ?? null;
 
-        if ($identifier === null) {
+        if ($otp === null || ($otp['expires'] ?? 0) < time()) {
             return $this->redirect('/admin/login');
         }
 
         return $this->partial('verify', [
-            'identifier' => $identifier,
+            'identifier' => $otp['email'] ?? '',
             'error' => null,
             'brand' => config('cms.admin.brand', 'TAVP'),
         ]);
@@ -95,21 +139,30 @@ class AuthController extends AdminController
     public function verify(): string|Response
     {
         $code = (string) $this->request->input('code', '');
+        $otp = $_SESSION['cms_otp'] ?? null;
 
-        if ($this->sessionAuth === null || !$this->sessionAuth->verify($code)) {
+        if ($otp === null || ($otp['expires'] ?? 0) < time()) {
+            return $this->redirect('/admin/login');
+        }
+
+        if (!$this->otp->verifyOtp($code, $otp['hash'] ?? '')) {
             return $this->partial('verify', [
-                'identifier' => $this->sessionAuth?->pendingIdentifier() ?? '',
+                'identifier' => $otp['email'] ?? '',
                 'error' => 'Invalid or expired code. Please try again.',
                 'brand' => config('cms.admin.brand', 'TAVP'),
             ]);
         }
+
+        // Login successful
+        $_SESSION['cms_admin'] = $otp['email'];
+        unset($_SESSION['cms_otp']);
 
         return $this->redirect('/admin');
     }
 
     public function logout(): Response
     {
-        $this->sessionAuth?->logout();
+        unset($_SESSION['cms_admin'], $_SESSION['cms_otp']);
 
         return $this->redirect('/admin/login');
     }
