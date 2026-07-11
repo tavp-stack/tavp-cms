@@ -64,6 +64,9 @@ class AuthController extends AdminController
         // Send the OTP email
         $this->sendOtpEmail($email, $code);
 
+        // Ensure session is saved before redirect
+        session_write_close();
+
         return $this->redirect('/admin/verify');
     }
 
@@ -160,6 +163,9 @@ class AuthController extends AdminController
         // Login successful
         $_SESSION['cms_admin'] = $otp['email'];
         unset($_SESSION['cms_otp']);
+
+        // Ensure session is saved before redirect
+        session_write_close();
 
         return $this->redirect('/admin');
     }
