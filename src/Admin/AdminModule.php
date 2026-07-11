@@ -77,6 +77,11 @@ class AdminModule
         $router->post('/admin/teams/{id}/delete', [TeamController::class, 'destroy']);
         $router->post('/admin/teams/{teamId}/members', [TeamController::class, 'addMember']);
         $router->post('/admin/teams/{teamId}/members/{memberId}/remove', [TeamController::class, 'removeMember']);
+
+        // Billing
+        $router->get('/admin/billing', [BillingController::class, 'index']);
+        $router->get('/admin/billing/invoices', [BillingController::class, 'invoices']);
+        $router->post('/admin/billing/subscriptions/{id}/cancel', [BillingController::class, 'cancelSubscription']);
     }
 }
 }
