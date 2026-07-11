@@ -32,9 +32,21 @@
     <thead class="bg-surface-container-high">
       <tr>
         <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Preview</th>
-        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Name</th>
-        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Type</th>
-        <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">Size</th>
+        <?php
+        $mediaSortCols = [
+          'name' => 'Name',
+          'mime_type' => 'Type',
+          'size' => 'Size',
+        ];
+        foreach ($mediaSortCols as $col => $colLabel):
+          $isActive = ($_GET['sort'] ?? 'name') === $col;
+          $nextDir = ($isActive && ($_GET['dir'] ?? 'ASC') === 'ASC') ? 'DESC' : 'ASC';
+          $arrow = $isActive ? (($_GET['dir'] ?? 'ASC') === 'ASC' ? ' ↑' : ' ↓') : '';
+        ?>
+          <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">
+            <a href="?sort=<?= $col ?>&dir=<?= $nextDir ?>" class="hover:text-secondary transition-colors"><?= $this->e($colLabel) ?><?= $arrow ?></a>
+          </th>
+        <?php endforeach; ?>
         <th class="px-4 py-3 text-right font-label-caps text-label-caps text-on-surface-variant">Actions</th>
       </tr>
     </thead>

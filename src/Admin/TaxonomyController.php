@@ -18,15 +18,30 @@ class TaxonomyController extends AdminController
             return $r;
         }
 
+        $sort = $_GET['sort'] ?? 'name';
+        $dir = strtoupper($_GET['dir'] ?? 'ASC');
+        if (!in_array($sort, ['name', 'slug', 'id'], true)) { $sort = 'name'; }
+        if (!in_array($dir, ['ASC', 'DESC'], true)) { $dir = 'ASC'; }
+
         $taxonomy = $this->taxonomy();
         $terms = array_map(
             static fn ($term) => $term instanceof \Tavp\Cms\Taxonomy\Term ? $term->toArray() : $term,
             $taxonomy->all($type)
         );
 
+        // Sort in PHP (taxonomy->all() returns array)
+        usort($terms, function ($a, $b) use ($sort, $dir) {
+            $va = $a[$sort] ?? '';
+            $vb = $b[$sort] ?? '';
+            $cmp = strcasecmp((string) $va, (string) $vb);
+            return $dir === 'DESC' ? -$cmp : $cmp;
+        });
+
         return $this->admin('taxonomy_list', [
             'terms' => $terms,
             'termType' => $type,
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

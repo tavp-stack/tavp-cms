@@ -19,6 +19,23 @@ class MediaController extends AdminController
 
         $media = $this->getMediaLibrary()->all();
 
+        // Sort
+        $sort = $_GET['sort'] ?? 'name';
+        $dir = strtoupper($_GET['dir'] ?? 'ASC');
+        if (!in_array($sort, ['name', 'mime_type', 'size', 'id'], true)) { $sort = 'name'; }
+        if (!in_array($dir, ['ASC', 'DESC'], true)) { $dir = 'ASC'; }
+
+        usort($media, function ($a, $b) use ($sort, $dir) {
+            $va = $a[$sort] ?? 0;
+            $vb = $b[$sort] ?? 0;
+            if ($sort === 'size') {
+                $cmp = (int) $va <=> (int) $vb;
+            } else {
+                $cmp = strcasecmp((string) $va, (string) $vb);
+            }
+            return $dir === 'DESC' ? -$cmp : $cmp;
+        });
+
         return $this->admin('media.list', [
             'media' => $media,
         ]);

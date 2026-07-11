@@ -38,11 +38,21 @@
   <div>
     <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Role <span class="text-error">*</span></label>
     <?php $currentRole = $__old['role'] ?? $user['role'] ?? 'editor'; ?>
-    <select name="role" class="w-full bg-surface-container border border-outline-variant rounded px-4 py-3 focus:border-secondary outline-none font-body-md">
-      <?php foreach ($roles as $r): ?>
-        <option value="<?= $this->e($r) ?>"<?= $currentRole === $r ? ' selected' : '' ?>><?= $this->e(ucfirst($r)) ?></option>
-      <?php endforeach; ?>
-    </select>
+    <div x-data="{ open: false, q: '', roles: <?= htmlspecialchars(json_encode($roles), ENT_QUOTES) ?>, selected: '<?= $currentRole ?>' }" class="relative">
+      <input type="hidden" name="role" :value="selected">
+      <button type="button" @click="open = !open" @click.outside="open = false" class="w-full bg-surface-container border border-outline-variant rounded px-4 py-3 text-left font-body-md focus:border-secondary outline-none flex items-center justify-between">
+        <span x-text="selected ? selected.charAt(0).toUpperCase() + selected.slice(1) : 'Select role...'"></span>
+        <span class="material-symbols-outlined text-sm text-on-surface-variant">expand_more</span>
+      </button>
+      <div x-show="open" x-cloak class="absolute z-10 mt-1 w-full bg-surface-container border border-outline-variant rounded shadow-lg max-h-48 overflow-y-auto">
+        <div class="p-2">
+          <input type="text" x-model="q" placeholder="Search role..." class="w-full bg-surface-container-low border border-outline-variant rounded px-3 py-2 text-sm outline-none focus:border-secondary">
+        </div>
+        <template x-for="r in roles.filter(r => r.toLowerCase().includes(q.toLowerCase()))" :key="r">
+          <div @click="selected = r; open = false" class="px-4 py-2 hover:bg-surface-container-high cursor-pointer text-sm" :class="selected === r ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface'" x-text="r.charAt(0).toUpperCase() + r.slice(1)"></div>
+        </template>
+      </div>
+    </div>
     <p class="text-xs text-on-surface-variant mt-1">Admins can manage everything; editors manage content, media and taxonomy.</p>
   </div>
 

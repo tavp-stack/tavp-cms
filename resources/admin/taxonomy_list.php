@@ -1,4 +1,4 @@
-<?php /** @var array $terms @var string $termType */ ?>
+<?php /** @var array $terms @var string $termType @var string $sort @var string $dir */ ?>
 <?php $labels = ['category' => 'Kategori', 'tag' => 'Tag']; $label = $labels[$termType] ?? ucfirst($termType); ?>
 <div class="mb-8 flex items-center justify-between">
   <div>
@@ -17,9 +17,21 @@
     <table class="w-full text-sm">
       <thead class="bg-surface-container-lowest">
         <tr>
-          <th class="text-left px-4 py-3 font-bold">Name</th>
-          <th class="text-left px-4 py-3 font-bold">Slug</th>
-          <th class="text-left px-4 py-3 font-bold">Description</th>
+          <?php
+          $cols = [
+            'name' => 'Name',
+            'slug' => 'Slug',
+            'description' => 'Description',
+          ];
+          foreach ($cols as $col => $colLabel):
+            $isActive = $sort === $col;
+            $nextDir = ($isActive && $dir === 'ASC') ? 'DESC' : 'ASC';
+            $arrow = $isActive ? ($dir === 'ASC' ? ' ↑' : ' ↓') : '';
+          ?>
+            <th class="text-left px-4 py-3 font-bold">
+              <a href="?sort=<?= $col ?>&dir=<?= $nextDir ?>" class="hover:text-secondary transition-colors"><?= $this->e($colLabel) ?><?= $arrow ?></a>
+            </th>
+          <?php endforeach; ?>
           <th class="text-right px-4 py-3 font-bold">Actions</th>
         </tr>
       </thead>
