@@ -65,10 +65,10 @@ class ContentType
      */
     public function browseColumns(): array
     {
-        $preferred = ['title', 'slug', 'status'];
+        $preferred = ['title', 'hero_title', 'name', 'slug', 'status'];
         $names = array_map(fn (Field $f) => $f->name, $this->fields);
 
-        $columns = array_values(array_intersect($preferred, $names));
+        $columns = array_values(array_unique(array_intersect($preferred, $names)));
 
         return $columns ?: array_slice($names, 0, 3);
     }
