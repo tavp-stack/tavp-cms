@@ -83,27 +83,35 @@ try {
   <!-- Weekly Traffic Chart -->
   <div class="bg-surface-container p-6 border border-outline-variant">
     <h3 class="font-headline-lg text-headline-lg text-secondary mb-6">Traffic (7 Days)</h3>
-    <div class="h-48 w-full bg-surface-container-lowest/50 rounded-lg overflow-hidden border border-outline-variant/30 relative">
-      <?php if (!empty($weeklyTraffic)): ?>
-        <?php
-          $maxViews = max(array_column($weeklyTraffic, 'cnt'));
-          $barWidth = 100 / count($weeklyTraffic);
-        ?>
-        <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
-          <?php foreach ($weeklyTraffic as $i => $day): ?>
-            <?php $height = $maxViews > 0 ? ($day['cnt'] / $maxViews) * 80 + 10 : 10; ?>
-            <rect x="<?= $i * $barWidth ?>" y="<?= 100 - $height ?>" width="<?= $barWidth - 1 ?>" height="<?= $height ?>" fill="#e6c446" opacity="0.8"/>
-          <?php endforeach; ?>
-        </svg>
-        <div class="absolute bottom-0 left-0 right-0 flex justify-between px-2 py-1 text-[10px] text-on-surface-variant">
-          <?php foreach ($weeklyTraffic as $day): ?>
-            <span><?= date('D', strtotime($day['day'])) ?></span>
-          <?php endforeach; ?>
-        </div>
-      <?php else: ?>
-        <p class="text-on-surface-variant text-center py-8">No data yet</p>
-      <?php endif; ?>
-    </div>
+    <?php if (!empty($weeklyTraffic)): ?>
+      <?php
+        $maxViews = max(array_column($weeklyTraffic, 'cnt'));
+        $maxViews = max($maxViews, 1);
+      ?>
+      <div class="space-y-3">
+        <?php foreach ($weeklyTraffic as $day): ?>
+          <?php
+            $height = $maxViews > 0 ? round(($day['cnt'] / $maxViews) * 100) : 0;
+            $dayName = date('D', strtotime($day['day']));
+            $dayDate = date('M j', strtotime($day['day']));
+          ?>
+          <div class="flex items-center gap-3">
+            <div class="w-16 text-right">
+              <span class="font-code-sm text-code-sm text-on-surface-variant"><?= $dayName ?></span><br>
+              <span class="font-code-sm text-code-sm text-on-surface-variant text-[10px]"><?= $dayDate ?></span>
+            </div>
+            <div class="flex-1 bg-primary-container h-6 rounded overflow-hidden">
+              <div class="bg-secondary h-full rounded transition-all duration-500" style="width: <?= $height ?>%"></div>
+            </div>
+            <div class="w-12 text-right">
+              <span class="font-code-sm text-code-sm text-secondary"><?= (int) $day['cnt'] ?></span>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php else: ?>
+      <p class="text-on-surface-variant text-center py-8">No data yet</p>
+    <?php endif; ?>
   </div>
 
   <!-- Top Pages -->
