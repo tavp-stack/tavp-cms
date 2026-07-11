@@ -7,14 +7,29 @@ $yesterday = date('Y-m-d', strtotime('-1 day'));
 $weekAgo = date('Y-m-d', strtotime('-7 days'));
 $monthAgo = date('Y-m-d', strtotime('-30 days'));
 
-// Period selector
+// Period selector — supports preset (7d/30d/90d) or a custom from/to range.
 $period = $_GET['period'] ?? '7d';
-$periodDays = match($period) {
-    '30d' => 30,
-    '90d' => 90,
-    default => 7,
-};
-$periodStart = date('Y-m-d', strtotime("-{$periodDays} days"));
+$customFrom = isset($_GET['from']) && $_GET['from'] !== '' ? $_GET['from'] : null;
+$customTo = isset($_GET['to']) && $_GET['to'] !== '' ? $_GET['to'] : null;
+
+$validDate = static fn ($d) => $d !== null && \DateTime::createFromFormat('Y-m-d', $d) !== false;
+
+if ($validDate($customFrom) && $validDate($customTo)) {
+    $isCustom = true;
+    $period = 'custom';
+    $periodStart = min($customFrom, $customTo);
+    $periodEnd = max($customFrom, $customTo);
+    $periodDays = max(1, (int) ((strtotime($periodEnd) - strtotime($periodStart)) / 86400) + 1);
+} else {
+    $isCustom = false;
+    $periodDays = match($period) {
+        '30d' => 30,
+        '90d' => 90,
+        default => 7,
+    };
+    $periodStart = date('Y-m-d', strtotime("-{$periodDays} days"));
+    $periodEnd = $today;
+}
 
 try {
     // Today's stats
@@ -23,26 +38,27 @@ try {
     $uniqueVisitors = $db->query("SELECT COUNT(DISTINCT session_id) as cnt FROM analytics_page_visits WHERE DATE(created_at) = ?", [$today])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
     $realtime = $db->query("SELECT COUNT(*) as cnt FROM analytics_sessions WHERE last_activity_at >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)")->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
     $fraudEvents = $db->query("SELECT COUNT(*) as cnt FROM analytics_fraud_events WHERE DATE(created_at) = ?", [$today])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    
+
+    $range = [$periodStart, $periodEnd];
     // Period totals
-    $totalPageviews = $db->query("SELECT COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) >= ?", [$periodStart])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    $totalVisitors = $db->query("SELECT COUNT(DISTINCT session_id) as cnt FROM analytics_page_visits WHERE DATE(created_at) >= ?", [$periodStart])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
+    $totalPageviews = $db->query("SELECT COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) BETWEEN ? AND ?", $range)->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
+    $totalVisitors = $db->query("SELECT COUNT(DISTINCT session_id) as cnt FROM analytics_page_visits WHERE DATE(created_at) BETWEEN ? AND ?", $range)->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
     $avgDaily = $periodDays > 0 ? round($totalPageviews / $periodDays) : 0;
     
     // Traffic chart data
-    $trafficData = $db->query("SELECT DATE(created_at) as day, COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) >= ? GROUP BY DATE(created_at) ORDER BY day ASC", [$periodStart])->fetchAll(\PDO::FETCH_ASSOC);
+    $trafficData = $db->query("SELECT DATE(created_at) as day, COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) BETWEEN ? AND ? GROUP BY DATE(created_at) ORDER BY day ASC", $range)->fetchAll(\PDO::FETCH_ASSOC);
     
     // Top pages
-    $topPages = $db->query("SELECT path, COUNT(*) as views FROM analytics_page_visits WHERE DATE(created_at) >= ? GROUP BY path ORDER BY views DESC LIMIT 10", [$periodStart])->fetchAll(\PDO::FETCH_ASSOC);
+    $topPages = $db->query("SELECT path, COUNT(*) as views FROM analytics_page_visits WHERE DATE(created_at) BETWEEN ? AND ? GROUP BY path ORDER BY views DESC LIMIT 10", $range)->fetchAll(\PDO::FETCH_ASSOC);
     
     // Device breakdown
-    $devices = $db->query("SELECT device, COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) >= ? GROUP BY device ORDER BY cnt DESC", [$periodStart])->fetchAll(\PDO::FETCH_ASSOC);
+    $devices = $db->query("SELECT device, COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) BETWEEN ? AND ? GROUP BY device ORDER BY cnt DESC", $range)->fetchAll(\PDO::FETCH_ASSOC);
     
     // Browser breakdown
-    $browsers = $db->query("SELECT browser, COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) >= ? GROUP BY browser ORDER BY cnt DESC", [$periodStart])->fetchAll(\PDO::FETCH_ASSOC);
+    $browsers = $db->query("SELECT browser, COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) BETWEEN ? AND ? GROUP BY browser ORDER BY cnt DESC", $range)->fetchAll(\PDO::FETCH_ASSOC);
     
     // Geographic data
-    $countries = $db->query("SELECT country, COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) >= ? AND country IS NOT NULL AND country != '' GROUP BY country ORDER BY cnt DESC LIMIT 10", [$periodStart])->fetchAll(\PDO::FETCH_ASSOC);
+    $countries = $db->query("SELECT country, COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) BETWEEN ? AND ? AND country IS NOT NULL AND country != '' GROUP BY country ORDER BY cnt DESC LIMIT 10", $range)->fetchAll(\PDO::FETCH_ASSOC);
     
     // Recent sessions
     $recentSessions = $db->query("SELECT * FROM analytics_sessions ORDER BY last_activity_at DESC LIMIT 10")->fetchAll(\PDO::FETCH_ASSOC);
@@ -63,10 +79,23 @@ try {
     <h1 class="font-headline-xl text-headline-xl text-secondary">Analytics</h1>
     <p class="font-body-md text-body-md text-on-surface-variant mt-1">Traffic insights and user behavior</p>
   </div>
-  <div class="flex items-center gap-2">
-    <a href="/admin/analytics?period=7d" class="px-4 py-2 rounded font-label-caps text-label-caps transition-colors <?= $period === '7d' ? 'bg-secondary text-on-secondary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' ?>">7 Days</a>
-    <a href="/admin/analytics?period=30d" class="px-4 py-2 rounded font-label-caps text-label-caps transition-colors <?= $period === '30d' ? 'bg-secondary text-on-secondary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' ?>">30 Days</a>
-    <a href="/admin/analytics?period=90d" class="px-4 py-2 rounded font-label-caps text-label-caps transition-colors <?= $period === '90d' ? 'bg-secondary text-on-secondary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' ?>">90 Days</a>
+  <div class="flex flex-col items-end gap-3">
+    <div class="flex items-center gap-2">
+      <a href="/admin/analytics?period=7d" class="px-4 py-2 rounded font-label-caps text-label-caps transition-colors <?= (!$isCustom && $period === '7d') ? 'bg-secondary text-on-secondary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' ?>">7 Days</a>
+      <a href="/admin/analytics?period=30d" class="px-4 py-2 rounded font-label-caps text-label-caps transition-colors <?= (!$isCustom && $period === '30d') ? 'bg-secondary text-on-secondary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' ?>">30 Days</a>
+      <a href="/admin/analytics?period=90d" class="px-4 py-2 rounded font-label-caps text-label-caps transition-colors <?= (!$isCustom && $period === '90d') ? 'bg-secondary text-on-secondary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' ?>">90 Days</a>
+    </div>
+    <form method="get" action="/admin/analytics" class="flex items-center gap-2">
+      <input type="date" name="from" value="<?= $this->e($customFrom ?? '') ?>" max="<?= $today ?>"
+        class="bg-surface-container border <?= $isCustom ? 'border-secondary' : 'border-outline-variant' ?> rounded px-3 py-2 font-code-sm text-code-sm text-on-surface outline-none focus:border-secondary">
+      <span class="text-on-surface-variant text-sm">to</span>
+      <input type="date" name="to" value="<?= $this->e($customTo ?? '') ?>" max="<?= $today ?>"
+        class="bg-surface-container border <?= $isCustom ? 'border-secondary' : 'border-outline-variant' ?> rounded px-3 py-2 font-code-sm text-code-sm text-on-surface outline-none focus:border-secondary">
+      <button class="px-4 py-2 rounded font-label-caps text-label-caps bg-secondary text-on-secondary hover:brightness-110 transition-all">APPLY</button>
+      <?php if ($isCustom): ?>
+        <a href="/admin/analytics?period=7d" class="px-3 py-2 rounded font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-high transition-colors" title="Clear custom range">CLEAR</a>
+      <?php endif; ?>
+    </form>
   </div>
 </div>
 
