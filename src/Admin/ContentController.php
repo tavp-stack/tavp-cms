@@ -175,4 +175,9 @@ class ContentController extends AdminController
             return '';
         }
     }
+
+    private function type(string $name): ?\Tavp\Cms\Content\ContentType
+    {
+        return $this->bread()->type($name);
+    }
 }
