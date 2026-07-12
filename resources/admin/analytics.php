@@ -1,77 +1,25 @@
 <?php
 /** @var array $__counts */
-
-$db = app('db');
-$today = date('Y-m-d');
-$yesterday = date('Y-m-d', strtotime('-1 day'));
-$weekAgo = date('Y-m-d', strtotime('-7 days'));
-$monthAgo = date('Y-m-d', strtotime('-30 days'));
-
-// Period selector — supports preset (7d/30d/90d) or a custom from/to range.
-$period = $_GET['period'] ?? '7d';
-$customFrom = isset($_GET['from']) && $_GET['from'] !== '' ? $_GET['from'] : null;
-$customTo = isset($_GET['to']) && $_GET['to'] !== '' ? $_GET['to'] : null;
-
-$validDate = static fn ($d) => $d !== null && \DateTime::createFromFormat('Y-m-d', $d) !== false;
-
-if ($validDate($customFrom) && $validDate($customTo)) {
-    $isCustom = true;
-    $period = 'custom';
-    $periodStart = min($customFrom, $customTo);
-    $periodEnd = max($customFrom, $customTo);
-    $periodDays = max(1, (int) ((strtotime($periodEnd) - strtotime($periodStart)) / 86400) + 1);
-} else {
-    $isCustom = false;
-    $periodDays = match($period) {
-        '30d' => 30,
-        '90d' => 90,
-        default => 7,
-    };
-    $periodStart = date('Y-m-d', strtotime("-{$periodDays} days"));
-    $periodEnd = $today;
-}
-
-try {
-    // Today's stats
-    $pageviewsToday = $db->query("SELECT COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) = ?", [$today])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    $pageviewsYesterday = $db->query("SELECT COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) = ?", [$yesterday])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    $uniqueVisitors = $db->query("SELECT COUNT(DISTINCT session_id) as cnt FROM analytics_page_visits WHERE DATE(created_at) = ?", [$today])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    $realtime = $db->query("SELECT COUNT(*) as cnt FROM analytics_sessions WHERE last_activity_at >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)")->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    $fraudEvents = $db->query("SELECT COUNT(*) as cnt FROM analytics_fraud_events WHERE DATE(created_at) = ?", [$today])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-
-    $range = [$periodStart, $periodEnd];
-    // Period totals
-    $totalPageviews = $db->query("SELECT COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) BETWEEN ? AND ?", $range)->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    $totalVisitors = $db->query("SELECT COUNT(DISTINCT session_id) as cnt FROM analytics_page_visits WHERE DATE(created_at) BETWEEN ? AND ?", $range)->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    $avgDaily = $periodDays > 0 ? round($totalPageviews / $periodDays) : 0;
-    
-    // Traffic chart data
-    $trafficData = $db->query("SELECT DATE(created_at) as day, COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) BETWEEN ? AND ? GROUP BY DATE(created_at) ORDER BY day ASC", $range)->fetchAll(\PDO::FETCH_ASSOC);
-    
-    // Top pages
-    $topPages = $db->query("SELECT path, COUNT(*) as views FROM analytics_page_visits WHERE DATE(created_at) BETWEEN ? AND ? GROUP BY path ORDER BY views DESC LIMIT 10", $range)->fetchAll(\PDO::FETCH_ASSOC);
-    
-    // Device breakdown
-    $devices = $db->query("SELECT device, COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) BETWEEN ? AND ? GROUP BY device ORDER BY cnt DESC", $range)->fetchAll(\PDO::FETCH_ASSOC);
-    
-    // Browser breakdown
-    $browsers = $db->query("SELECT browser, COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) BETWEEN ? AND ? GROUP BY browser ORDER BY cnt DESC", $range)->fetchAll(\PDO::FETCH_ASSOC);
-    
-    // Geographic data
-    $countries = $db->query("SELECT country, COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) BETWEEN ? AND ? AND country IS NOT NULL AND country != '' GROUP BY country ORDER BY cnt DESC LIMIT 10", $range)->fetchAll(\PDO::FETCH_ASSOC);
-    
-    // Recent sessions
-    $recentSessions = $db->query("SELECT * FROM analytics_sessions ORDER BY last_activity_at DESC LIMIT 10")->fetchAll(\PDO::FETCH_ASSOC);
-    
-    // Calculate percentage change
-    $change = $pageviewsYesterday > 0 ? round(($pageviewsToday - $pageviewsYesterday) / $pageviewsYesterday * 100) : 0;
-    
-} catch (\Throwable $e) {
-    $pageviewsToday = 0; $pageviewsYesterday = 0; $uniqueVisitors = 0; $realtime = 0; $fraudEvents = 0;
-    $totalPageviews = 0; $totalVisitors = 0; $avgDaily = 0;
-    $trafficData = []; $topPages = []; $devices = []; $browsers = []; $countries = []; $recentSessions = [];
-    $change = 0;
-}
+/** @var array $trafficData */
+/** @var array $topPages */
+/** @var array $devices */
+/** @var array $browsers */
+/** @var array $countries */
+/** @var array $recentSessions */
+/** @var int $pageviewsToday */
+/** @var int $pageviewsYesterday */
+/** @var int $uniqueVisitors */
+/** @var int $realtime */
+/** @var int $fraudEvents */
+/** @var int $totalPageviews */
+/** @var int $totalVisitors */
+/** @var int $avgDaily */
+/** @var int $change */
+/** @var string $period */
+/** @var bool $isCustom */
+/** @var string|null $customFrom */
+/** @var string|null $customTo */
+/** @var int $periodDays */
 ?>
 
 <div class="flex justify-between items-center mb-8">
@@ -138,29 +86,22 @@ try {
   </div>
   <?php if (!empty($trafficData)): ?>
     <?php
-      $maxViews = max(array_column($trafficData, 'cnt'));
-      $maxViews = max($maxViews, 1);
+      // Prepare data for Chart.js
+      $labels = array_column($trafficData, 'day');
+      $data = array_column($trafficData, 'cnt');
+
+      // Create LineChart instance
+      $chart = new \Tavp\Blocks\Components\LineChart('Daily Traffic');
+      $chart->setLabels($labels);
+      $chart->addDataset('Pageviews', $data, [
+        'borderColor' => '#6750A4',
+        'backgroundColor' => 'rgba(103, 80, 164, 0.1)',
+        'tension' => 0.4,
+        'fill' => true
+      ]);
+      $chart->setSize(800, 300);
+      echo $chart->render();
     ?>
-    <div class="flex items-end gap-1 h-48">
-      <?php foreach ($trafficData as $day): ?>
-        <?php
-          $height = $maxViews > 0 ? round(($day['cnt'] / $maxViews) * 100) : 0;
-          $dayName = date('D', strtotime($day['day']));
-          $dayDate = date('M j', strtotime($day['day']));
-        ?>
-        <div class="flex-1 flex flex-col items-center group">
-          <div class="relative w-full flex justify-center">
-            <div class="absolute -top-8 bg-surface-container-highest text-on-surface px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-              <?= (int) $day['cnt'] ?> views
-            </div>
-          </div>
-          <div class="w-full bg-primary-container rounded-t" style="height: <?= max($height, 2) ?>%">
-            <div class="w-full bg-secondary h-full rounded-t transition-all duration-300 group-hover:brightness-110"></div>
-          </div>
-          <span class="font-code-sm text-code-sm text-on-surface-variant mt-2 text-[10px]"><?= $dayName ?></span>
-        </div>
-      <?php endforeach; ?>
-    </div>
   <?php else: ?>
     <div class="flex items-center justify-center h-48 text-on-surface-variant">
       <p class="font-body-md">No traffic data yet for this period</p>

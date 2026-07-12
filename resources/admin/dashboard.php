@@ -1,25 +1,15 @@
 <?php /** @var array $counts @var array $__types */ ?>
 <?php
-$db = app('db');
-$today = date('Y-m-d');
-$yesterday = date('Y-m-d', strtotime('-1 day'));
-$weekStart = date('Y-m-d', strtotime('-7 days'));
-
-try {
-    $pageviewsToday = $db->query("SELECT COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) = ?", [$today])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    $pageviewsYesterday = $db->query("SELECT COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) = ?", [$yesterday])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    $uniqueVisitors = $db->query("SELECT COUNT(DISTINCT session_id) as cnt FROM analytics_page_visits WHERE DATE(created_at) = ?", [$today])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    $realtime = $db->query("SELECT COUNT(*) as cnt FROM analytics_sessions WHERE last_activity_at >= DATE_SUB(NOW(), INTERVAL 5 MINUTE)")->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    $fraud = $db->query("SELECT COUNT(*) as cnt FROM analytics_fraud_events WHERE DATE(created_at) = ?", [$today])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    $weekViews = $db->query("SELECT COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) >= ?", [$weekStart])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    $weekVisitors = $db->query("SELECT COUNT(DISTINCT session_id) as cnt FROM analytics_page_visits WHERE DATE(created_at) >= ?", [$weekStart])->fetchAll(\PDO::FETCH_ASSOC)[0]['cnt'] ?? 0;
-    $trafficData = $db->query("SELECT DATE(created_at) as day, COUNT(*) as cnt FROM analytics_page_visits WHERE DATE(created_at) >= ? GROUP BY DATE(created_at) ORDER BY day ASC", [$weekStart])->fetchAll(\PDO::FETCH_ASSOC);
-    $topPages = $db->query("SELECT path, COUNT(*) as views FROM analytics_page_visits WHERE DATE(created_at) >= ? GROUP BY path ORDER BY views DESC LIMIT 5", [$weekStart])->fetchAll(\PDO::FETCH_ASSOC);
-    $change = $pageviewsYesterday > 0 ? round(($pageviewsToday - $pageviewsYesterday) / $pageviewsYesterday * 100) : 0;
-} catch (\Throwable $e) {
-    $pageviewsToday = 0; $pageviewsYesterday = 0; $uniqueVisitors = 0; $realtime = 0; $fraud = 0;
-    $weekViews = 0; $weekVisitors = 0; $trafficData = []; $topPages = []; $change = 0;
-}
+/** @var array $trafficData */
+/** @var array $topPages */
+/** @var int $pageviewsToday */
+/** @var int $pageviewsYesterday */
+/** @var int $uniqueVisitors */
+/** @var int $realtime */
+/** @var int $fraud */
+/** @var int $weekViews */
+/** @var int $weekVisitors */
+/** @var int $change */
 ?>
 
 <!-- Header -->
@@ -75,30 +65,32 @@ try {
   </div>
 </section>
 
-<!-- Traffic Trend + Top Pages -->
-<section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-  <div class="lg:col-span-2 bg-surface-container p-6 border border-outline-variant">
-    <h3 class="font-headline-lg text-headline-lg text-secondary mb-6">Tren Trafik (7 hari)</h3>
-    <?php if (!empty($trafficData)): ?>
-      <?php $maxViews = max(max(array_column($trafficData, 'cnt')), 1); ?>
-      <div class="flex items-end gap-1 h-48">
-        <?php foreach ($trafficData as $day): ?>
-          <?php $height = round(($day['cnt'] / $maxViews) * 100); ?>
-          <div class="flex-1 flex flex-col items-center group">
-            <div class="relative w-full flex justify-center">
-              <div class="absolute -top-8 bg-surface-container-highest text-on-surface px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"><?= (int) $day['cnt'] ?> views</div>
-            </div>
-            <div class="w-full bg-primary-container rounded-t" style="height: <?= max($height, 2) ?>%">
-              <div class="w-full bg-secondary h-full rounded-t transition-all duration-300 group-hover:brightness-110"></div>
-            </div>
-            <span class="font-code-sm text-code-sm text-on-surface-variant mt-2 text-[10px]"><?= date('D', strtotime($day['day'])) ?></span>
-          </div>
-        <?php endforeach; ?>
-      </div>
-    <?php else: ?>
-      <div class="flex items-center justify-center h-48 text-on-surface-variant"><p class="font-body-md">Belum ada data trafik.</p></div>
-    <?php endif; ?>
-  </div>
+  <!-- Traffic Trend + Top Pages -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2 bg-surface-container p-6 border border-outline-variant">
+      <h3 class="font-headline-lg text-headline-lg text-secondary mb-6">Tren Trafik (7 hari)</h3>
+      <?php if (!empty($trafficData)): ?>
+        <?php
+          // Prepare data for Chart.js
+          $labels = array_column($trafficData, 'day');
+          $data = array_column($trafficData, 'cnt');
+
+          // Create LineChart instance
+          $chart = new \Tavp\Blocks\Components\LineChart('Traffic 7 Hari');
+          $chart->setLabels($labels);
+          $chart->addDataset('Pageviews', $data, [
+            'borderColor' => '#6750A4',
+            'backgroundColor' => 'rgba(103, 80, 164, 0.1)',
+            'tension' => 0.4,
+            'fill' => true
+          ]);
+          $chart->setSize(600, 300);
+          echo $chart->render();
+        ?>
+      <?php else: ?>
+        <div class="flex items-center justify-center h-48 text-on-surface-variant"><p class="font-body-md">Belum ada data trafik.</p></div>
+      <?php endif; ?>
+    </div>
 
   <div class="bg-surface-container p-6 border border-outline-variant">
     <h3 class="font-headline-lg text-headline-lg text-secondary mb-6">Halaman Teratas</h3>
