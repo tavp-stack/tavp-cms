@@ -77,23 +77,37 @@ class BreadManager
     }
 
     /**
-     * Read: a single record by id.
+     * Read: a single record by id or slug.
      *
      * @return array<string,mixed>|null
      */
     public function read(string $type, string|int $id): ?array
     {
-        return $this->store->find($this->must($type), $id);
+        $contentType = $this->must($type);
+
+        // If $id is numeric (int or numeric string), treat as ID; otherwise treat as slug.
+        if (is_numeric($id)) {
+            return $this->store->find($contentType, (int) $id);
+        }
+
+        return $this->store->findBySlug($contentType, (string) $id);
     }
 
     /**
-     * Read by slug (used by the front-end router).
+     * Read: a single record by id or slug.
      *
      * @return array<string,mixed>|null
      */
-    public function readBySlug(string $type, string $slug): ?array
+    public function read(string $type, string|int $id): ?array
     {
-        return $this->store->findBySlug($this->must($type), $slug);
+        $contentType = $this->must($type);
+
+        // If $id is numeric (int or numeric string), treat as ID; otherwise treat as slug.
+        if (is_numeric($id)) {
+            return $this->store->find($contentType, (int) $id);
+        }
+
+        return $this->store->findBySlug($contentType, (string) $id);
     }
 
     /**
@@ -144,7 +158,8 @@ class BreadManager
     public function edit(string $type, string|int $id, array $data): array
     {
         $contentType = $this->must($type);
-        $existing = $this->store->find($contentType, $id);
+        $findId = is_numeric($id) ? (int) $id : $id;
+        $existing = $this->store->find($contentType, $findId);
 
         if ($existing === null) {
             throw new \InvalidArgumentException("Record not found: {$type}/{$id}");
@@ -183,17 +198,18 @@ class BreadManager
     public function delete(string $type, string|int $id): bool
     {
         $contentType = $this->must($type);
+        $deleteId = is_numeric($id) ? (int) $id : $id;
 
         // Snapshot before deleting.
         if ($this->revisions !== null) {
-            $existing = $this->store->find($contentType, $id);
+            $existing = $this->store->find($contentType, $deleteId);
             if ($existing !== null) {
                 $author = $_SESSION['cms_admin'] ?? null;
-                $this->revisions->snapshot($type, $id, $existing, $author, 'Before delete');
+                $this->revisions->snapshot($type, $deleteId, $existing, $author, 'Before delete');
             }
         }
 
-        $result = $this->store->delete($contentType, $id);
+        $result = $this->store->delete($contentType, $deleteId);
 
         // Webhook.
         if ($this->webhooks !== null) {

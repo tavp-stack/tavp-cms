@@ -97,7 +97,9 @@ class ContentController extends AdminController
         }
 
         $contentType = $this->type($type);
-        $record = $contentType ? $this->bread()->read($type, $id) : null;
+        // Cast $id to integer if numeric (routes pass string "5" but store expects int)
+        $readId = is_numeric($id) ? (int) $id : $id;
+        $record = $contentType ? $this->bread()->read($type, $readId) : null;
 
         if ($contentType === null || $record === null) {
             return $this->redirect("/admin/c/{$type}");
@@ -129,8 +131,11 @@ class ContentController extends AdminController
         $data = $this->collect($contentType);
         $data['author'] = $this->getCurrentUserName();
 
+        // Cast $id to integer if numeric (routes pass string "5" but store expects int)
+        $editId = is_numeric($id) ? (int) $id : $id;
+
         try {
-            $this->bread()->edit($type, $id, $data);
+            $this->bread()->edit($type, $editId, $data);
         } catch (ValidationException $e) {
             $this->flashErrors($e->errors());
             $this->flashOld($data);
@@ -150,7 +155,7 @@ class ContentController extends AdminController
             return $this->redirect('/admin');
         }
 
-        $this->bread()->delete($type, $id);
+        $this->bread()->delete($type, is_numeric($id) ? (int) $id : $id);
 
         return $this->redirect("/admin/c/{$type}");
     }
