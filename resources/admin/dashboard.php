@@ -71,18 +71,17 @@
       <h3 class="font-headline-lg text-headline-lg text-secondary mb-6">Tren Trafik (7 hari)</h3>
       <?php if (!empty($trafficData)): ?>
         <?php
-          // Prepare data for Chart.js
+          // Prepare data for Chart.js Bar Chart
           $labels = array_column($trafficData, 'day');
           $data = array_column($trafficData, 'cnt');
 
-          // Create LineChart instance
-          $chart = new \Tavp\Blocks\Components\LineChart('Traffic 7 Hari');
+          // Create BarChart instance
+          $chart = new \Tavp\Blocks\Components\BarChart('Traffic 7 Hari');
           $chart->setLabels($labels);
           $chart->addDataset('Pageviews', $data, [
-            'borderColor' => '#6750A4',
-            'backgroundColor' => 'rgba(103, 80, 164, 0.1)',
-            'tension' => 0.4,
-            'fill' => true
+            'backgroundColor' => 'rgba(236, 201, 75, 0.5)',
+            'borderColor' => 'rgb(236, 201, 75)',
+            'borderWidth' => 1,
           ]);
           $chart->setSize(600, 300);
           echo $chart->render();
