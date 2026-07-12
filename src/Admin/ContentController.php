@@ -73,6 +73,7 @@ class ContentController extends AdminController
         }
 
         $data = $this->collect($contentType);
+        $data['author'] = $this->getCurrentUserName();
 
         try {
             $this->bread()->add($type, $data);
@@ -126,6 +127,7 @@ class ContentController extends AdminController
         }
 
         $data = $this->collect($contentType);
+        $data['author'] = $this->getCurrentUserName();
 
         try {
             $this->bread()->edit($type, $id, $data);
@@ -154,25 +156,23 @@ class ContentController extends AdminController
     }
 
     /**
-     * Collect submitted values for a content type's fields.
-     *
-     * @return array<string,mixed>
+     * Get current logged-in user's name for author field.
      */
-    private function collect(ContentType $contentType): array
+    private function getCurrentUserName(): string
     {
-        $data = [];
-        foreach ($contentType->fields as $field) {
-            $value = $this->request->input($field->name);
-            if ($value !== null) {
-                $data[$field->name] = $value;
-            }
+        $email = $_SESSION['cms_admin'] ?? '';
+        if ($email === '') {
+            return '';
         }
-
-        return $data;
-    }
-
-    private function type(string $name): ?ContentType
-    {
-        return $this->bread()->type($name);
+        try {
+            $rows = app('db')->fetchAll(
+                'SELECT name FROM users WHERE email = :email LIMIT 1',
+                \PDO::FETCH_ASSOC,
+                ['email' => $email]
+            );
+            return $rows[0]['name'] ?? '';
+        } catch (\Throwable) {
+            return '';
+        }
     }
 }
