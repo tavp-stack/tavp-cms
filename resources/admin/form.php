@@ -81,16 +81,37 @@ document.addEventListener('DOMContentLoaded', function() {
       ta.dataset.tuiReady = '1';
       new toastui.Editor({
         el: wrap,
-        height: '400px',
+        height: '500px',
         initialEditType: 'wysiwyg',
         initialValue: ta.value || '',
         events: {
           change: function() { ta.value = this.getMarkdown(); }
+        },
+        hooks: {
+          addImageBlobHook: function(blob, callback) {
+            const formData = new FormData();
+            formData.append('file', blob);
+            fetch('/admin/media/api/upload', {
+              method: 'POST',
+              body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                callback(data.url, data.name);
+              } else {
+                alert('Upload failed: ' + (data.message || 'Unknown error'));
+              }
+            })
+            .catch(err => {
+              alert('Upload error: ' + err.message);
+            });
+            return false;
+          }
         }
       });
     })();
     <?php endif; ?>
-  <?php endforeach; ?>
-});
+  <?php endforeach; });
 </script>
 <?php endif; ?>

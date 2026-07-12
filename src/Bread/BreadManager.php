@@ -94,20 +94,14 @@ class BreadManager
     }
 
     /**
-     * Read: a single record by id or slug.
+     * ReadBySlug: a single record by slug.
      *
      * @return array<string,mixed>|null
      */
-    public function read(string $type, string|int $id): ?array
+    public function readBySlug(string $type, string $slug): ?array
     {
         $contentType = $this->must($type);
-
-        // If $id is numeric (int or numeric string), treat as ID; otherwise treat as slug.
-        if (is_numeric($id)) {
-            return $this->store->find($contentType, (int) $id);
-        }
-
-        return $this->store->findBySlug($contentType, (string) $id);
+        return $this->store->findBySlug($contentType, $slug);
     }
 
     /**

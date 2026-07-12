@@ -49,9 +49,11 @@ class ContentController extends AdminController
             return $this->redirect('/admin');
         }
 
+        // Construct $content for the form view (empty for create)
+        $content = ['__type' => $type, '__fields' => $this->fieldsToArray($contentType->fields)];
+
         return $this->admin('form', [
-            'type' => $contentType,
-            'record' => [],
+            'content' => $content,
             'action' => "/admin/c/{$type}",
             'heading' => 'New ' . $contentType->singular,
         ]);
@@ -105,9 +107,14 @@ class ContentController extends AdminController
             return $this->redirect("/admin/c/{$type}");
         }
 
+        // Construct $content for the form view
+        // $record already has decoded field values from hydrate()
+        $content = $record;
+        $content['__type'] = $type;
+        $content['__fields'] = $this->fieldsToArray($contentType->fields);
+
         return $this->admin('form', [
-            'type' => $contentType,
-            'record' => $record,
+            'content' => $content,
             'action' => "/admin/c/{$type}/{$id}",
             'heading' => 'Edit ' . $contentType->singular,
         ]);
@@ -184,5 +191,22 @@ class ContentController extends AdminController
     private function type(string $name): ?\Tavp\Cms\Content\ContentType
     {
         return $this->bread()->type($name);
+    }
+
+    /**
+     * Convert Field objects to arrays for the form view.
+     *
+     * @param \Tavp\Cms\Content\Field[] $fields
+     * @return array<int,array<string,mixed>>
+     */
+    private function fieldsToArray(array $fields): array
+    {
+        return array_map(fn (\Tavp\Cms\Content\Field $f) => [
+            'name' => $f->name,
+            'type' => $f->type->value,
+            'required' => $f->required,
+            'default' => $f->default,
+            'options' => $f->options,
+        ], $fields);
     }
 }

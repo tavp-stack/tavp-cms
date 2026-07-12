@@ -84,6 +84,49 @@ class MediaController extends AdminController
         return $this->redirect('/admin/media');
     }
 
+    /**
+     * API endpoint for Toast UI Editor image upload.
+     * Returns JSON response with image URL.
+     */
+    public function uploadApi(): Response
+    {
+        if ($r = $this->guard()) {
+            return $r;
+        }
+
+        $file = $_FILES['file'] ?? $_FILES['image'] ?? null;
+
+        if ($file === null || $file['error'] !== UPLOAD_ERR_OK) {
+            return $this->json(['success' => false, 'message' => 'No file uploaded or upload error.'], 400);
+        }
+
+        try {
+            $id = $this->getMediaLibrary()->upload($file);
+            $media = $this->getMediaLibrary()->find($id);
+            $url = '/uploads/' . ($media['path'] ?? $file['name']);
+
+            return $this->json([
+                'success' => true,
+                'url' => $url,
+                'name' => $media['name'] ?? $file['name'],
+                'id' => $id,
+            ]);
+        } catch (\Throwable $e) {
+            return $this->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Return JSON response.
+     */
+    private function json(array $data, int $status = 200): Response
+    {
+        http_response_code($status);
+        header('Content-Type: application/json');
+        echo json_encode($data);
+        return new Response();
+    }
+
     private function getMediaLibrary(): \Tavp\Cms\Media\MediaLibrary
     {
         return app()->getService(\Tavp\Cms\Media\MediaLibrary::class);

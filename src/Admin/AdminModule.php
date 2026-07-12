@@ -57,6 +57,7 @@ class AdminModule
         // Media
         $router->get('/admin/media', [MediaController::class, 'index']);
         $router->post('/admin/media/upload', [MediaController::class, 'upload']);
+        $router->post('/admin/media/api/upload', [MediaController::class, 'uploadApi']);
         $router->post('/admin/media/{id}/delete', [MediaController::class, 'destroy']);
 
         // Menus
