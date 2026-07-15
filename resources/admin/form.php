@@ -79,39 +79,54 @@ document.addEventListener('DOMContentLoaded', function() {
       const ta = document.getElementById('editor-<?= $this->e($field['name']) ?>');
       if (!wrap || !ta || ta.dataset.tuiReady) return;
       ta.dataset.tuiReady = '1';
-      new toastui.Editor({
-        el: wrap,
-        height: '500px',
-        initialEditType: 'wysiwyg',
-        initialValue: ta.value || '',
-        events: {
-          change: function() { ta.value = this.getMarkdown(); }
-        },
-        hooks: {
-          addImageBlobHook: function(blob, callback) {
-            const formData = new FormData();
-            formData.append('file', blob);
-            fetch('/admin/media/api/upload', {
-              method: 'POST',
-              body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-              if (data.success) {
-                callback(data.url, data.name);
-              } else {
-                alert('Upload failed: ' + (data.message || 'Unknown error'));
-              }
-            })
-            .catch(err => {
-              alert('Upload error: ' + err.message);
-            });
-            return false;
+
+      // Check if Toast UI Editor is loaded
+      if (typeof toastui === 'undefined' || !toastui.Editor) {
+        console.error('Toast UI Editor not loaded');
+        wrap.innerHTML = '<p class="text-red-500">Error: Toast UI Editor failed to load. Check console for details.</p>';
+        return;
+      }
+
+      try {
+        new toastui.Editor({
+          el: wrap,
+          height: '500px',
+          initialEditType: 'wysiwyg',
+          initialValue: ta.value || '',
+          events: {
+            change: function() { ta.value = this.getMarkdown(); }
+          },
+          hooks: {
+            addImageBlobHook: function(blob, callback) {
+              const formData = new FormData();
+              formData.append('file', blob);
+              fetch('/admin/media/api/upload', {
+                method: 'POST',
+                body: formData
+              })
+              .then(res => res.json())
+              .then(data => {
+                if (data.success) {
+                  callback(data.url, data.name);
+                } else {
+                  alert('Upload failed: ' + (data.message || 'Unknown error'));
+                }
+              })
+              .catch(err => {
+                alert('Upload error: ' + err.message);
+              });
+              return false;
+            }
           }
-        }
-      });
+        });
+        console.log('Toast UI Editor initialized for <?= $this->e($field['name']) ?>');
+      } catch (err) {
+        console.error('Toast UI Editor initialization error:', err);
+        wrap.innerHTML = '<p class="text-red-500">Error initializing editor: ' + err.message + '</p>';
+      }
     })();
     <?php endif; ?>
-  <?php endforeach; });
+  <?php endforeach; ?>
+});
 </script>
 <?php endif; ?>

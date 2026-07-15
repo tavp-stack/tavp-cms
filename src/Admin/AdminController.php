@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tavp\Cms\Admin;
 
 use Tavp\Cms\Bread\BreadManager;
+use Tavp\Cms\Content\ContentType;
 use Tavp\Core\Controllers\BaseController;
 use Tavp\Core\Http\Response;
 use Tavp\Tavpid\Rbac\AccessControl;
@@ -150,5 +151,19 @@ abstract class AdminController extends BaseController
     protected function e(mixed $value): string
     {
         return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+    }
+
+    /**
+     * Collect form POST data filtered by content type fields.
+     */
+    protected function collect(ContentType $contentType): array
+    {
+        $data = [];
+        foreach ($contentType->fields as $field) {
+            if (isset($_POST[$field->name])) {
+                $data[$field->name] = $_POST[$field->name];
+            }
+        }
+        return $data;
     }
 }

@@ -1,0 +1,28 @@
+name: tavp-web-id
+recipe: tavp
+image: ghcr.io/tavp-stack/tavpbox-php:latest
+webroot: .
+services:
+  mariadb:
+    enabled: true
+  redis:
+    enabled: true
+  mailpit:
+    enabled: true
+  phpmyadmin:
+    enabled: true
+env:
+  APP_NAME: "TAVP Web ID"
+  APP_ENV: local
+  DB_DATABASE: tavp
+  DB_USERNAME: tavp
+  DB_PASSWORD: tavp
+tooling:
+  tavp:
+    cmd: php /var/www/html/vendor/bin/tavp
+  migrate:
+    cmd: php /var/www/html/vendor/bin/tavp migrate
+  seed:
+    cmd: mysql --skip-ssl -h localhost -u app -papp app < /var/www/html/seed_data.sql
+ram: 512MB
+cpu: 1

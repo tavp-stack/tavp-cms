@@ -9,7 +9,22 @@ use Tavp\Cms\Cache\CachedContentStore;
 use Tavp\Cms\Publishing\PublishScheduler;
 use Tavp\Cms\Revisions\RevisionStore;
 use Tavp\Cms\Search\SearchEngine;
-use Tavp\Cms\Seo\SitemapController;
+use Tavp\Cms\Seo\{
+    AiMetaGenerator,
+    BacklinkMonitor,
+    ContentSyndicator,
+    LinkChecker,
+    RedirectManager,
+    RobotsController,
+    RssController,
+    SchemaGenerator,
+    SeoAdminController,
+    SeoAnalyzer,
+    SeoManager,
+    SitemapController,
+    SitemapGenerator,
+    SocialSharing,
+};
 use Tavp\Cms\Storage\ContentStore;
 use Tavp\Cms\Storage\DatabaseStore;
 use Tavp\Cms\Storage\FlatFileStore;
@@ -187,6 +202,53 @@ class CmsServiceProvider implements ServiceProvider
                 },
             );
         });
+
+        // --- SEO Manager ----------------------------------------------------
+        if (config('seo.enabled', true)) {
+            $app->bind(SeoManager::class, function () {
+                return new SeoManager(
+                    db: app('db')->getAdapter(),
+                    config: (array) config('seo', []),
+                );
+            });
+
+            $app->bind(SchemaGenerator::class, fn () => new SchemaGenerator(
+                config: (array) config('seo', []),
+            ));
+
+            $app->bind(SitemapGenerator::class, function () {
+                return new SitemapGenerator(
+                    db: app('db')->getAdapter(),
+                    config: (array) config('seo', []),
+                );
+            });
+
+            $app->bind(SeoAnalyzer::class, fn () => new SeoAnalyzer(
+                config: (array) config('seo', []),
+            ));
+
+            $app->bind(RedirectManager::class, function () {
+                return new RedirectManager(
+                    db: app('db')->getAdapter(),
+                    config: (array) config('seo', []),
+                );
+            });
+
+            $app->bind(LinkChecker::class, fn () => new LinkChecker(
+                db: app('db')->getAdapter(),
+            ));
+
+            $app->bind(ContentSyndicator::class, fn () => new ContentSyndicator(
+                config: (array) config('seo', []),
+            ));
+
+            $app->bind(BacklinkMonitor::class, fn () => new BacklinkMonitor(
+                db: app('db')->getAdapter(),
+                config: (array) config('seo', []),
+            ));
+
+            $app->bind(AiMetaGenerator::class, fn () => new AiMetaGenerator());
+        }
     }
 
     public function boot(): void {}
@@ -195,11 +257,19 @@ class CmsServiceProvider implements ServiceProvider
     {
         require __DIR__ . '/../routes/web.php';
 
-        if (config('cms.seo.enabled', true)) {
-            $sitemapPath = '/' . ltrim((string) config('cms.seo.sitemap_path', '/sitemap.xml'), '/');
-            if (isset($router)) {
-                $router->get($sitemapPath, [SitemapController::class, '__invoke']);
-            }
+        if (config('seo.enabled', true) && isset($router)) {
+            $router->get('/sitemap.xml', [SitemapController::class, '__invoke']);
+            $router->get('/robots.txt', [RobotsController::class, '__invoke']);
+            $router->get('/feed', [RssController::class, 'feed']);
+
+            $router->get('/admin/seo', [SeoAdminController::class, 'index']);
+            $router->get('/admin/seo/settings', [SeoAdminController::class, 'settings']);
+            $router->post('/admin/seo/settings', [SeoAdminController::class, 'settings']);
+            $router->get('/admin/seo/redirects', [SeoAdminController::class, 'redirects']);
+            $router->post('/admin/seo/redirects', [SeoAdminController::class, 'redirects']);
+            $router->post('/admin/seo/redirects/delete', [SeoAdminController::class, 'deleteRedirect']);
+            $router->get('/admin/seo/analyzer', [SeoAdminController::class, 'analyzer']);
+            $router->post('/admin/seo/ping', [SeoAdminController::class, 'ping']);
         }
 
         if (config('cms.api.enabled', true) && isset($router)) {
