@@ -16,11 +16,10 @@
   </div>
 <?php endif; ?>
 
-<form method="post" action="<?= $this->e($action) ?>" class="max-w-2xl space-y-6">
+<form id="content-form" method="post" action="<?= $this->e($action) ?>" class="max-w-2xl space-y-6 pb-24">
   <?php foreach ($content['__fields'] ?? [] as $field): ?>
     <?php
       $key = $field['name'];
-      // Skip author — it's auto-filled from logged-in user
       if ($key === 'author') continue;
       $value = $__old[$key] ?? ($content[$key] ?? ($field['default'] ?? ''));
     ?>
@@ -43,8 +42,7 @@
         </select>
 
       <?php elseif ($field['type'] === 'richtext' || $field['type'] === 'editor'): ?>
-        <div id="editor-wrap-<?= $this->e($key) ?>"></div>
-        <textarea name="<?= $this->e($key) ?>" id="editor-<?= $this->e($key) ?>" class="hidden"><?= $this->e($value) ?></textarea>
+        <textarea name="<?= $this->e($key) ?>" id="editor-<?= $this->e($key) ?>" class="easymde-target"><?= $this->e($value) ?></textarea>
 
       <?php elseif ($field['type'] === 'slug'): ?>
         <input type="text" name="<?= $this->e($key) ?>" value="<?= $this->e($value) ?>"
@@ -56,12 +54,15 @@
       <?php endif; ?>
     </div>
   <?php endforeach; ?>
+</form>
 
-  <div class="flex gap-3 pt-2">
-    <button class="bg-secondary text-on-secondary font-label-caps text-label-caps py-3 px-8 hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">SAVE</button>
+<!-- Floating save bar — fixed at bottom, highest z-index -->
+<div class="fixed bottom-0 left-0 right-0 z-[9999] floating-save-bar border-t border-outline-variant" x-data x-bind:style="'margin-left:' + (sidebarCollapsed ? '68px' : '256px')">
+  <div class="px-10 py-4 flex gap-3">
+    <button type="submit" form="content-form" class="bg-secondary text-on-secondary font-label-caps text-label-caps py-3 px-8 hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">SAVE</button>
     <a href="/admin/c/<?= $this->e($content['__type'] ?? 'post') ?>" class="border border-outline-variant font-label-caps text-label-caps py-3 px-8 hover:bg-surface-container-high transition-colors">CANCEL</a>
   </div>
-</form>
+</div>
 
 <?php
 $hasEditor = false;
@@ -72,61 +73,51 @@ if ($hasEditor):
 ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  <?php foreach (($content['__fields'] ?? []) as $field): ?>
-    <?php if ($field['type'] === 'richtext' || $field['type'] === 'editor'): ?>
-    (function() {
-      const wrap = document.getElementById('editor-wrap-<?= $this->e($field['name']) ?>');
-      const ta = document.getElementById('editor-<?= $this->e($field['name']) ?>');
-      if (!wrap || !ta || ta.dataset.tuiReady) return;
-      ta.dataset.tuiReady = '1';
+  var form = document.getElementById('content-form');
+  var editors = [];
 
-      // Check if Toast UI Editor is loaded
-      if (typeof toastui === 'undefined' || !toastui.Editor) {
-        console.error('Toast UI Editor not loaded');
-        wrap.innerHTML = '<p class="text-red-500">Error: Toast UI Editor failed to load. Check console for details.</p>';
-        return;
-      }
+  document.querySelectorAll('.easymde-target').forEach(function(ta) {
+    if (ta.dataset.mdeReady) return;
+    ta.dataset.mdeReady = '1';
 
-      try {
-        new toastui.Editor({
-          el: wrap,
-          height: '500px',
-          initialEditType: 'wysiwyg',
-          initialValue: ta.value || '',
-          events: {
-            change: function() { ta.value = this.getMarkdown(); }
-          },
-          hooks: {
-            addImageBlobHook: function(blob, callback) {
-              const formData = new FormData();
-              formData.append('file', blob);
-              fetch('/admin/media/api/upload', {
-                method: 'POST',
-                body: formData
-              })
-              .then(res => res.json())
-              .then(data => {
-                if (data.success) {
-                  callback(data.url, data.name);
-                } else {
-                  alert('Upload failed: ' + (data.message || 'Unknown error'));
-                }
-              })
-              .catch(err => {
-                alert('Upload error: ' + err.message);
-              });
-              return false;
-            }
-          }
-        });
-        console.log('Toast UI Editor initialized for <?= $this->e($field['name']) ?>');
-      } catch (err) {
-        console.error('Toast UI Editor initialization error:', err);
-        wrap.innerHTML = '<p class="text-red-500">Error initializing editor: ' + err.message + '</p>';
-      }
-    })();
-    <?php endif; ?>
-  <?php endforeach; ?>
+    var mde = new EasyMDE({
+      element: ta,
+      spellChecker: false,
+      autosave: { enabled: false },
+      minHeight: '400px',
+      status: false,
+      toolbar: [
+        'bold', 'italic', 'heading', '|',
+        'quote', 'unordered-list', 'ordered-list', '|',
+        'link', 'image', 'table', 'code', '|',
+        'preview', 'side-by-side', 'fullscreen', '|',
+        'guide'
+      ]
+    });
+
+    // Ensure textarea is not disabled
+    ta.removeAttribute('disabled');
+    ta.removeAttribute('readonly');
+
+    // Sync on every change
+    mde.codemirror.on('change', function() {
+      ta.value = mde.value();
+    });
+
+    editors.push({ mde: mde, ta: ta });
+  });
+
+  // Force sync ALL editors before form submit
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      editors.forEach(function(ed) {
+        ed.ta.value = ed.mde.value();
+        ed.ta.removeAttribute('disabled');
+        ed.ta.removeAttribute('readonly');
+      });
+      console.log('Form submitting, body value length:', (form.querySelector('[name="body"]') || {}).value?.length);
+    });
+  }
 });
 </script>
 <?php endif; ?>

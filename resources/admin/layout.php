@@ -8,8 +8,8 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="https://uicdn.toast.com/editor/3.2.2/toastui-editor.min.css"/>
-<script src="https://uicdn.toast.com/editor/3.2.2/toastui-editor-all.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css"/>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-php.min.js"></script>
@@ -65,6 +65,19 @@ tailwind.config = {
   /* Dropdown styles */
   .dropdown-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
   .dropdown-content.open { max-height: 500px; }
+  /* EasyMDE dark theme overrides */
+  .EasyMDEContainer .CodeMirror { background: #161c27 !important; color: #dde2f3 !important; border-color: #45474c !important; }
+  .EasyMDEContainer .CodeMirror-cursor { border-left-color: #e6c446 !important; }
+  .EasyMDEContainer .CodeMirror-selected { background: #2d3748 !important; }
+  .EasyMDEContainer .editor-toolbar { background: #1a202c !important; border-color: #45474c !important; }
+  .EasyMDEContainer .editor-toolbar button { color: #95a0b5 !important; }
+  .EasyMDEContainer .editor-toolbar button:hover { color: #e6c446 !important; background: #242a36 !important; }
+  .EasyMDEContainer .editor-toolbar button.active { color: #e6c446 !important; background: #2d3748 !important; }
+  .EasyMDEContainer .editor-preview { background: #0d131f !important; color: #dde2f3 !important; }
+  .EasyMDEContainer .editor-preview-side { background: #0d131f !important; color: #dde2f3 !important; border-color: #45474c !important; }
+  .EasyMDEContainer .editor-statusbar { color: #95a0b5 !important; }
+  /* Floating save bar background */
+  .floating-save-bar { background: #0d131f; backdrop-filter: blur(12px); }
 </style>
 </head>
 <body class="overflow-x-hidden" x-data="{ sidebarCollapsed: false }">
