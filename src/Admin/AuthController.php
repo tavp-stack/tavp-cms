@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tavp\Cms\Admin;
 
 use Tavp\Core\Auth\MailService;
-use Tavp\Core\Auth\OtpService;
 use Tavp\Core\Http\Response;
+use Tavp\Tavpid\Auth\OtpService;
 
 /**
  * Admin auth — login/logout via session + OTP.
@@ -20,6 +20,8 @@ class AuthController extends AdminController
         parent::__construct();
         $this->otp = new OtpService(
             (int) config('cms.admin.otp_ttl_minutes', 10),
+            5, // max attempts
+            6, // code length
         );
     }
 
@@ -52,18 +54,17 @@ class AuthController extends AdminController
             ]);
         }
 
-        // Generate OTP
-        $code = $this->otp->createOtp($email, 'email');
-        $hash = $this->otp->hash($code);
+        // Generate OTP (tavpid returns array with code, hash, expires_at)
+        $otpData = $this->otp->createOtp($email, 'email');
 
         $_SESSION['cms_otp'] = [
             'email' => $email,
-            'hash' => $hash,
-            'expires' => time() + (int) config('cms.admin.otp_ttl_minutes', 10) * 60,
+            'hash' => $otpData['hash'],
+            'expires' => $otpData['expires_at'],
         ];
 
         // Send the OTP email
-        $this->sendOtpEmail($email, $code);
+        $this->sendOtpEmail($email, $otpData['code']);
 
         // Ensure session is saved before redirect
         session_write_close();
@@ -166,11 +167,13 @@ class AuthController extends AdminController
             return $this->redirect('/admin/login');
         }
 
-        // Verify OTP against session hash
-        $expectedHash = $otp['hash'] ?? '';
-        $submittedHash = $this->otp->hash($code);
+        // Verify OTP against session hash (tavpid API)
+        $stored = [
+            'hash' => $otp['hash'] ?? '',
+            'expires_at' => $otp['expires'] ?? 0,
+        ];
 
-        if (!hash_equals($expectedHash, $submittedHash)) {
+        if (!$this->otp->verifyOtp($code, $stored)) {
             return $this->partial('verify', [
                 'identifier' => $otp['email'] ?? '',
                 'error' => 'Invalid or expired code. Please try again.',
