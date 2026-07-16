@@ -79,8 +79,8 @@ class MediaLibrary
 
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         $fileName = $this->uniqueName($file['name'], $ext);
-        $relative = trim((string) ($this->config['path'] ?? 'uploads'), '/') . '/' . $fileName;
-        $target = $this->diskRoot() . '/' . $relative;
+        $relative = $fileName;
+        $target = $this->diskRoot() . '/' . trim((string) ($this->config['path'] ?? 'uploads'), '/') . '/' . $fileName;
 
         if (!is_dir(dirname($target))) {
             mkdir(dirname($target), 0755, true);
