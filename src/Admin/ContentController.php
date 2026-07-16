@@ -85,6 +85,7 @@ class ContentController extends AdminController
             return $this->redirect("/admin/c/{$type}/create");
         }
 
+        $this->clearCmsCache();
         return $this->redirect("/admin/c/{$type}");
     }
 
@@ -149,6 +150,7 @@ class ContentController extends AdminController
             return $this->redirect("/admin/c/{$type}/{$id}/edit");
         }
 
+        $this->clearCmsCache();
         return $this->redirect("/admin/c/{$type}");
     }
 
@@ -208,5 +210,28 @@ class ContentController extends AdminController
             'default' => $f->default,
             'options' => $f->options,
         ], $fields);
+    }
+
+    private function clearCmsCache(): void
+    {
+        try {
+            $cachePath = config('cms.cache.path', storage_path('cms/cache'));
+            if (is_dir($cachePath)) {
+                $files = glob($cachePath . '/*');
+                foreach ($files as $f) {
+                    if (is_file($f)) unlink($f);
+                }
+            }
+            // Also clear compiled Volt templates
+            $voltPath = storage_path('compiled/volt');
+            if (is_dir($voltPath)) {
+                $files = glob($voltPath . '/*');
+                foreach ($files as $f) {
+                    if (is_file($f)) unlink($f);
+                }
+            }
+        } catch (\Throwable) {
+            // Ignore cache clearing errors
+        }
     }
 }

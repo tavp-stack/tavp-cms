@@ -90,10 +90,8 @@ class MediaLibrary
 
         $record = [
             'name' => pathinfo($file['name'], PATHINFO_FILENAME),
-            'file_name' => $fileName,
             'mime_type' => $file['type'],
             'path' => $relative,
-            'disk' => (string) ($this->config['disk'] ?? 'public'),
             'size' => (int) $file['size'],
         ];
 
@@ -137,7 +135,11 @@ class MediaLibrary
     private function moveUploaded(string $from, string $to): void
     {
         if (is_uploaded_file($from)) {
-            move_uploaded_file($from, $to);
+            if (!@move_uploaded_file($from, $to)) {
+                // Fallback: copy + unlink (works with volume mounts)
+                copy($from, $to);
+                @unlink($from);
+            }
 
             return;
         }
