@@ -262,14 +262,15 @@ class CmsServiceProvider implements ServiceProvider
             $router->get('/robots.txt', [RobotsController::class, '__invoke']);
             $router->get('/feed', [RssController::class, 'feed']);
 
-            $router->get('/admin/seo', [SeoAdminController::class, 'index']);
-            $router->get('/admin/seo/settings', [SeoAdminController::class, 'settings']);
-            $router->post('/admin/seo/settings', [SeoAdminController::class, 'settings']);
-            $router->get('/admin/seo/redirects', [SeoAdminController::class, 'redirects']);
-            $router->post('/admin/seo/redirects', [SeoAdminController::class, 'redirects']);
-            $router->post('/admin/seo/redirects/delete', [SeoAdminController::class, 'deleteRedirect']);
-            $router->get('/admin/seo/analyzer', [SeoAdminController::class, 'analyzer']);
-            $router->post('/admin/seo/ping', [SeoAdminController::class, 'ping']);
+            $p = '/' . trim(config('cms.admin.route_prefix', 'admin'), '/');
+            $router->get("{$p}/seo", [SeoAdminController::class, 'index']);
+            $router->get("{$p}/seo/settings", [SeoAdminController::class, 'settings']);
+            $router->post("{$p}/seo/settings", [SeoAdminController::class, 'settings']);
+            $router->get("{$p}/seo/redirects", [SeoAdminController::class, 'redirects']);
+            $router->post("{$p}/seo/redirects", [SeoAdminController::class, 'redirects']);
+            $router->post("{$p}/seo/redirects/delete", [SeoAdminController::class, 'deleteRedirect']);
+            $router->get("{$p}/seo/analyzer", [SeoAdminController::class, 'analyzer']);
+            $router->post("{$p}/seo/ping", [SeoAdminController::class, 'ping']);
         }
 
         if (config('cms.api.enabled', true) && isset($router)) {

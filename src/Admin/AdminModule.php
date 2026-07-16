@@ -14,89 +14,92 @@ use Tavp\Core\Routing\Router;
  */
 class AdminModule
 {
-    public static function routes(Router $router): void
+    public static function routes(Router $router, ?string $prefix = null): void
     {
+        $p = $prefix ?? config('cms.admin.route_prefix', 'admin');
+        $p = '/' . trim($p, '/');
+
         // Auth
-        $router->get('/admin/login', [AuthController::class, 'showLogin']);
-        $router->post('/admin/login', [AuthController::class, 'sendOtp']);
-        $router->get('/admin/verify', [AuthController::class, 'showVerify']);
-        $router->post('/admin/verify', [AuthController::class, 'verify']);
-        $router->post('/admin/logout', [AuthController::class, 'logout']);
+        $router->get("{$p}/login", [AuthController::class, 'showLogin']);
+        $router->post("{$p}/login", [AuthController::class, 'sendOtp']);
+        $router->get("{$p}/verify", [AuthController::class, 'showVerify']);
+        $router->post("{$p}/verify", [AuthController::class, 'verify']);
+        $router->post("{$p}/logout", [AuthController::class, 'logout']);
 
         // Dashboard
-        $router->get('/admin', [DashboardController::class, 'index']);
-        $router->get('/admin/home', [DashboardController::class, 'home']);
+        $router->get("{$p}", [DashboardController::class, 'index']);
+        $router->get("{$p}/home", [DashboardController::class, 'home']);
 
-        // Content BREAD (create before {id} so the literal segment wins)
-        $router->get('/admin/c/{type}', [ContentController::class, 'index']);
-        $router->get('/admin/c/{type}/create', [ContentController::class, 'create']);
-        $router->post('/admin/c/{type}', [ContentController::class, 'store']);
-        $router->get('/admin/c/{type}/{id}/edit', [ContentController::class, 'edit']);
-        $router->post('/admin/c/{type}/{id}', [ContentController::class, 'update']);
-        $router->post('/admin/c/{type}/{id}/delete', [ContentController::class, 'destroy']);
+        // Content BREAD
+        $router->get("{$p}/c/{type}", [ContentController::class, 'index']);
+        $router->get("{$p}/c/{type}/create", [ContentController::class, 'create']);
+        $router->post("{$p}/c/{type}", [ContentController::class, 'store']);
+        $router->get("{$p}/c/{type}/{id}/edit", [ContentController::class, 'edit']);
+        $router->post("{$p}/c/{type}/{id}", [ContentController::class, 'update']);
+        $router->post("{$p}/c/{type}/{id}/delete", [ContentController::class, 'destroy']);
 
         // Revisions
-        $router->get('/admin/c/{type}/{id}/revisions', [RevisionController::class, 'history']);
-        $router->post('/admin/c/{type}/{id}/rollback/{timestamp}', [RevisionController::class, 'rollback']);
+        $router->get("{$p}/c/{type}/{id}/revisions", [RevisionController::class, 'history']);
+        $router->post("{$p}/c/{type}/{id}/rollback/{timestamp}", [RevisionController::class, 'rollback']);
 
         // Search
-        $router->get('/admin/search', [SearchController::class, 'search']);
+        $router->get("{$p}/search", [SearchController::class, 'search']);
 
         // Taxonomy
-        $router->get('/admin/taxonomy/{type}', [TaxonomyController::class, 'index']);
-        $router->get('/admin/taxonomy/{type}/create', [TaxonomyController::class, 'create']);
-        $router->post('/admin/taxonomy/{type}', [TaxonomyController::class, 'store']);
-        $router->get('/admin/taxonomy/{type}/{id}/edit', [TaxonomyController::class, 'edit']);
-        $router->post('/admin/taxonomy/{type}/{id}', [TaxonomyController::class, 'update']);
-        $router->post('/admin/taxonomy/{type}/{id}/delete', [TaxonomyController::class, 'destroy']);
+        $router->get("{$p}/taxonomy/{type}", [TaxonomyController::class, 'index']);
+        $router->get("{$p}/taxonomy/{type}/create", [TaxonomyController::class, 'create']);
+        $router->post("{$p}/taxonomy/{type}", [TaxonomyController::class, 'store']);
+        $router->get("{$p}/taxonomy/{type}/{id}/edit", [TaxonomyController::class, 'edit']);
+        $router->post("{$p}/taxonomy/{type}/{id}", [TaxonomyController::class, 'update']);
+        $router->post("{$p}/taxonomy/{type}/{id}/delete", [TaxonomyController::class, 'destroy']);
 
         // Settings
-        $router->get('/admin/settings', [SettingsController::class, 'index']);
-        $router->post('/admin/settings', [SettingsController::class, 'update']);
+        $router->get("{$p}/settings", [SettingsController::class, 'index']);
+        $router->post("{$p}/settings", [SettingsController::class, 'update']);
 
         // Media
-        $router->get('/admin/media', [MediaController::class, 'index']);
-        $router->post('/admin/media/upload', [MediaController::class, 'upload']);
-        $router->post('/admin/media/api/upload', [MediaController::class, 'uploadApi']);
-        $router->post('/admin/media/{id}/delete', [MediaController::class, 'destroy']);
+        $router->get("{$p}/media", [MediaController::class, 'index']);
+        $router->post("{$p}/media/upload", [MediaController::class, 'upload']);
+        $router->post("{$p}/media/api/upload", [MediaController::class, 'uploadApi']);
+        $router->post("{$p}/media/{id}/delete", [MediaController::class, 'destroy']);
 
         // Menus
-        $router->get('/admin/menus', [MenuController::class, 'index']);
-        $router->get('/admin/menus/create', [MenuController::class, 'create']);
-        $router->post('/admin/menus', [MenuController::class, 'store']);
-        $router->get('/admin/menus/{id}/edit', [MenuController::class, 'edit']);
-        $router->post('/admin/menus/{id}', [MenuController::class, 'update']);
-        $router->post('/admin/menus/{id}/delete', [MenuController::class, 'destroy']);
-        $router->post('/admin/menus/{menuId}/items', [MenuController::class, 'addItem']);
-        $router->post('/admin/menus/{menuId}/items/{itemId}/delete', [MenuController::class, 'deleteItem']);
+        $router->get("{$p}/menus", [MenuController::class, 'index']);
+        $router->get("{$p}/menus/create", [MenuController::class, 'create']);
+        $router->post("{$p}/menus", [MenuController::class, 'store']);
+        $router->get("{$p}/menus/{id}/edit", [MenuController::class, 'edit']);
+        $router->post("{$p}/menus/{id}", [MenuController::class, 'update']);
+        $router->post("{$p}/menus/{id}/delete", [MenuController::class, 'destroy']);
+        $router->post("{$p}/menus/{menuId}/items", [MenuController::class, 'addItem']);
+        $router->post("{$p}/menus/{menuId}/items/{itemId}/delete", [MenuController::class, 'deleteItem']);
 
         // Users
-        $router->get('/admin/users', [UsersController::class, 'index']);
-        $router->get('/admin/users/create', [UsersController::class, 'create']);
-        $router->post('/admin/users', [UsersController::class, 'store']);
-        $router->get('/admin/users/{id}/edit', [UsersController::class, 'edit']);
-        $router->post('/admin/users/{id}', [UsersController::class, 'update']);
-        $router->post('/admin/users/{id}/delete', [UsersController::class, 'destroy']);
+        $router->get("{$p}/users", [UsersController::class, 'index']);
+        $router->get("{$p}/users/create", [UsersController::class, 'create']);
+        $router->post("{$p}/users", [UsersController::class, 'store']);
+        $router->get("{$p}/users/{id}/edit", [UsersController::class, 'edit']);
+        $router->post("{$p}/users/{id}", [UsersController::class, 'update']);
+        $router->post("{$p}/users/{id}/delete", [UsersController::class, 'destroy']);
 
         // Teams
-        $router->get('/admin/teams', [TeamController::class, 'index']);
-        $router->get('/admin/teams/create', [TeamController::class, 'create']);
-        $router->post('/admin/teams', [TeamController::class, 'store']);
-        $router->get('/admin/teams/{id}/edit', [TeamController::class, 'edit']);
-        $router->post('/admin/teams/{id}', [TeamController::class, 'update']);
-        $router->post('/admin/teams/{id}/delete', [TeamController::class, 'destroy']);
-        $router->post('/admin/teams/{teamId}/members', [TeamController::class, 'addMember']);
-        $router->post('/admin/teams/{teamId}/members/{memberId}/remove', [TeamController::class, 'removeMember']);
+        $router->get("{$p}/teams", [TeamController::class, 'index']);
+        $router->get("{$p}/teams/create", [TeamController::class, 'create']);
+        $router->post("{$p}/teams", [TeamController::class, 'store']);
+        $router->get("{$p}/teams/{id}/edit", [TeamController::class, 'edit']);
+        $router->post("{$p}/teams/{id}", [TeamController::class, 'update']);
+        $router->post("{$p}/teams/{id}/delete", [TeamController::class, 'destroy']);
+        $router->post("{$p}/teams/{teamId}/members", [TeamController::class, 'addMember']);
+        $router->post("{$p}/teams/{teamId}/members/{memberId}/remove", [TeamController::class, 'removeMember']);
 
         // Billing
-        $router->get('/admin/billing', [BillingController::class, 'index']);
-        $router->get('/admin/billing/invoices', [BillingController::class, 'invoices']);
-        $router->post('/admin/billing/subscriptions/{id}/cancel', [BillingController::class, 'cancelSubscription']);
+        $router->get("{$p}/billing", [BillingController::class, 'index']);
+        $router->get("{$p}/billing/invoices", [BillingController::class, 'invoices']);
+        $router->post("{$p}/billing/subscriptions/{id}/cancel", [BillingController::class, 'cancelSubscription']);
 
         // Analytics
-        $router->get('/admin/analytics', [AnalyticsController::class, 'index']);
+        $router->get("{$p}/analytics", [AnalyticsController::class, 'index']);
 
-        // BREAD Manager (admin only)
-        $router->get('/admin/bread', [BreadController::class, 'index']);
+        // BREAD Manager
+        $router->get("{$p}/bread", [BreadController::class, 'index']);
     }
 }
