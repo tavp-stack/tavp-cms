@@ -75,7 +75,19 @@ class AuthController extends AdminController
         ];
 
         // Send the OTP email
-        $this->sendOtpEmail($email, $otpData['code']);
+        $sent = $this->sendOtpEmail($email, $otpData['code']);
+
+        if (!$sent) {
+            // Email failed — show error to user
+            $errorMsg = $_SESSION['cms_otp_error'] ?? 'Failed to send email. Please try again.';
+            unset($_SESSION['cms_otp_error']);
+
+            return $this->partial('login', [
+                'error' => $errorMsg,
+                'brand' => config('cms.admin.brand', 'TAVP'),
+                'adminPrefix' => $this->adminPrefix(),
+            ]);
+        }
 
         // Ensure session is saved before redirect
         session_write_close();
@@ -100,17 +112,10 @@ class AuthController extends AdminController
         }
     }
 
-    private function sendOtpEmail(string $email, string $code): void
+    private function sendOtpEmail(string $email, string $code): bool
     {
         try {
-            $mailer = new MailService([
-                'driver' => config('cms.mail.driver', 'smtp'),
-                'host' => config('cms.mail.host', '127.0.0.1'),
-                'port' => (int) config('cms.mail.port', 1025),
-                'username' => config('cms.mail.username', ''),
-                'password' => config('cms.mail.password', ''),
-                'from' => config('cms.mail.from', 'noreply@tavp.web.id'),
-            ]);
+            $mailer = new MailService(config('cms.mail'));
 
             $brand = config('cms.admin.brand', 'TAVP');
             $ttl = (int) config('cms.admin.otp_ttl_minutes', 10);
@@ -143,14 +148,20 @@ class AuthController extends AdminController
 </body>
 </html>';
 
-            $mailer->send(
+            return $mailer->send(
                 $email,
                 "Your {$brand} sign-in code",
                 "Your sign-in code is: {$code}\n\nIt expires in {$ttl} minutes.",
                 $html
             );
-        } catch (\Throwable) {
-            // Email failed — don't block the flow
+        } catch (\Throwable $e) {
+            // Log the error for debugging
+            error_log('[TAVP CMS] OTP email failed: ' . $e->getMessage());
+
+            // Store error in session for user feedback
+            $_SESSION['cms_otp_error'] = $e->getMessage();
+
+            return false;
         }
     }
 

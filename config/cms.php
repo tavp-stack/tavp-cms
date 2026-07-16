@@ -53,11 +53,32 @@ return [
     ],
 
     'mail' => [
+        // Driver: smtp | mailgun | sendgrid | ses | postmark | gmail
         'driver' => env('CMS_MAIL_DRIVER', 'smtp'),
-        'host' => env('CMS_MAIL_HOST', '127.0.0.1'),
-        'port' => (int) env('CMS_MAIL_PORT', 1025),
-        'username' => env('CMS_MAIL_USERNAME', ''),
-        'password' => env('CMS_MAIL_PASSWORD', ''),
+
+        // SMTP (raw socket — works with Mailpit in dev)
+        'host'       => env('CMS_MAIL_HOST', '127.0.0.1'),
+        'port'       => (int) env('CMS_MAIL_PORT', 1025),
+        'username'   => env('CMS_MAIL_USERNAME', ''),
+        'password'   => env('CMS_MAIL_PASSWORD', ''),
+        'encryption' => env('CMS_MAIL_ENCRYPTION', 'tls'),
+
+        // Mailgun
+        'mailgun_domain' => env('CMS_MAILGUN_DOMAIN', ''),
+        'mailgun_secret' => env('CMS_MAILGUN_SECRET', ''),
+
+        // SendGrid
+        'sendgrid_api_key' => env('CMS_SENDGRID_API_KEY', ''),
+
+        // Amazon SES
+        'ses_key'    => env('CMS_SES_KEY', ''),
+        'ses_secret' => env('CMS_SES_SECRET', ''),
+        'ses_region' => env('CMS_SES_REGION', 'us-east-1'),
+
+        // Postmark
+        'postmark_token' => env('CMS_POSTMARK_TOKEN', ''),
+
+        // From address (shared across all drivers)
         'from' => env('CMS_MAIL_FROM', 'noreply@tavp.web.id'),
     ],
 
