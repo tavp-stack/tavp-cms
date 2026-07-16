@@ -16,7 +16,14 @@ class AdminModule
 {
     public static function routes(Router $router, ?string $prefix = null): void
     {
-        $p = $prefix ?? config('cms.admin.route_prefix', 'admin');
+        // Read from database first, fallback to config
+        $dbPrefix = null;
+        try {
+            $settings = app()->getService(\Tavp\Cms\Settings\Settings::class);
+            $dbPrefix = $settings?->get('admin.route_prefix');
+        } catch (\Throwable) {}
+
+        $p = $prefix ?? $dbPrefix ?? config('cms.admin.route_prefix', 'admin');
         $p = '/' . trim($p, '/');
 
         // Auth

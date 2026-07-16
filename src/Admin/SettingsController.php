@@ -30,6 +30,13 @@ class SettingsController extends AdminController
                     ['key' => 'timezone', 'label' => 'Timezone', 'type' => 'text', 'placeholder' => 'Asia/Jakarta'],
                 ],
             ],
+            'admin' => [
+                'label' => 'Admin Panel',
+                'icon' => 'admin_panel_settings',
+                'fields' => [
+                    ['key' => 'route_prefix', 'label' => 'Admin URL Path', 'type' => 'text', 'placeholder' => 'admin', 'help' => 'Custom URL path for the admin panel. Default: admin. Requires container restart to take effect.'],
+                ],
+            ],
             'contact' => [
                 'label' => 'Contact',
                 'icon' => 'mail',
