@@ -137,6 +137,7 @@ class UsersController extends AdminController
             'action' => '/admin/users/' . $id,
             'heading' => 'Edit User',
             'isEdit' => true,
+            'isAdmin' => $this->can('users.*'),
         ]);
     }
 

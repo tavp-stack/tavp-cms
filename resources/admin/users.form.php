@@ -26,9 +26,11 @@
   <div>
     <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Email <span class="text-error">*</span></label>
     <?php if ($isEdit): ?>
-      <input type="email" value="<?= $this->e($user['email'] ?? '') ?>" disabled
-        class="w-full bg-surface-container-high border border-outline-variant rounded px-4 py-3 text-on-surface-variant font-code-sm text-code-sm cursor-not-allowed">
-      <p class="text-xs text-on-surface-variant mt-1">Email cannot be changed after creation.</p>
+      <input type="email" name="email" value="<?= $this->e($__old['email'] ?? $user['email'] ?? '') ?>" <?= ($isAdmin ?? false) ? '' : 'readonly' ?>
+        class="w-full bg-surface-container-high border border-outline-variant rounded px-4 py-3 text-on-surface-variant font-code-sm text-code-sm <?= ($isAdmin ?? false) ? '' : 'cursor-not-allowed' ?>">
+      <?php if (!($isAdmin ?? false)): ?>
+        <p class="text-xs text-on-surface-variant mt-1">Only admins can change the email address.</p>
+      <?php endif; ?>
     <?php else: ?>
       <input type="email" name="email" required value="<?= $this->e($__old['email'] ?? '') ?>" placeholder="user@example.com"
         class="w-full bg-surface-container border border-outline-variant rounded px-4 py-3 focus:border-secondary outline-none font-code-sm text-code-sm">
