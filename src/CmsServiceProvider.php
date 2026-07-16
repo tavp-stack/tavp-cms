@@ -262,7 +262,12 @@ class CmsServiceProvider implements ServiceProvider
             $router->get('/robots.txt', [RobotsController::class, '__invoke']);
             $router->get('/feed', [RssController::class, 'feed']);
 
-            $p = '/' . trim(config('cms.admin.route_prefix', 'admin'), '/');
+            $dbPrefix = null;
+            try {
+                $settings = app()->getService(\Tavp\Cms\Settings\Settings::class);
+                $dbPrefix = $settings?->get('admin.route_prefix');
+            } catch (\Throwable) {}
+            $p = '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin'), '/');
             $router->get("{$p}/seo", [SeoAdminController::class, 'index']);
             $router->get("{$p}/seo/settings", [SeoAdminController::class, 'settings']);
             $router->post("{$p}/seo/settings", [SeoAdminController::class, 'settings']);
