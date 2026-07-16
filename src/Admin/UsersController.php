@@ -95,12 +95,11 @@ class UsersController extends AdminController
 
         $now = date('Y-m-d H:i:s');
         $this->db()->execute(
-            'INSERT INTO users (name, email, role, bio, social_github, social_twitter, social_linkedin, social_instagram, social_website, created_at, updated_at) '
-            . 'VALUES (:name, :email, :role, :bio, :social_github, :social_twitter, :social_linkedin, :social_instagram, :social_website, :created_at, :updated_at)',
+            'INSERT INTO users (name, email, bio, social_github, social_twitter, social_linkedin, social_instagram, social_website, created_at, updated_at) '
+            . 'VALUES (:name, :email, :bio, :social_github, :social_twitter, :social_linkedin, :social_instagram, :social_website, :created_at, :updated_at)',
             [
                 'name' => $name !== '' ? $name : $email,
                 'email' => $email,
-                'role' => $role,
                 'bio' => trim((string) $this->request->input('bio', '')),
                 'social_github' => trim((string) $this->request->input('social_github', '')),
                 'social_twitter' => trim((string) $this->request->input('social_twitter', '')),
@@ -111,6 +110,24 @@ class UsersController extends AdminController
                 'updated_at' => $now,
             ]
         );
+
+        // Assign role in user_roles table
+        try {
+            $newUserId = $this->db()->lastInsertId();
+            $roleRow = $this->db()->fetchAll(
+                'SELECT id FROM roles WHERE name = :role LIMIT 1',
+                \PDO::FETCH_ASSOC,
+                ['role' => $role]
+            );
+            if (!empty($roleRow)) {
+                $this->db()->execute(
+                    'INSERT INTO user_roles (user_id, role_id, created_at) VALUES (:uid, :rid, NOW())',
+                    ['uid' => $newUserId, 'rid' => $roleRow[0]['id']]
+                );
+            }
+        } catch (\Throwable) {
+            // roles table might not exist — ignore
+        }
 
         $this->flash('success', 'User added. They can sign in with a one-time code.');
         return $this->redirect('/admin/users');
@@ -179,11 +196,10 @@ class UsersController extends AdminController
         }
 
         $this->db()->execute(
-            'UPDATE users SET name = :name, email = :email, role = :role, bio = :bio, social_github = :social_github, social_twitter = :social_twitter, social_linkedin = :social_linkedin, social_instagram = :social_instagram, social_website = :social_website, updated_at = :updated_at WHERE id = :id',
+            'UPDATE users SET name = :name, email = :email, bio = :bio, social_github = :social_github, social_twitter = :social_twitter, social_linkedin = :social_linkedin, social_instagram = :social_instagram, social_website = :social_website, updated_at = :updated_at WHERE id = :id',
             [
                 'name' => $name,
                 'email' => $email,
-                'role' => $role,
                 'bio' => trim((string) $this->request->input('bio', '')),
                 'social_github' => trim((string) $this->request->input('social_github', '')),
                 'social_twitter' => trim((string) $this->request->input('social_twitter', '')),
@@ -194,6 +210,25 @@ class UsersController extends AdminController
                 'id' => $id,
             ]
         );
+
+        // Update role in user_roles table
+        try {
+            $roleRow = $this->db()->fetchAll(
+                'SELECT id FROM roles WHERE name = :role LIMIT 1',
+                \PDO::FETCH_ASSOC,
+                ['role' => $role]
+            );
+            if (!empty($roleRow)) {
+                $roleId = $roleRow[0]['id'];
+                $this->db()->execute('DELETE FROM user_roles WHERE user_id = :uid', ['uid' => $id]);
+                $this->db()->execute(
+                    'INSERT INTO user_roles (user_id, role_id, created_at) VALUES (:uid, :rid, NOW())',
+                    ['uid' => $id, 'rid' => $roleId]
+                );
+            }
+        } catch (\Throwable) {
+            // roles table might not exist — ignore
+        }
 
         $this->flash('success', 'User updated.');
         return $this->redirect('/admin/users');
