@@ -1,10 +1,10 @@
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-white">SEO Analyzer</h1>
-    <a href="/admin/seo" class="text-gray-400 hover:text-white">← Back</a>
+    <a href="<?= $adminPrefix ?>/seo" class="text-gray-400 hover:text-white">← Back</a>
 </div>
 
 <div class="bg-gray-800 rounded-lg p-6 mb-6">
-    <form method="GET" action="/admin/seo/analyzer" class="flex gap-4 items-end">
+    <form method="GET" action="<?= $adminPrefix ?>/seo/analyzer" class="flex gap-4 items-end">
         <div class="flex-1">
             <label class="block text-gray-300 text-sm mb-1">Content Type</label>
             <select name="type" class="w-full bg-gray-700 text-white rounded px-3 py-2">

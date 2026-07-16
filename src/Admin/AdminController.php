@@ -19,6 +19,16 @@ abstract class AdminController extends BaseController
 {
     protected ?AccessControl $rbac = null;
 
+    protected function adminPrefix(): string
+    {
+        $dbPrefix = null;
+        try {
+            $settings = app()->getService(\Tavp\Cms\Settings\Settings::class);
+            $dbPrefix = $settings?->get('admin.route_prefix');
+        } catch (\Throwable) {}
+        return '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin'), '/');
+    }
+
     public function __construct()
     {
         parent::__construct();
@@ -67,7 +77,7 @@ abstract class AdminController extends BaseController
     protected function guard(): ?Response
     {
         if (empty($_SESSION['cms_admin'])) {
-            return $this->redirect('/admin/login');
+            return $this->redirect($this->adminPrefix() . '/login');
         }
 
         return null;
@@ -93,6 +103,14 @@ abstract class AdminController extends BaseController
         $data['__errors'] = $_SESSION['cms_errors'] ?? [];
         $data['__old'] = $_SESSION['cms_old'] ?? [];
         unset($_SESSION['cms_errors'], $_SESSION['cms_old']);
+
+        // Admin prefix: read from DB first, fallback to config
+        $dbPrefix = null;
+        try {
+            $settings = app()->getService(\Tavp\Cms\Settings\Settings::class);
+            $dbPrefix = $settings?->get('admin.route_prefix');
+        } catch (\Throwable) {}
+        $data['adminPrefix'] = '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin'), '/');
 
         $content = $this->partial($template, $data);
 

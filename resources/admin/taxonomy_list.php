@@ -5,7 +5,7 @@
     <h1 class="text-2xl font-bold"><?= $this->e($label) ?></h1>
     <p class="text-sm text-on-surface-variant">Manage <?= $this->e(strtolower($label)) ?>.</p>
   </div>
-  <a href="/admin/taxonomy/<?= $this->e($termType) ?>/create" class="bg-secondary text-on-secondary py-3 px-6 rounded font-label-caps text-label-caps hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">
+  <a href="<?= $adminPrefix ?>/taxonomy/<?= $this->e($termType) ?>/create" class="bg-secondary text-on-secondary py-3 px-6 rounded font-label-caps text-label-caps hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">
     + NEW <?= strtoupper($this->e($label)) ?>
   </a>
 </div>
@@ -42,8 +42,8 @@
             <td class="px-4 py-3 text-on-surface-variant font-mono text-xs"><?= $this->e($term['slug']) ?></td>
             <td class="px-4 py-3 text-on-surface-variant text-xs"><?= $this->e(mb_substr((string) ($term['description'] ?? ''), 0, 60)) ?></td>
             <td class="px-4 py-3 text-right space-x-2">
-              <a href="/admin/taxonomy/<?= $this->e($termType) ?>/<?= $this->e($term['id']) ?>/edit" class="text-xs text-primary-container hover:underline">Edit</a>
-              <form method="post" action="/admin/taxonomy/<?= $this->e($termType) ?>/<?= $this->e($term['id']) ?>/delete" class="inline" onsubmit="return confirm('Delete this item?')">
+              <a href="<?= $adminPrefix ?>/taxonomy/<?= $this->e($termType) ?>/<?= $this->e($term['id']) ?>/edit" class="text-xs text-primary-container hover:underline">Edit</a>
+              <form method="post" action="<?= $adminPrefix ?>/taxonomy/<?= $this->e($termType) ?>/<?= $this->e($term['id']) ?>/delete" class="inline" onsubmit="return confirm('Delete this item?')">
                 <button class="text-xs text-error hover:underline">Delete</button>
               </form>
             </td>

@@ -15,21 +15,21 @@ $iconMap = [
 
 <!-- Quick Actions -->
 <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-  <a href="/admin/c/page/create" class="bg-surface-container p-4 border border-outline-variant hover:border-secondary transition-colors flex items-center gap-3">
+  <a href="<?= $adminPrefix ?>/c/page/create" class="bg-surface-container p-4 border border-outline-variant hover:border-secondary transition-colors flex items-center gap-3">
     <span class="material-symbols-outlined text-secondary text-2xl">add_circle</span>
     <div>
       <p class="font-label-caps text-label-caps text-on-surface-variant">NEW PAGE</p>
       <p class="font-code-sm text-code-sm text-on-surface-variant">Create a new page</p>
     </div>
   </a>
-  <a href="/admin/c/post/create" class="bg-surface-container p-4 border border-outline-variant hover:border-secondary transition-colors flex items-center gap-3">
+  <a href="<?= $adminPrefix ?>/c/post/create" class="bg-surface-container p-4 border border-outline-variant hover:border-secondary transition-colors flex items-center gap-3">
     <span class="material-symbols-outlined text-secondary text-2xl">edit_note</span>
     <div>
       <p class="font-label-caps text-label-caps text-on-surface-variant">NEW POST</p>
       <p class="font-code-sm text-code-sm text-on-surface-variant">Write a blog post</p>
     </div>
   </a>
-  <a href="/admin/media" class="bg-surface-container p-4 border border-outline-variant hover:border-secondary transition-colors flex items-center gap-3">
+  <a href="<?= $adminPrefix ?>/media" class="bg-surface-container p-4 border border-outline-variant hover:border-secondary transition-colors flex items-center gap-3">
     <span class="material-symbols-outlined text-secondary text-2xl">add_photo_alternate</span>
     <div>
       <p class="font-label-caps text-label-caps text-on-surface-variant">UPLOAD MEDIA</p>
@@ -48,7 +48,7 @@ $iconMap = [
 <!-- Metrics Overview -->
 <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
   <?php foreach ($__types as $name => $type): ?>
-    <a href="/admin/c/<?= $this->e($name) ?>" class="bg-surface-container p-6 border border-outline-variant performance-card flex justify-between items-end hover:hard-step-shadow hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all duration-150">
+    <a href="<?= $adminPrefix ?>/c/<?= $this->e($name) ?>" class="bg-surface-container p-6 border border-outline-variant performance-card flex justify-between items-end hover:hard-step-shadow hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all duration-150">
       <div>
         <p class="font-label-caps text-label-caps text-on-surface-variant mb-2">TOTAL <?= strtoupper($this->e($type->label)) ?></p>
         <h2 class="font-headline-xl text-headline-xl"><?= (int) ($counts[$name] ?? 0) ?></h2>
@@ -68,7 +68,7 @@ $iconMap = [
       <h3 class="font-headline-lg text-headline-lg text-secondary mb-6">Content Types</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <?php foreach ($__types as $name => $type): ?>
-          <a href="/admin/c/<?= $this->e($name) ?>" class="bg-surface-container p-4 border border-outline-variant hover:border-secondary transition-colors">
+          <a href="<?= $adminPrefix ?>/c/<?= $this->e($name) ?>" class="bg-surface-container p-4 border border-outline-variant hover:border-secondary transition-colors">
             <div class="flex items-center gap-3 mb-2">
               <span class="material-symbols-outlined text-secondary"><?= $this->e($iconMap[$name] ?? 'description') ?></span>
               <span class="font-label-caps text-label-caps"><?= $this->e($type->label) ?></span>
@@ -91,7 +91,7 @@ $iconMap = [
             $data = json_decode($item['data'] ?? '{}', true);
             $title = $data['title'] ?? $item['slug'];
         ?>
-          <a href="/admin/c/<?= $this->e($item['type']) ?>/<?= $this->e($item['id']) ?>/edit" class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant hover:border-secondary transition-colors">
+          <a href="<?= $adminPrefix ?>/c/<?= $this->e($item['type']) ?>/<?= $this->e($item['id']) ?>/edit" class="flex items-center justify-between p-3 bg-surface-container-low border border-outline-variant hover:border-secondary transition-colors">
             <div class="flex items-center gap-3">
               <span class="material-symbols-outlined text-secondary"><?= $this->e($iconMap[$item['type']] ?? 'description') ?></span>
               <div>
@@ -118,8 +118,8 @@ $iconMap = [
       <div class="bg-surface-container border border-outline-variant p-6">
         <h3 class="font-headline-lg text-headline-lg text-secondary mb-6">Klasifikasi</h3>
         <div class="flex gap-4">
-          <a href="/admin/taxonomy/category" class="bg-surface-container-low border border-outline-variant px-6 py-3 font-label-caps text-label-caps text-on-surface-variant hover:border-secondary transition-colors">Kategori</a>
-          <a href="/admin/taxonomy/tag" class="bg-surface-container-low border border-outline-variant px-6 py-3 font-label-caps text-label-caps text-on-surface-variant hover:border-secondary transition-colors">Tag</a>
+          <a href="<?= $adminPrefix ?>/taxonomy/category" class="bg-surface-container-low border border-outline-variant px-6 py-3 font-label-caps text-label-caps text-on-surface-variant hover:border-secondary transition-colors">Kategori</a>
+          <a href="<?= $adminPrefix ?>/taxonomy/tag" class="bg-surface-container-low border border-outline-variant px-6 py-3 font-label-caps text-label-caps text-on-surface-variant hover:border-secondary transition-colors">Tag</a>
         </div>
       </div>
     <?php endif; ?>
@@ -128,15 +128,15 @@ $iconMap = [
     <div class="bg-surface-container border border-outline-variant p-6">
       <h3 class="font-headline-lg text-headline-lg text-secondary mb-6">Site Management</h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <a href="/admin/menus" class="bg-surface-container-low border border-outline-variant p-4 hover:border-secondary transition-colors flex items-center gap-3">
+        <a href="<?= $adminPrefix ?>/menus" class="bg-surface-container-low border border-outline-variant p-4 hover:border-secondary transition-colors flex items-center gap-3">
           <span class="material-symbols-outlined text-secondary">menu</span>
           <span class="font-label-caps text-label-caps">Menu</span>
         </a>
-        <a href="/admin/media" class="bg-surface-container-low border border-outline-variant p-4 hover:border-secondary transition-colors flex items-center gap-3">
+        <a href="<?= $adminPrefix ?>/media" class="bg-surface-container-low border border-outline-variant p-4 hover:border-secondary transition-colors flex items-center gap-3">
           <span class="material-symbols-outlined text-secondary">image</span>
           <span class="font-label-caps text-label-caps">Media</span>
         </a>
-        <a href="/admin/settings" class="bg-surface-container-low border border-outline-variant p-4 hover:border-secondary transition-colors flex items-center gap-3">
+        <a href="<?= $adminPrefix ?>/settings" class="bg-surface-container-low border border-outline-variant p-4 hover:border-secondary transition-colors flex items-center gap-3">
           <span class="material-symbols-outlined text-secondary">settings</span>
           <span class="font-label-caps text-label-caps">Settings</span>
         </a>

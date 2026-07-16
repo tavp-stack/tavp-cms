@@ -11,6 +11,16 @@ use Tavp\Core\Http\Response;
  */
 class TeamController extends AdminController
 {
+    protected function adminPrefix(): string
+    {
+        $dbPrefix = null;
+        try {
+            $settings = app()->getService(\Tavp\Cms\Settings\Settings::class);
+            $dbPrefix = $settings?->get('admin.route_prefix');
+        } catch (\Throwable) {}
+        return '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin'), '/');
+    }
+
     public function index(): string|Response
     {
         if ($r = $this->guard()) {
@@ -51,7 +61,7 @@ class TeamController extends AdminController
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
 
-        return $this->redirect('/admin/teams');
+        return $this->redirect($this->adminPrefix() . '/teams');
     }
 
     public function edit(string $id): string|Response
@@ -87,7 +97,7 @@ class TeamController extends AdminController
             'updated_at' => date('Y-m-d H:i:s'),
         ], ['id' => $id]);
 
-        return $this->redirect('/admin/teams');
+        return $this->redirect($this->adminPrefix() . '/teams');
     }
 
     public function destroy(string $id): Response
@@ -99,7 +109,7 @@ class TeamController extends AdminController
         $this->db()->delete('team_members', ['team_id' => $id]);
         $this->db()->delete('teams', ['id' => $id]);
 
-        return $this->redirect('/admin/teams');
+        return $this->redirect($this->adminPrefix() . '/teams');
     }
 
     public function addMember(string $teamId): Response
@@ -115,7 +125,7 @@ class TeamController extends AdminController
         $user = $this->db()->query('SELECT id FROM users WHERE email = ?', [$email]);
         if (empty($user)) {
             $this->flash('error', 'User not found.');
-            return $this->redirect('/admin/teams/' . $teamId . '/edit');
+            return $this->redirect($this->adminPrefix() . '/teams/' . $teamId . '/edit');
         }
 
         $userId = $user[0]['id'];
@@ -126,7 +136,7 @@ class TeamController extends AdminController
             'created_at' => date('Y-m-d H:i:s'),
         ]);
 
-        return $this->redirect('/admin/teams/' . $teamId . '/edit');
+        return $this->redirect($this->adminPrefix() . '/teams/' . $teamId . '/edit');
     }
 
     public function removeMember(string $teamId, string $memberId): Response
@@ -137,7 +147,7 @@ class TeamController extends AdminController
 
         $this->db()->delete('team_members', ['id' => $memberId, 'team_id' => $teamId]);
 
-        return $this->redirect('/admin/teams/' . $teamId . '/edit');
+        return $this->redirect($this->adminPrefix() . '/teams/' . $teamId . '/edit');
     }
 
     private function db()

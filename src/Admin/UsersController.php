@@ -15,13 +15,23 @@ use Tavp\Core\Http\Response;
  */
 class UsersController extends AdminController
 {
+    protected function adminPrefix(): string
+    {
+        $dbPrefix = null;
+        try {
+            $settings = app()->getService(\Tavp\Cms\Settings\Settings::class);
+            $dbPrefix = $settings?->get('admin.route_prefix');
+        } catch (\Throwable) {}
+        return '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin'), '/');
+    }
+
     public function index(): string|Response
     {
         if ($r = $this->guard()) {
             return $r;
         }
         if (!$this->can('users.view') && !$this->can('users.*')) {
-            return $this->redirect('/admin');
+            return $this->redirect($this->adminPrefix());
         }
 
         // Sorting
@@ -90,7 +100,7 @@ class UsersController extends AdminController
         if (!empty($errors)) {
             $this->flashErrors($errors);
             $this->flashOld(['name' => $name, 'email' => $email, 'role' => $role]);
-            return $this->redirect('/admin/users/create');
+            return $this->redirect($this->adminPrefix() . '/users/create');
         }
 
         $now = date('Y-m-d H:i:s');
@@ -130,7 +140,7 @@ class UsersController extends AdminController
         }
 
         $this->flash('success', 'User added. They can sign in with a one-time code.');
-        return $this->redirect('/admin/users');
+        return $this->redirect($this->adminPrefix() . '/users');
     }
 
     public function edit(string $id): string|Response
@@ -145,7 +155,7 @@ class UsersController extends AdminController
             ['id' => $id]
         );
         if (empty($rows)) {
-            return $this->redirect('/admin/users');
+            return $this->redirect($this->adminPrefix() . '/users');
         }
 
         return $this->admin('users.form', [
@@ -192,7 +202,7 @@ class UsersController extends AdminController
 
         if (!empty($errors)) {
             $this->flashErrors($errors);
-            return $this->redirect('/admin/users/' . $id . '/edit');
+            return $this->redirect($this->adminPrefix() . '/users/' . $id . '/edit');
         }
 
         $this->db()->execute(
@@ -231,7 +241,7 @@ class UsersController extends AdminController
         }
 
         $this->flash('success', 'User updated.');
-        return $this->redirect('/admin/users');
+        return $this->redirect($this->adminPrefix() . '/users');
     }
 
     public function destroy(string $id): Response
@@ -251,13 +261,13 @@ class UsersController extends AdminController
         $protected = array_map('strtolower', (array) config('cms.admin.emails', []));
         if ($email === strtolower((string) $this->adminUser()) || in_array($email, $protected, true)) {
             $this->flash('error', 'That account cannot be deleted.');
-            return $this->redirect('/admin/users');
+            return $this->redirect($this->adminPrefix() . '/users');
         }
 
         $this->db()->execute('DELETE FROM users WHERE id = :id', ['id' => $id]);
 
         $this->flash('success', 'User removed.');
-        return $this->redirect('/admin/users');
+        return $this->redirect($this->adminPrefix() . '/users');
     }
 
     /**

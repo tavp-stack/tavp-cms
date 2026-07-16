@@ -1,6 +1,6 @@
 <?php /** @var array $team @var array $members @var string $action @var string $heading */ ?>
 <div class="flex items-center gap-4 mb-gutter">
-  <a href="/admin/teams" class="text-on-surface-variant hover:text-secondary transition-colors">
+  <a href="<?= $adminPrefix ?>/teams" class="text-on-surface-variant hover:text-secondary transition-colors">
     <span class="material-symbols-outlined">arrow_back</span>
   </a>
   <h2 class="font-headline-xl text-headline-xl"><?= $this->e($heading) ?></h2>
@@ -37,7 +37,7 @@
               <td class="px-4 py-2 font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($m['email'] ?? '-') ?></td>
               <td class="px-4 py-2 font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($m['role'] ?? '') ?></td>
               <td class="px-4 py-2 text-right">
-                <form method="post" action="/admin/teams/<?= $this->e($team['id']) ?>/members/<?= $this->e($m['id']) ?>/remove" class="inline">
+                <form method="post" action="<?= $adminPrefix ?>/teams/<?= $this->e($team['id']) ?>/members/<?= $this->e($m['id']) ?>/remove" class="inline">
                   <button type="submit" class="text-error font-label-caps text-label-caps hover:underline">Remove</button>
                 </form>
               </td>
@@ -59,12 +59,12 @@
         <option value="admin">Admin</option>
         <option value="owner">Owner</option>
       </select>
-      <button type="submit" formaction="/admin/teams/<?= $this->e($team['id'] ?? '0') ?>/members" class="bg-secondary text-on-secondary font-label-caps text-label-caps py-2 px-4 hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">Add</button>
+      <button type="submit" formaction="<?= $adminPrefix ?>/teams/<?= $this->e($team['id'] ?? '0') ?>/members" class="bg-secondary text-on-secondary font-label-caps text-label-caps py-2 px-4 hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">Add</button>
     </div>
   </div>
 
   <div class="flex gap-3">
     <button type="submit" class="bg-secondary text-on-secondary font-label-caps text-label-caps py-3 px-8 hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">SAVE TEAM</button>
-    <a href="/admin/teams" class="border border-outline-variant font-label-caps text-label-caps py-3 px-8 hover:bg-surface-container-high transition-colors">CANCEL</a>
+    <a href="<?= $adminPrefix ?>/teams" class="border border-outline-variant font-label-caps text-label-caps py-3 px-8 hover:bg-surface-container-high transition-colors">CANCEL</a>
   </div>
 </form>

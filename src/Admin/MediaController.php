@@ -11,6 +11,16 @@ use Tavp\Core\Http\Response;
  */
 class MediaController extends AdminController
 {
+    protected function adminPrefix(): string
+    {
+        $dbPrefix = null;
+        try {
+            $settings = app()->getService(\Tavp\Cms\Settings\Settings::class);
+            $dbPrefix = $settings?->get('admin.route_prefix');
+        } catch (\Throwable) {}
+        return '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin'), '/');
+    }
+
     public function index(): string|Response
     {
         if ($r = $this->guard()) {
@@ -51,7 +61,7 @@ class MediaController extends AdminController
 
         if ($file === null || $file['error'] !== UPLOAD_ERR_OK) {
             $this->flash('error', 'No file uploaded or upload error.');
-            return $this->redirect('/admin/media');
+            return $this->redirect($this->adminPrefix() . '/media');
         }
 
         try {
@@ -61,7 +71,7 @@ class MediaController extends AdminController
             $this->flash('error', $e->getMessage());
         }
 
-        return $this->redirect('/admin/media');
+        return $this->redirect($this->adminPrefix() . '/media');
     }
 
     public function destroy(string $id): Response
@@ -81,7 +91,7 @@ class MediaController extends AdminController
             $this->flash('success', 'File deleted.');
         }
 
-        return $this->redirect('/admin/media');
+        return $this->redirect($this->adminPrefix() . '/media');
     }
 
     /**

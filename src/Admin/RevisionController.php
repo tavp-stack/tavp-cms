@@ -11,6 +11,16 @@ use Tavp\Core\Http\Response;
  */
 class RevisionController extends AdminController
 {
+    protected function adminPrefix(): string
+    {
+        $dbPrefix = null;
+        try {
+            $settings = app()->getService(\Tavp\Cms\Settings\Settings::class);
+            $dbPrefix = $settings?->get('admin.route_prefix');
+        } catch (\Throwable) {}
+        return '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin'), '/');
+    }
+
     public function history(string $type, string $id): string|Response
     {
         if ($r = $this->guard()) {

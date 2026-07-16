@@ -11,6 +11,16 @@ use Tavp\Core\Http\Response;
  */
 class MenuController extends AdminController
 {
+    protected function adminPrefix(): string
+    {
+        $dbPrefix = null;
+        try {
+            $settings = app()->getService(\Tavp\Cms\Settings\Settings::class);
+            $dbPrefix = $settings?->get('admin.route_prefix');
+        } catch (\Throwable) {}
+        return '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin'), '/');
+    }
+
     public function index(): string|Response
     {
         if ($r = $this->guard()) {
@@ -53,7 +63,7 @@ class MenuController extends AdminController
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
 
-        return $this->redirect('/admin/menus');
+        return $this->redirect($this->adminPrefix() . '/menus');
     }
 
     public function edit(string $id): string|Response
@@ -90,7 +100,7 @@ class MenuController extends AdminController
         $items = $this->request->input('items', []);
         $this->syncItems((int) $id, $items);
 
-        return $this->redirect('/admin/menus');
+        return $this->redirect($this->adminPrefix() . '/menus');
     }
 
     public function destroy(string $id): Response
@@ -102,7 +112,7 @@ class MenuController extends AdminController
         $this->db()->delete('menu_items', ['menu_id' => $id]);
         $this->db()->delete('menus', ['id' => $id]);
 
-        return $this->redirect('/admin/menus');
+        return $this->redirect($this->adminPrefix() . '/menus');
     }
 
     public function addItem(string $menuId): Response
@@ -125,7 +135,7 @@ class MenuController extends AdminController
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
 
-        return $this->redirect('/admin/menus/' . $menuId . '/edit');
+        return $this->redirect($this->adminPrefix() . '/menus/' . $menuId . '/edit');
     }
 
     public function deleteItem(string $menuId, string $itemId): Response
@@ -136,7 +146,7 @@ class MenuController extends AdminController
 
         $this->db()->delete('menu_items', ['id' => $itemId, 'menu_id' => $menuId]);
 
-        return $this->redirect('/admin/menus/' . $menuId . '/edit');
+        return $this->redirect($this->adminPrefix() . '/menus/' . $menuId . '/edit');
     }
 
     private function syncItems(int $menuId, array $items): void

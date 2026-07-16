@@ -1,5 +1,11 @@
 <?php /** @var string $content @var \Tavp\Cms\Admin\AdminAuth $__auth @var array $__types @var string $__brand */
-$adminPrefix = '/' . trim(config('cms.admin.route_prefix', 'admin'), '/');
+// Read admin prefix from database first, fallback to config
+$dbPrefix = null;
+try {
+    $settings = app()->getService(\Tavp\Cms\Settings\Settings::class);
+    $dbPrefix = $settings?->get('admin.route_prefix');
+} catch (\Throwable) {}
+$adminPrefix = '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin'), '/');
 ?>
 <!DOCTYPE html>
 <html class="dark" lang="id">

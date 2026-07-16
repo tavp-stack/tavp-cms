@@ -1,9 +1,9 @@
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-white">SEO Settings</h1>
-    <a href="/admin/seo" class="text-gray-400 hover:text-white">← Back</a>
+    <a href="<?= $adminPrefix ?>/seo" class="text-gray-400 hover:text-white">← Back</a>
 </div>
 
-<form method="POST" action="/admin/seo/settings" class="space-y-6">
+<form method="POST" action="<?= $adminPrefix ?>/seo/settings" class="space-y-6">
     <div class="bg-gray-800 rounded-lg p-6">
         <h2 class="text-lg font-bold text-white mb-4">Meta Tags</h2>
         <div class="space-y-4">

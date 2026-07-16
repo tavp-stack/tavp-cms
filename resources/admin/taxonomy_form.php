@@ -1,6 +1,6 @@
 <?php /** @var string $termType @var array $term @var string $action @var string $heading */ ?>
 <div class="mb-8">
-  <a href="/admin/taxonomy/<?= $this->e($termType) ?>" class="text-sm text-[#8f9097] hover:underline">&larr; Back to <?= $this->e(ucfirst($termType)) ?>s</a>
+  <a href="<?= $adminPrefix ?>/taxonomy/<?= $this->e($termType) ?>" class="text-sm text-[#8f9097] hover:underline">&larr; Back to <?= $this->e(ucfirst($termType)) ?>s</a>
   <h1 class="text-2xl font-bold mt-2"><?= $this->e($heading) ?></h1>
 </div>
 
@@ -45,6 +45,6 @@
 
   <div class="flex gap-3 pt-2">
     <button class="rounded bg-[#e6c446] text-[#3b2f00] font-bold px-6 py-2 hover:opacity-90">Save</button>
-    <a href="/admin/taxonomy/<?= $this->e($termType) ?>" class="rounded border border-[#45474c] px-6 py-2 hover:bg-[#1a202c]">Cancel</a>
+    <a href="<?= $adminPrefix ?>/taxonomy/<?= $this->e($termType) ?>" class="rounded border border-[#45474c] px-6 py-2 hover:bg-[#1a202c]">Cancel</a>
   </div>
 </form>

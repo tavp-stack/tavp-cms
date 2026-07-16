@@ -44,7 +44,7 @@ tailwind.config = {
   <?php if ($error): ?>
     <div class="mb-4 rounded border border-error bg-error/10 px-3 py-2 text-sm text-error"><?= $this->e($error) ?></div>
   <?php endif; ?>
-  <form method="post" action="/admin/login" class="space-y-4">
+  <form method="post" action="<?= $adminPrefix ?>/login" class="space-y-4">
     <div>
       <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">E-MAIL</label>
       <input name="email" type="email" required autofocus class="w-full bg-surface-container border border-outline-variant rounded px-4 py-3 focus:border-secondary outline-none transition-colors font-body-md" placeholder="you@example.com">

@@ -18,7 +18,7 @@
     <h1 class="font-headline-xl text-headline-xl text-secondary mb-1">Dashboard</h1>
     <p class="font-body-md text-body-md text-on-surface-variant">Ringkasan trafik situs 7 hari terakhir.</p>
   </div>
-  <a href="/admin/analytics" class="bg-secondary text-on-secondary py-3 px-6 rounded font-label-caps text-label-caps hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all flex items-center gap-2">
+  <a href="<?= $adminPrefix ?>/analytics" class="bg-secondary text-on-secondary py-3 px-6 rounded font-label-caps text-label-caps hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all flex items-center gap-2">
     <span class="material-symbols-outlined text-[20px]">analytics</span>
     Analytics Lengkap
   </a>

@@ -29,11 +29,11 @@
   </div>
   <div class="flex flex-col items-end gap-3">
     <div class="flex items-center gap-2">
-      <a href="/admin/analytics?period=7d" class="px-4 py-2 rounded font-label-caps text-label-caps transition-colors <?= (!$isCustom && $period === '7d') ? 'bg-secondary text-on-secondary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' ?>">7 Days</a>
-      <a href="/admin/analytics?period=30d" class="px-4 py-2 rounded font-label-caps text-label-caps transition-colors <?= (!$isCustom && $period === '30d') ? 'bg-secondary text-on-secondary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' ?>">30 Days</a>
-      <a href="/admin/analytics?period=90d" class="px-4 py-2 rounded font-label-caps text-label-caps transition-colors <?= (!$isCustom && $period === '90d') ? 'bg-secondary text-on-secondary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' ?>">90 Days</a>
+      <a href="<?= $adminPrefix ?>/analytics?period=7d" class="px-4 py-2 rounded font-label-caps text-label-caps transition-colors <?= (!$isCustom && $period === '7d') ? 'bg-secondary text-on-secondary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' ?>">7 Days</a>
+      <a href="<?= $adminPrefix ?>/analytics?period=30d" class="px-4 py-2 rounded font-label-caps text-label-caps transition-colors <?= (!$isCustom && $period === '30d') ? 'bg-secondary text-on-secondary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' ?>">30 Days</a>
+      <a href="<?= $adminPrefix ?>/analytics?period=90d" class="px-4 py-2 rounded font-label-caps text-label-caps transition-colors <?= (!$isCustom && $period === '90d') ? 'bg-secondary text-on-secondary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' ?>">90 Days</a>
     </div>
-    <form method="get" action="/admin/analytics" class="flex items-center gap-2">
+    <form method="get" action="<?= $adminPrefix ?>/analytics" class="flex items-center gap-2">
       <input type="date" name="from" value="<?= $this->e($customFrom ?? '') ?>" max="<?= $today ?>"
         class="bg-surface-container border <?= $isCustom ? 'border-secondary' : 'border-outline-variant' ?> rounded px-3 py-2 font-code-sm text-code-sm text-on-surface outline-none focus:border-secondary">
       <span class="text-on-surface-variant text-sm">to</span>
@@ -41,7 +41,7 @@
         class="bg-surface-container border <?= $isCustom ? 'border-secondary' : 'border-outline-variant' ?> rounded px-3 py-2 font-code-sm text-code-sm text-on-surface outline-none focus:border-secondary">
       <button class="px-4 py-2 rounded font-label-caps text-label-caps bg-secondary text-on-secondary hover:brightness-110 transition-all">APPLY</button>
       <?php if ($isCustom): ?>
-        <a href="/admin/analytics?period=7d" class="px-3 py-2 rounded font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-high transition-colors" title="Clear custom range">CLEAR</a>
+        <a href="<?= $adminPrefix ?>/analytics?period=7d" class="px-3 py-2 rounded font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-high transition-colors" title="Clear custom range">CLEAR</a>
       <?php endif; ?>
     </form>
   </div>

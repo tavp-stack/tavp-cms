@@ -1,6 +1,6 @@
 <?php /** @var array $content @var string $action @var string $heading */ ?>
 <div class="flex items-center gap-4 mb-gutter">
-  <a href="/admin/c/<?= $this->e($content['__type'] ?? 'post') ?>" class="text-on-surface-variant hover:text-secondary transition-colors">
+  <a href="<?= $adminPrefix ?>/c/<?= $this->e($content['__type'] ?? 'post') ?>" class="text-on-surface-variant hover:text-secondary transition-colors">
     <span class="material-symbols-outlined">arrow_back</span>
   </a>
   <h2 class="font-headline-xl text-headline-xl"><?= $this->e($heading) ?></h2>
@@ -60,7 +60,7 @@
 <div class="fixed bottom-0 left-0 right-0 z-[9999] floating-save-bar border-t border-outline-variant" x-data x-bind:style="'margin-left:' + (sidebarCollapsed ? '68px' : '256px')">
   <div class="px-10 py-4 flex gap-3">
     <button type="submit" form="content-form" class="bg-secondary text-on-secondary font-label-caps text-label-caps py-3 px-8 hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">SAVE</button>
-    <a href="/admin/c/<?= $this->e($content['__type'] ?? 'post') ?>" class="border border-outline-variant font-label-caps text-label-caps py-3 px-8 hover:bg-surface-container-high transition-colors">CANCEL</a>
+    <a href="<?= $adminPrefix ?>/c/<?= $this->e($content['__type'] ?? 'post') ?>" class="border border-outline-variant font-label-caps text-label-caps py-3 px-8 hover:bg-surface-container-high transition-colors">CANCEL</a>
   </div>
 </div>
 

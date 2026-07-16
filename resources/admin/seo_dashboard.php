@@ -1,10 +1,10 @@
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-white">SEO Dashboard</h1>
     <div class="flex gap-2">
-        <a href="/admin/seo/settings" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">Settings</a>
-        <a href="/admin/seo/redirects" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">Redirects</a>
-        <a href="/admin/seo/analyzer" class="px-4 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-400">Analyzer</a>
-        <form method="POST" action="/admin/seo/ping" class="inline">
+        <a href="<?= $adminPrefix ?>/seo/settings" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">Settings</a>
+        <a href="<?= $adminPrefix ?>/seo/redirects" class="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600">Redirects</a>
+        <a href="<?= $adminPrefix ?>/seo/analyzer" class="px-4 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-400">Analyzer</a>
+        <form method="POST" action="<?= $adminPrefix ?>/seo/ping" class="inline">
             <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-500">Ping Sitemap</button>
         </form>
     </div>

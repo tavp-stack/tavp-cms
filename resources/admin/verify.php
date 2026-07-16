@@ -44,14 +44,14 @@ tailwind.config = {
   <?php if ($error): ?>
     <div class="mb-4 rounded border border-error bg-error/10 px-3 py-2 text-sm text-error"><?= $this->e($error) ?></div>
   <?php endif; ?>
-  <form method="post" action="/admin/verify" class="space-y-4">
+  <form method="post" action="<?= $adminPrefix ?>/verify" class="space-y-4">
     <div>
       <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">CODE</label>
       <input name="code" inputmode="numeric" pattern="[0-9]*" maxlength="6" required autofocus class="w-full bg-surface-container border border-outline-variant rounded px-4 py-3 tracking-[0.5em] text-center text-lg focus:border-secondary outline-none font-code-sm" placeholder="000000">
     </div>
     <button class="w-full bg-secondary text-on-secondary font-label-caps text-label-caps py-3 rounded hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">VERIFY &amp; SIGN IN</button>
   </form>
-  <form method="post" action="/admin/login" class="mt-4 text-center">
+  <form method="post" action="<?= $adminPrefix ?>/login" class="mt-4 text-center">
     <button class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors">Use a different e-mail</button>
   </form>
 </div>

@@ -11,6 +11,16 @@ use Tavp\Core\Http\Response;
  */
 class BillingController extends AdminController
 {
+    protected function adminPrefix(): string
+    {
+        $dbPrefix = null;
+        try {
+            $settings = app()->getService(\Tavp\Cms\Settings\Settings::class);
+            $dbPrefix = $settings?->get('admin.route_prefix');
+        } catch (\Throwable) {}
+        return '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin'), '/');
+    }
+
     public function index(): string|Response
     {
         if ($r = $this->guard()) {
@@ -63,7 +73,7 @@ class BillingController extends AdminController
 
         $this->flash('success', 'Subscription cancelled.');
 
-        return $this->redirect('/admin/billing');
+        return $this->redirect($this->adminPrefix() . '/billing');
     }
 
     private function countByStatus(string $table, string $status): int

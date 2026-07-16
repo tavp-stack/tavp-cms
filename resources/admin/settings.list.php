@@ -17,7 +17,7 @@ unset($_SESSION['cms_flash']);
   </div>
 <?php endif; ?>
 
-<form method="post" action="/admin/settings" class="space-y-6 max-w-3xl">
+<form method="post" action="<?= $adminPrefix ?>/settings" class="space-y-6 max-w-3xl">
   <?php foreach ($schema as $group => $section): ?>
     <div class="bg-surface-container border border-outline-variant p-6">
       <h3 class="font-headline-lg text-headline-lg mb-6 flex items-center gap-2">

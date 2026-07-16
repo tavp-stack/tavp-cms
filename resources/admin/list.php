@@ -43,7 +43,7 @@ foreach ($records as $r) {
 }'>
   <div class="flex justify-between items-center mb-gutter">
     <h2 class="font-headline-xl text-headline-xl"><?= $this->e($type->label) ?></h2>
-    <a href="/admin/c/<?= $this->e($type->name) ?>/create" class="bg-secondary text-on-secondary py-3 px-6 rounded font-label-caps text-label-caps hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">
+    <a href="<?= $adminPrefix ?>/c/<?= $this->e($type->name) ?>/create" class="bg-secondary text-on-secondary py-3 px-6 rounded font-label-caps text-label-caps hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">
       + NEW <?= strtoupper($this->e($type->singular)) ?>
     </a>
   </div>

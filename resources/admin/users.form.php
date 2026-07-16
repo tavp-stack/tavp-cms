@@ -1,6 +1,6 @@
 <?php /** @var array $user @var array $roles @var string $action @var string $heading @var bool $isEdit */ ?>
 <div class="flex items-center gap-4 mb-gutter">
-  <a href="/admin/users" class="text-on-surface-variant hover:text-secondary transition-colors">
+  <a href="<?= $adminPrefix ?>/users" class="text-on-surface-variant hover:text-secondary transition-colors">
     <span class="material-symbols-outlined">arrow_back</span>
   </a>
   <h2 class="font-headline-xl text-headline-xl"><?= $this->e($heading) ?></h2>
@@ -105,6 +105,6 @@
 
   <div class="flex gap-4 pt-2 sticky bottom-4 bg-background/80 backdrop-blur-md py-4 border-t border-outline-variant -mx-10 px-10">
     <button class="bg-secondary text-on-secondary font-label-caps text-label-caps py-3 px-8 hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">SAVE</button>
-    <a href="/admin/users" class="border border-outline-variant font-label-caps text-label-caps py-3 px-8 hover:bg-surface-container-high transition-colors">CANCEL</a>
+    <a href="<?= $adminPrefix ?>/users" class="border border-outline-variant font-label-caps text-label-caps py-3 px-8 hover:bg-surface-container-high transition-colors">CANCEL</a>
   </div>
 </form>

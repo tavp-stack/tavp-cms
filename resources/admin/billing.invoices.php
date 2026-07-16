@@ -1,7 +1,7 @@
 <?php /** @var array $invoices */ ?>
 <div class="flex justify-between items-center mb-gutter">
   <h2 class="font-headline-xl text-headline-xl">Invoices</h2>
-  <a href="/admin/billing" class="text-secondary font-label-caps text-label-caps hover:underline">&larr; Back to Billing</a>
+  <a href="<?= $adminPrefix ?>/billing" class="text-secondary font-label-caps text-label-caps hover:underline">&larr; Back to Billing</a>
 </div>
 
 <div class="bg-surface-container border border-outline-variant overflow-hidden">

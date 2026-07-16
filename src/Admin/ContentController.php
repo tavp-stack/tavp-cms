@@ -13,6 +13,16 @@ use Tavp\Core\Http\Response;
  */
 class ContentController extends AdminController
 {
+    protected function adminPrefix(): string
+    {
+        $dbPrefix = null;
+        try {
+            $settings = app()->getService(\Tavp\Cms\Settings\Settings::class);
+            $dbPrefix = $settings?->get('admin.route_prefix');
+        } catch (\Throwable) {}
+        return '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin'), '/');
+    }
+
     public function index(string $type): string|Response
     {
         if ($r = $this->guard()) {
@@ -20,12 +30,12 @@ class ContentController extends AdminController
         }
 
         if (!$this->can("content.browse")) {
-            return $this->redirect('/admin');
+            return $this->redirect($this->adminPrefix());
         }
 
         $contentType = $this->type($type);
         if ($contentType === null) {
-            return $this->redirect('/admin');
+            return $this->redirect($this->adminPrefix());
         }
 
         return $this->admin('list', [
@@ -41,12 +51,12 @@ class ContentController extends AdminController
         }
 
         if (!$this->can("content.create")) {
-            return $this->redirect('/admin');
+            return $this->redirect($this->adminPrefix());
         }
 
         $contentType = $this->type($type);
         if ($contentType === null) {
-            return $this->redirect('/admin');
+            return $this->redirect($this->adminPrefix());
         }
 
         // Construct $content for the form view (empty for create)
@@ -66,12 +76,12 @@ class ContentController extends AdminController
         }
 
         if (!$this->can("content.create")) {
-            return $this->redirect('/admin');
+            return $this->redirect($this->adminPrefix());
         }
 
         $contentType = $this->type($type);
         if ($contentType === null) {
-            return $this->redirect('/admin');
+            return $this->redirect($this->adminPrefix());
         }
 
         $data = $this->collect($contentType);
@@ -96,7 +106,7 @@ class ContentController extends AdminController
         }
 
         if (!$this->can("content.edit")) {
-            return $this->redirect('/admin');
+            return $this->redirect($this->adminPrefix());
         }
 
         $contentType = $this->type($type);
@@ -128,12 +138,12 @@ class ContentController extends AdminController
         }
 
         if (!$this->can("content.edit")) {
-            return $this->redirect('/admin');
+            return $this->redirect($this->adminPrefix());
         }
 
         $contentType = $this->type($type);
         if ($contentType === null) {
-            return $this->redirect('/admin');
+            return $this->redirect($this->adminPrefix());
         }
 
         $data = $this->collect($contentType);
@@ -161,7 +171,7 @@ class ContentController extends AdminController
         }
 
         if (!$this->can("content.delete")) {
-            return $this->redirect('/admin');
+            return $this->redirect($this->adminPrefix());
         }
 
         $this->bread()->delete($type, is_numeric($id) ? (int) $id : $id);

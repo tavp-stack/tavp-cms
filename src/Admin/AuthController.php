@@ -15,6 +15,16 @@ class AuthController extends AdminController
 {
     private OtpService $otp;
 
+    protected function adminPrefix(): string
+    {
+        $dbPrefix = null;
+        try {
+            $settings = app()->getService(\Tavp\Cms\Settings\Settings::class);
+            $dbPrefix = $settings?->get('admin.route_prefix');
+        } catch (\Throwable) {}
+        return '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin'), '/');
+    }
+
     public function __construct()
     {
         parent::__construct();
@@ -28,7 +38,7 @@ class AuthController extends AdminController
     public function showLogin(): string|Response
     {
         if (!empty($_SESSION['cms_admin'])) {
-            return $this->redirect('/admin');
+            return $this->redirect($this->adminPrefix());
         }
 
         // Clear pending OTP session
@@ -69,7 +79,7 @@ class AuthController extends AdminController
         // Ensure session is saved before redirect
         session_write_close();
 
-        return $this->redirect('/admin/verify');
+        return $this->redirect($this->adminPrefix() . '/verify');
     }
 
     /**
@@ -148,7 +158,7 @@ class AuthController extends AdminController
         $otp = $_SESSION['cms_otp'] ?? null;
 
         if ($otp === null || ($otp['expires'] ?? 0) < time()) {
-            return $this->redirect('/admin/login');
+            return $this->redirect($this->adminPrefix() . '/login');
         }
 
         return $this->partial('verify', [
@@ -164,7 +174,7 @@ class AuthController extends AdminController
         $otp = $_SESSION['cms_otp'] ?? null;
 
         if ($otp === null || ($otp['expires'] ?? 0) < time()) {
-            return $this->redirect('/admin/login');
+            return $this->redirect($this->adminPrefix() . '/login');
         }
 
         // Verify OTP against session hash (tavpid API)
@@ -188,13 +198,13 @@ class AuthController extends AdminController
         // Ensure session is saved before redirect
         session_write_close();
 
-        return $this->redirect('/admin');
+        return $this->redirect($this->adminPrefix());
     }
 
     public function logout(): Response
     {
         unset($_SESSION['cms_admin'], $_SESSION['cms_otp']);
 
-        return $this->redirect('/admin/login');
+        return $this->redirect($this->adminPrefix() . '/login');
     }
 }

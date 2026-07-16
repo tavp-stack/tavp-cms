@@ -10,7 +10,7 @@ unset($_SESSION['cms_flash']);
     <h1 class="font-headline-xl text-headline-xl text-secondary">Users</h1>
     <p class="font-body-md text-body-md text-on-surface-variant mt-1">Manage who can sign in and what they can do</p>
   </div>
-  <a href="/admin/users/create" class="bg-secondary text-on-secondary font-label-caps text-label-caps py-3 px-6 hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">+ NEW USER</a>
+  <a href="<?= $adminPrefix ?>/users/create" class="bg-secondary text-on-secondary font-label-caps text-label-caps py-3 px-6 hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">+ NEW USER</a>
 </div>
 
 <?php if ($flashSuccess): ?>
@@ -37,7 +37,7 @@ unset($_SESSION['cms_flash']);
           $arrow = $isActive ? ($dir === 'ASC' ? ' ↑' : ' ↓') : '';
         ?>
           <th class="px-4 py-3 text-left font-label-caps text-label-caps text-on-surface-variant">
-            <a href="/admin/users?sort=<?= $col ?>&dir=<?= $nextDir ?>" class="hover:text-secondary transition-colors">
+            <a href="<?= $adminPrefix ?>/users?sort=<?= $col ?>&dir=<?= $nextDir ?>" class="hover:text-secondary transition-colors">
               <?= $this->e($meta['label']) ?><?= $arrow ?>
             </a>
           </th>
@@ -73,9 +73,9 @@ unset($_SESSION['cms_flash']);
           </td>
           <td class="px-4 py-3 font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($user['created_at'] ?? '') ?></td>
           <td class="px-4 py-3 text-right whitespace-nowrap">
-            <a href="/admin/users/<?= $this->e($user['id']) ?>/edit" class="text-secondary font-label-caps text-label-caps hover:underline">Edit</a>
+            <a href="<?= $adminPrefix ?>/users/<?= $this->e($user['id']) ?>/edit" class="text-secondary font-label-caps text-label-caps hover:underline">Edit</a>
             <?php if (!$isSelf): ?>
-              <form method="post" action="/admin/users/<?= $this->e($user['id']) ?>/delete" class="inline ml-3" onsubmit="return confirm('Delete this user?');">
+              <form method="post" action="<?= $adminPrefix ?>/users/<?= $this->e($user['id']) ?>/delete" class="inline ml-3" onsubmit="return confirm('Delete this user?');">
                 <button type="submit" class="text-error font-label-caps text-label-caps hover:underline">Delete</button>
               </form>
             <?php endif; ?>

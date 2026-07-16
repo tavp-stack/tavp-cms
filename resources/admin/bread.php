@@ -58,10 +58,10 @@
 
       <!-- Actions -->
       <div class="flex gap-3">
-        <a href="/admin/c/<?= $this->e($name) ?>" class="flex-1 bg-surface-container-high text-on-surface py-2 px-4 rounded font-label-caps text-label-caps text-center hover:bg-surface-container-highest transition-colors">
+        <a href="<?= $adminPrefix ?>/c/<?= $this->e($name) ?>" class="flex-1 bg-surface-container-high text-on-surface py-2 px-4 rounded font-label-caps text-label-caps text-center hover:bg-surface-container-highest transition-colors">
           Browse
         </a>
-        <a href="/admin/c/<?= $this->e($name) ?>/create" class="flex-1 bg-secondary text-on-secondary py-2 px-4 rounded font-label-caps text-label-caps text-center hard-step-shadow hover:brightness-110 transition-all">
+        <a href="<?= $adminPrefix ?>/c/<?= $this->e($name) ?>/create" class="flex-1 bg-secondary text-on-secondary py-2 px-4 rounded font-label-caps text-label-caps text-center hard-step-shadow hover:brightness-110 transition-all">
           Add New
         </a>
       </div>

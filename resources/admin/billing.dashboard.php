@@ -47,7 +47,7 @@
           <td class="px-4 py-3 font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($sub['gateway'] ?? '') ?></td>
           <td class="px-4 py-3 text-right">
             <?php if (($sub['status'] ?? '') === 'active'): ?>
-              <form method="post" action="/admin/billing/subscriptions/<?= $this->e($sub['id']) ?>/cancel" class="inline">
+              <form method="post" action="<?= $adminPrefix ?>/billing/subscriptions/<?= $this->e($sub['id']) ?>/cancel" class="inline">
                 <button type="submit" class="text-error font-label-caps text-label-caps hover:underline" onclick="return confirm('Cancel subscription?')">Cancel</button>
               </form>
             <?php endif; ?>

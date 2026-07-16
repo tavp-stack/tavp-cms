@@ -20,7 +20,7 @@
 <!-- Upload Form -->
 <div class="bg-surface-container border border-outline-variant p-6 mb-gutter">
   <h3 class="font-headline-lg text-headline-lg mb-4">Upload File</h3>
-  <form method="post" action="/admin/media/upload" enctype="multipart/form-data" class="flex gap-3">
+  <form method="post" action="<?= $adminPrefix ?>/media/upload" enctype="multipart/form-data" class="flex gap-3">
     <input type="file" name="file" required class="flex-1 bg-surface-container-low border border-outline-variant rounded px-4 py-2 text-on-surface text-sm focus:border-secondary outline-none transition-colors">
     <button type="submit" class="bg-secondary text-on-secondary font-label-caps text-label-caps py-2 px-6 hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">Upload</button>
   </form>
@@ -66,7 +66,7 @@
           <td class="px-4 py-3 font-code-sm text-code-sm text-on-surface-variant"><?= $this->e($file['mime_type'] ?? '') ?></td>
           <td class="px-4 py-3 font-code-sm text-code-sm text-on-surface-variant"><?= $this->e(round(($file['size'] ?? 0) / 1024)) ?> KB</td>
           <td class="px-4 py-3 text-right">
-            <form method="post" action="/admin/media/<?= $this->e($file['id']) ?>/delete" class="inline">
+            <form method="post" action="<?= $adminPrefix ?>/media/<?= $this->e($file['id']) ?>/delete" class="inline">
               <button type="submit" class="text-error font-label-caps text-label-caps hover:underline" onclick="return confirm('Delete file?')">Delete</button>
             </form>
           </td>
