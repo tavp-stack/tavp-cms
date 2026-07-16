@@ -158,9 +158,9 @@ class CmsServiceProvider implements ServiceProvider
                 $db = app('db');
                 $now = date('Y-m-d H:i:s');
                 $db->execute(
-                    'INSERT INTO media (name, file_name, mime_type, path, disk, size, created_at, updated_at)
-                     VALUES (:name, :file_name, :mime_type, :path, :disk, :size, :created_at, :updated_at)',
-                    array_merge($data, ['created_at' => $now, 'updated_at' => $now])
+                    'INSERT INTO media (name, mime_type, path, size, created_at)
+                     VALUES (:name, :mime_type, :path, :size, :created_at)',
+                    ['name' => $data['name'], 'mime_type' => $data['mime_type'], 'path' => $data['path'], 'size' => $data['size'], 'created_at' => $now]
                 );
                 return (int) $db->lastInsertId();
             },
