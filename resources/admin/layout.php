@@ -159,6 +159,7 @@ tailwind.config = {
         ['href' => $adminPrefix . '/media', 'icon' => 'image', 'label' => 'Media', 'desc' => 'Upload files'],
         ['href' => $adminPrefix . '/settings', 'icon' => 'settings', 'label' => 'Settings', 'desc' => 'Site configuration'],
         ['href' => $adminPrefix . '/users', 'icon' => 'group', 'label' => 'Users', 'desc' => 'Manage accounts'],
+        ['href' => $adminPrefix . '/messages', 'icon' => 'mail', 'label' => 'Messages', 'desc' => 'Contact form messages'],
         ['href' => $adminPrefix . '/analytics', 'icon' => 'analytics', 'label' => 'Analytics', 'desc' => 'Traffic insights'],
         ['href' => $adminPrefix . '/seo', 'icon' => 'search', 'label' => 'SEO', 'desc' => 'Search engine optimization'],
     ];
