@@ -56,12 +56,52 @@
     <p class="text-xs text-on-surface-variant mt-1">Admins can manage everything; editors manage content, media and taxonomy.</p>
   </div>
 
+  <div>
+    <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Bio</label>
+    <textarea name="bio" rows="3" placeholder="Short bio about this user..."
+      class="w-full bg-surface-container border border-outline-variant rounded px-4 py-3 focus:border-secondary outline-none font-body-md"><?= $this->e($__old['bio'] ?? $user['bio'] ?? '') ?></textarea>
+  </div>
+
+  <div class="bg-surface-container border border-outline-variant rounded-xl p-6 space-y-4">
+    <h3 class="font-headline-lg text-headline-lg text-on-surface flex items-center gap-2">
+      <span class="material-symbols-outlined text-secondary">share</span>
+      Social Media
+    </h3>
+    <p class="text-sm text-on-surface-variant">Social links yang akan ditampilkan di profil publik.</p>
+
+    <div>
+      <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">GitHub</label>
+      <input type="text" name="social_github" value="<?= $this->e($__old['social_github'] ?? $user['social_github'] ?? '') ?>" placeholder="https://github.com/username"
+        class="w-full bg-surface-container-low border border-outline-variant rounded px-4 py-3 focus:border-secondary outline-none font-code-sm text-code-sm">
+    </div>
+    <div>
+      <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Twitter / X</label>
+      <input type="text" name="social_twitter" value="<?= $this->e($__old['social_twitter'] ?? $user['social_twitter'] ?? '') ?>" placeholder="https://twitter.com/username"
+        class="w-full bg-surface-container-low border border-outline-variant rounded px-4 py-3 focus:border-secondary outline-none font-code-sm text-code-sm">
+    </div>
+    <div>
+      <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">LinkedIn</label>
+      <input type="text" name="social_linkedin" value="<?= $this->e($__old['social_linkedin'] ?? $user['social_linkedin'] ?? '') ?>" placeholder="https://linkedin.com/in/username"
+        class="w-full bg-surface-container-low border border-outline-variant rounded px-4 py-3 focus:border-secondary outline-none font-code-sm text-code-sm">
+    </div>
+    <div>
+      <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Instagram</label>
+      <input type="text" name="social_instagram" value="<?= $this->e($__old['social_instagram'] ?? $user['social_instagram'] ?? '') ?>" placeholder="https://instagram.com/username"
+        class="w-full bg-surface-container-low border border-outline-variant rounded px-4 py-3 focus:border-secondary outline-none font-code-sm text-code-sm">
+    </div>
+    <div>
+      <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">Website</label>
+      <input type="text" name="social_website" value="<?= $this->e($__old['social_website'] ?? $user['social_website'] ?? '') ?>" placeholder="https://yoursite.com"
+        class="w-full bg-surface-container-low border border-outline-variant rounded px-4 py-3 focus:border-secondary outline-none font-code-sm text-code-sm">
+    </div>
+  </div>
+
   <div class="bg-surface-container-low border border-outline-variant rounded p-4 flex items-start gap-3">
     <span class="material-symbols-outlined text-secondary text-xl">info</span>
     <p class="text-sm text-on-surface-variant">This user signs in with a one-time code sent to their e-mail. No password is needed.</p>
   </div>
 
-  <div class="flex gap-4 pt-2">
+  <div class="flex gap-4 pt-2 sticky bottom-4 bg-background/80 backdrop-blur-md py-4 border-t border-outline-variant -mx-10 px-10">
     <button class="bg-secondary text-on-secondary font-label-caps text-label-caps py-3 px-8 hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">SAVE</button>
     <a href="/admin/users" class="border border-outline-variant font-label-caps text-label-caps py-3 px-8 hover:bg-surface-container-high transition-colors">CANCEL</a>
   </div>

@@ -119,7 +119,7 @@ class MediaController extends AdminController
     /**
      * Return JSON response.
      */
-    private function json(array $data, int $status = 200): Response
+    protected function json(mixed $data, int $status = 200): Response
     {
         http_response_code($status);
         header('Content-Type: application/json');

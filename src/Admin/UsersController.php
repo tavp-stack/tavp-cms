@@ -95,12 +95,18 @@ class UsersController extends AdminController
 
         $now = date('Y-m-d H:i:s');
         $this->db()->execute(
-            'INSERT INTO users (name, email, role, created_at, updated_at) '
-            . 'VALUES (:name, :email, :role, :created_at, :updated_at)',
+            'INSERT INTO users (name, email, role, bio, social_github, social_twitter, social_linkedin, social_instagram, social_website, created_at, updated_at) '
+            . 'VALUES (:name, :email, :role, :bio, :social_github, :social_twitter, :social_linkedin, :social_instagram, :social_website, :created_at, :updated_at)',
             [
                 'name' => $name !== '' ? $name : $email,
                 'email' => $email,
                 'role' => $role,
+                'bio' => trim((string) $this->request->input('bio', '')),
+                'social_github' => trim((string) $this->request->input('social_github', '')),
+                'social_twitter' => trim((string) $this->request->input('social_twitter', '')),
+                'social_linkedin' => trim((string) $this->request->input('social_linkedin', '')),
+                'social_instagram' => trim((string) $this->request->input('social_instagram', '')),
+                'social_website' => trim((string) $this->request->input('social_website', '')),
                 'created_at' => $now,
                 'updated_at' => $now,
             ]
@@ -141,17 +147,48 @@ class UsersController extends AdminController
         }
 
         $name = trim((string) $this->request->input('name', ''));
+        $email = strtolower(trim((string) $this->request->input('email', '')));
         $role = (string) $this->request->input('role', 'editor');
 
         if (!in_array($role, $this->roles(), true)) {
             $role = 'editor';
         }
 
+        // Validate email
+        $errors = [];
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'][] = 'A valid e-mail is required.';
+        }
+
+        // Check if email is already taken by another user
+        if (empty($errors)) {
+            $existing = $this->db()->fetchAll(
+                'SELECT id FROM users WHERE email = :email AND id != :id LIMIT 1',
+                \PDO::FETCH_ASSOC,
+                ['email' => $email, 'id' => $id]
+            );
+            if (!empty($existing)) {
+                $errors['email'][] = 'That e-mail is already taken.';
+            }
+        }
+
+        if (!empty($errors)) {
+            $this->flashErrors($errors);
+            return $this->redirect('/admin/users/' . $id . '/edit');
+        }
+
         $this->db()->execute(
-            'UPDATE users SET name = :name, role = :role, updated_at = :updated_at WHERE id = :id',
+            'UPDATE users SET name = :name, email = :email, role = :role, bio = :bio, social_github = :social_github, social_twitter = :social_twitter, social_linkedin = :social_linkedin, social_instagram = :social_instagram, social_website = :social_website, updated_at = :updated_at WHERE id = :id',
             [
                 'name' => $name,
+                'email' => $email,
                 'role' => $role,
+                'bio' => trim((string) $this->request->input('bio', '')),
+                'social_github' => trim((string) $this->request->input('social_github', '')),
+                'social_twitter' => trim((string) $this->request->input('social_twitter', '')),
+                'social_linkedin' => trim((string) $this->request->input('social_linkedin', '')),
+                'social_instagram' => trim((string) $this->request->input('social_instagram', '')),
+                'social_website' => trim((string) $this->request->input('social_website', '')),
                 'updated_at' => date('Y-m-d H:i:s'),
                 'id' => $id,
             ]
