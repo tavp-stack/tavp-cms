@@ -158,6 +158,7 @@ tailwind.config = {
         ['href' => '/admin/settings', 'icon' => 'settings', 'label' => 'Settings', 'desc' => 'Site configuration'],
         ['href' => '/admin/users', 'icon' => 'group', 'label' => 'Users', 'desc' => 'Manage accounts'],
         ['href' => '/admin/analytics', 'icon' => 'analytics', 'label' => 'Analytics', 'desc' => 'Traffic insights'],
+        ['href' => '/admin/seo', 'icon' => 'search', 'label' => 'SEO', 'desc' => 'Search engine optimization'],
     ];
     ?>
     <?php foreach ($siteMenus as $m): $active = str_starts_with($currentPath, $m['href']); ?>
