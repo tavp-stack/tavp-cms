@@ -47,6 +47,7 @@ class AuthController extends AdminController
         return $this->partial('login', [
             'error' => null,
             'brand' => config('cms.admin.brand', 'TAVP'),
+            'adminPrefix' => $this->adminPrefix(),
         ]);
     }
 
@@ -165,6 +166,7 @@ class AuthController extends AdminController
             'identifier' => $otp['email'] ?? '',
             'error' => null,
             'brand' => config('cms.admin.brand', 'TAVP'),
+            'adminPrefix' => $this->adminPrefix(),
         ]);
     }
 
