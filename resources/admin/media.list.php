@@ -57,7 +57,7 @@
         <tr class="border-t border-outline-variant hover:bg-surface-container-high/50 transition-colors">
           <td class="px-4 py-3">
             <?php if (str_starts_with((string) ($file['mime_type'] ?? ''), 'image/')): ?>
-              <img src="/uploads/<?= $this->e($file['file_name'] ?? '') ?>" alt="" class="w-10 h-10 object-cover rounded">
+              <img src="/uploads/<?= $this->e($file['path'] ?? $file['file_name'] ?? '') ?>" alt="" class="w-10 h-10 object-cover rounded">
             <?php else: ?>
               <span class="material-symbols-outlined text-secondary">insert_drive_file</span>
             <?php endif; ?>
