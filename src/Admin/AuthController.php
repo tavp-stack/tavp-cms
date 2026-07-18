@@ -55,6 +55,12 @@ class AuthController extends AdminController
     {
         $email = strtolower(trim((string) $this->request->input('email', '')));
 
+        // No e-mail supplied (e.g. a stray POST without the field) — just show
+        // the login form again instead of rendering a partial missing adminPrefix.
+        if ($email === '') {
+            return $this->showLogin();
+        }
+
         // Check if the email is allowed: either in the config allowlist
         // (built-in admins) or registered in the users table by an admin.
         $allowed = array_map('strtolower', (array) config('cms.admin.emails', []));
@@ -62,6 +68,7 @@ class AuthController extends AdminController
             return $this->partial('login', [
                 'error' => 'That e-mail is not allowed to sign in.',
                 'brand' => config('cms.admin.brand', 'TAVP'),
+                'adminPrefix' => $this->adminPrefix(),
             ]);
         }
 
