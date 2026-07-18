@@ -106,6 +106,22 @@ class AdminModule
         // Analytics
         $router->get("{$p}/analytics", [AnalyticsController::class, 'index']);
 
+        // Messages (contact-form inbox)
+        $router->get("{$p}/messages", [MessagesController::class, 'index']);
+        $router->post("{$p}/messages/read", [MessagesController::class, 'markRead']);
+        $router->post("{$p}/messages/archive", [MessagesController::class, 'archive']);
+        $router->post("{$p}/messages/delete", [MessagesController::class, 'destroy']);
+
+        // SEO
+        $router->get("{$p}/seo", [\Tavp\Cms\Seo\SeoAdminController::class, 'index']);
+        $router->get("{$p}/seo/settings", [\Tavp\Cms\Seo\SeoAdminController::class, 'settings']);
+        $router->post("{$p}/seo/settings", [\Tavp\Cms\Seo\SeoAdminController::class, 'settings']);
+        $router->get("{$p}/seo/redirects", [\Tavp\Cms\Seo\SeoAdminController::class, 'redirects']);
+        $router->post("{$p}/seo/redirects", [\Tavp\Cms\Seo\SeoAdminController::class, 'redirects']);
+        $router->post("{$p}/seo/redirects/delete", [\Tavp\Cms\Seo\SeoAdminController::class, 'deleteRedirect']);
+        $router->get("{$p}/seo/analyzer", [\Tavp\Cms\Seo\SeoAdminController::class, 'analyzer']);
+        $router->post("{$p}/seo/ping", [\Tavp\Cms\Seo\SeoAdminController::class, 'ping']);
+
         // BREAD Manager
         $router->get("{$p}/bread", [BreadController::class, 'index']);
     }
