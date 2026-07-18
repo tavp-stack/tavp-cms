@@ -51,9 +51,7 @@ tailwind.config = {
     </div>
     <button class="w-full bg-secondary text-on-secondary font-label-caps text-label-caps py-3 rounded hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">VERIFY &amp; SIGN IN</button>
   </form>
-  <form method="post" action="<?= $adminPrefix ?>/login" class="mt-4 text-center">
-    <button class="font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors">Use a different e-mail</button>
-  </form>
+  <a href="<?= $adminPrefix ?>/login" class="block mt-4 text-center font-body-md text-body-md text-on-surface-variant hover:text-secondary transition-colors">Use a different e-mail</a>
 </div>
 </body>
 </html>
