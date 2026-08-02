@@ -55,14 +55,19 @@ class AuthController extends AdminController
     {
         $email = strtolower(trim((string) $this->request->input('email', '')));
 
-        // No e-mail supplied (e.g. a stray POST without the field) — just show
-        // the login form again instead of rendering a partial missing adminPrefix.
+        // No e-mail supplied — return JSON error for AJAX or redirect for form
         if ($email === '') {
+            if ($this->isAjax()) {
+                return $this->json(['success' => false, 'message' => 'Email diperlukan.']);
+            }
             return $this->showLogin();
         }
 
         // Validate captcha before proceeding
         if (!captcha_verify()) {
+            if ($this->isAjax()) {
+                return $this->json(['success' => false, 'message' => 'Captcha salah. Silakan coba lagi.']);
+            }
             return $this->partial('login', [
                 'error' => 'Captcha salah. Silakan coba lagi.',
                 'brand' => config('cms.admin.brand', 'TAVP'),
@@ -74,6 +79,9 @@ class AuthController extends AdminController
         // (built-in admins) or registered in the users table by an admin.
         $allowed = array_map('strtolower', (array) config('cms.admin.emails', []));
         if (!in_array($email, $allowed, true) && !$this->isRegisteredUser($email)) {
+            if ($this->isAjax()) {
+                return $this->json(['success' => false, 'message' => 'Email tidak terdaftar.']);
+            }
             return $this->partial('login', [
                 'error' => 'That e-mail is not allowed to sign in.',
                 'brand' => config('cms.admin.brand', 'TAVP'),
@@ -90,25 +98,44 @@ class AuthController extends AdminController
             'expires' => $otpData['expires_at'],
         ];
 
-        // Send the OTP email
-        $sent = $this->sendOtpEmail($email, $otpData['code']);
-
-        if (!$sent) {
-            // Email failed — show error to user
-            $errorMsg = $_SESSION['cms_otp_error'] ?? 'Failed to send email. Please try again.';
-            unset($_SESSION['cms_otp_error']);
-
-            return $this->partial('login', [
-                'error' => $errorMsg,
-                'brand' => config('cms.admin.brand', 'TAVP'),
-                'adminPrefix' => $this->adminPrefix(),
-            ]);
+        // Fire-and-forget: send OTP email, catch errors silently
+        try {
+            $this->sendOtpEmail($email, $otpData['code']);
+        } catch (\Throwable $e) {
+            error_log('[TAVP CMS] OTP email failed: ' . $e->getMessage());
         }
 
-        // Ensure session is saved before redirect
-        session_write_close();
+        // AJAX: return JSON immediately
+        if ($this->isAjax()) {
+            session_write_close();
+            return $this->json(['success' => true, 'message' => 'Kode OTP telah dikirim.']);
+        }
 
+        // Form fallback: redirect to verify page
+        session_write_close();
         return $this->redirect($this->adminPrefix() . '/verify');
+    }
+
+    /**
+     * Whether the request is an AJAX/fetch request.
+     */
+    private function isAjax(): bool
+    {
+        $header = $_SERVER['HTTP_X_REQUESTED_WITH'] ?? '';
+        return strtolower($header) === 'xmlhttprequest'
+            || str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json');
+    }
+
+    /**
+     * Return a JSON response.
+     */
+    protected function json(mixed $data, int $status = 200): Response
+    {
+        $response = new Response();
+        $response->setStatusCode($status);
+        $response->header('Content-Type', 'application/json');
+        $response->setContent(json_encode($data, JSON_UNESCAPED_UNICODE));
+        return $response;
     }
 
     /**
@@ -203,6 +230,9 @@ class AuthController extends AdminController
         $otp = $_SESSION['cms_otp'] ?? null;
 
         if ($otp === null || ($otp['expires'] ?? 0) < time()) {
+            if ($this->isAjax()) {
+                return $this->json(['success' => false, 'message' => 'Kode kadaluarsa. Silakan minta kode baru.']);
+            }
             return $this->redirect($this->adminPrefix() . '/login');
         }
 
@@ -213,6 +243,9 @@ class AuthController extends AdminController
         ];
 
         if (!$this->otp->verifyOtp($code, $stored)) {
+            if ($this->isAjax()) {
+                return $this->json(['success' => false, 'message' => 'Kode salah atau kadaluarsa.']);
+            }
             return $this->partial('verify', [
                 'identifier' => $otp['email'] ?? '',
                 'error' => 'Invalid or expired code. Please try again.',
@@ -226,6 +259,10 @@ class AuthController extends AdminController
 
         // Ensure session is saved before redirect
         session_write_close();
+
+        if ($this->isAjax()) {
+            return $this->json(['success' => true, 'redirect' => $this->adminPrefix()]);
+        }
 
         return $this->redirect($this->adminPrefix());
     }
