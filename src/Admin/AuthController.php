@@ -61,6 +61,15 @@ class AuthController extends AdminController
             return $this->showLogin();
         }
 
+        // Validate captcha before proceeding
+        if (!captcha_verify()) {
+            return $this->partial('login', [
+                'error' => 'Captcha salah. Silakan coba lagi.',
+                'brand' => config('cms.admin.brand', 'TAVP'),
+                'adminPrefix' => $this->adminPrefix(),
+            ]);
+        }
+
         // Check if the email is allowed: either in the config allowlist
         // (built-in admins) or registered in the users table by an admin.
         $allowed = array_map('strtolower', (array) config('cms.admin.emails', []));

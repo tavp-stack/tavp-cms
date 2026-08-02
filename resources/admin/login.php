@@ -35,7 +35,16 @@ tailwind.config = {
   }
 }
 </script>
-<style>body{background:#0d131f;color:#dde2f3;font-family:'Inter',sans-serif}</style>
+<style>body{background:#0d131f;color:#dde2f3;font-family:'Inter',sans-serif}
+.captcha-dark .tavp-captcha{background:#1a202c!important;border-color:#45474c!important;box-shadow:none!important}
+.captcha-dark .tavp-captcha label{color:#dde2f3!important}
+.captcha-dark .tavp-captcha input[type="radio"]+label{background:#161c27!important;color:#dde2f3!important;border-color:#45474c!important}
+.captcha-dark .tavp-captcha input[type="radio"]:checked+label{background:#e6c446!important;color:#3b2f00!important;border-color:#e6c446!important}
+.captcha-dark .tavp-captcha input[type="number"],.captcha-dark .tavp-captcha input[type="text"]{background:#161c27!important;color:#dde2f3!important;border-color:#45474c!important}
+.captcha-dark .tavp-captcha input[type="range"]{accent-color:#e6c446!important}
+.captcha-dark .tavp-captcha .material-symbols-outlined{color:#e6c446!important}
+.captcha-dark .tavp-captcha .text-gray-400{color:#8f9097!important}
+</style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-6">
 <div class="w-full max-w-sm">
@@ -48,6 +57,9 @@ tailwind.config = {
     <div>
       <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">E-MAIL</label>
       <input name="email" type="email" required autofocus class="w-full bg-surface-container border border-outline-variant rounded px-4 py-3 focus:border-secondary outline-none transition-colors font-body-md" placeholder="you@example.com">
+    </div>
+    <div class="captcha-dark">
+      <?= captcha('puzzle') ?>
     </div>
     <button class="w-full bg-secondary text-on-secondary font-label-caps text-label-caps py-3 rounded hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">SEND CODE</button>
   </form>
