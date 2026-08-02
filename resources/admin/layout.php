@@ -166,11 +166,26 @@ tailwind.config = {
         ['href' => $adminPrefix . '/settings', 'icon' => 'settings', 'label' => 'Settings', 'desc' => 'Site configuration'],
         ['href' => $adminPrefix . '/users', 'icon' => 'group', 'label' => 'Users', 'desc' => 'Manage accounts'],
         ['href' => $adminPrefix . '/messages', 'icon' => 'mail', 'label' => 'Messages', 'desc' => 'Contact form messages'],
-        ['href' => $adminPrefix . '/analytics', 'icon' => 'analytics', 'label' => 'Analytics', 'desc' => 'Traffic insights'],
-        ['href' => $adminPrefix . '/seo', 'icon' => 'search', 'label' => 'SEO', 'desc' => 'Search engine optimization'],
     ];
     ?>
     <?php foreach ($siteMenus as $m): $active = str_starts_with($currentPath, $m['href']); ?>
+      <a href="<?= $this->e($m['href']) ?>" class="flex items-center gap-3 px-3 py-2.5 rounded transition-colors duration-200 <?= $active ? 'text-secondary bg-primary-container/10' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high' ?>" :class="sidebarCollapsed ? 'justify-center' : ''" title="<?= $this->e($m['desc']) ?>">
+        <span class="material-symbols-outlined text-xl"><?= $this->e($m['icon']) ?></span>
+        <span x-show="!sidebarCollapsed" x-transition class="font-body-md text-body-md whitespace-nowrap"><?= $this->e($m['label']) ?></span>
+      </a>
+    <?php endforeach; ?>
+
+    <div x-show="!sidebarCollapsed" class="pt-4 pb-1 px-3 text-on-surface-variant/40">
+      <span class="font-label-caps text-label-caps uppercase tracking-widest">SEO & Analytics</span>
+    </div>
+    <?php
+    $seoMenus = [
+        ['href' => $adminPrefix . '/seo', 'icon' => 'search', 'label' => 'SEO', 'desc' => 'Search engine optimization'],
+        ['href' => $adminPrefix . '/analytics', 'icon' => 'analytics', 'label' => 'Analytics', 'desc' => 'Traffic insights'],
+        ['href' => $adminPrefix . '/settings/seo', 'icon' => 'tune', 'label' => 'Footer', 'desc' => 'Footer settings'],
+    ];
+    ?>
+    <?php foreach ($seoMenus as $m): $active = str_starts_with($currentPath, $m['href']); ?>
       <a href="<?= $this->e($m['href']) ?>" class="flex items-center gap-3 px-3 py-2.5 rounded transition-colors duration-200 <?= $active ? 'text-secondary bg-primary-container/10' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high' ?>" :class="sidebarCollapsed ? 'justify-center' : ''" title="<?= $this->e($m['desc']) ?>">
         <span class="material-symbols-outlined text-xl"><?= $this->e($m['icon']) ?></span>
         <span x-show="!sidebarCollapsed" x-transition class="font-body-md text-body-md whitespace-nowrap"><?= $this->e($m['label']) ?></span>

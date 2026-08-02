@@ -8,7 +8,7 @@
         <a href="<?= $adminPrefix ?>/seo/redirects" class="px-4 py-2 bg-surface-container-high text-on-surface rounded border border-outline-variant hover:border-secondary transition-colors font-label-caps text-label-caps">Redirects</a>
         <a href="<?= $adminPrefix ?>/seo/analyzer" class="px-4 py-2 bg-secondary text-on-secondary rounded hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all font-label-caps text-label-caps">Analyzer</a>
         <form method="POST" action="<?= $adminPrefix ?>/seo/ping" class="inline">
-            <button type="submit" class="px-4 py-2 bg-primary-container text-on-primary rounded hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all font-label-caps text-label-caps">Ping Sitemap</button>
+            <button type="submit" class="px-4 py-2 bg-primary-container text-white rounded hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all font-label-caps text-label-caps">Ping Sitemap</button>
         </form>
     </div>
 </div>
