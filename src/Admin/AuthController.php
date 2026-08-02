@@ -98,17 +98,20 @@ class AuthController extends AdminController
             'expires' => $otpData['expires_at'],
         ];
 
-        // Fire-and-forget: send OTP email, catch errors silently
+        // AJAX: return JSON immediately, deliver the mail in the background
+        // so a slow SMTP dialog does not block the client (no stuck "loading").
+        if ($this->isAjax()) {
+            session_write_close();
+            $html = $this->otpEmailHtml($email, $otpData['code']);
+            $this->deferOtpHtml($email, $otpData['code'], $html);
+            return $this->json(['success' => true, 'message' => 'Kode OTP telah dikirim.']);
+        }
+
+        // Form fallback: deliver inline
         try {
             $this->sendOtpEmail($email, $otpData['code']);
         } catch (\Throwable $e) {
             error_log('[TAVP CMS] OTP email failed: ' . $e->getMessage());
-        }
-
-        // AJAX: return JSON immediately
-        if ($this->isAjax()) {
-            session_write_close();
-            return $this->json(['success' => true, 'message' => 'Kode OTP telah dikirim.']);
         }
 
         // Form fallback: redirect to verify page
@@ -157,14 +160,37 @@ class AuthController extends AdminController
 
     private function sendOtpEmail(string $email, string $code): bool
     {
+        $html = $this->otpEmailHtml($email, $code);
+
         try {
             $mailer = new MailService(config('cms.mail'));
-
             $brand = config('cms.admin.brand', 'TAVP');
             $ttl = (int) config('cms.admin.otp_ttl_minutes', 10);
 
-            $html = '<!DOCTYPE html>
-<html lang="id">
+            return $mailer->send(
+                $email,
+                "Your {$brand} sign-in code",
+                "Your sign-in code is: {$code}\n\nIt expires in {$ttl} minutes.",
+                $html
+            );
+        } catch (\Throwable $e) {
+            // Log the error for debugging
+            error_log('[TAVP CMS] OTP email failed: ' . $e->getMessage());
+
+            // Store error in session for user feedback
+            $_SESSION['cms_otp_error'] = $e->getMessage();
+
+            return false;
+        }
+    }
+
+    private function otpEmailHtml(string $email, string $code): string
+    {
+        $brand = config('cms.admin.brand', 'TAVP');
+        $ttl = (int) config('cms.admin.otp_ttl_minutes', 10);
+
+        return '<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <style>
@@ -182,7 +208,7 @@ class AuthController extends AdminController
   </div>
   <div class="card">
     <h1 style="color: #dde2f3; font-size: 20px; font-weight: 600; margin: 0 0 8px 0;">Sign-in Code</h1>
-    <p style="color: #8f9097; font-size: 14px; margin: 0 0 24px 0;">Use the code below to sign in to your admin panel.</p>
+    <p style="color: #8f9097; font-size: 14px; margin: 0 0 24px 0;">Use this code below to sign in to your admin panel.</p>
     <div class="code">' . $code . '</div>
     <p style="color: #8f9097; font-size: 12px; text-align: center; margin: 16px 0 0 0;">This code expires in ' . $ttl . ' minutes.</p>
   </div>
@@ -190,22 +216,43 @@ class AuthController extends AdminController
 </div>
 </body>
 </html>';
+    }
 
-            return $mailer->send(
-                $email,
-                "Your {$brand} sign-in code",
-                "Your sign-in code is: {$code}\n\nIt expires in {$ttl} minutes.",
-                $html
-            );
-        } catch (\Throwable $e) {
-            // Log the error for debugging
-            error_log('[TAVP CMS] OTP email failed: ' . $e->getMessage());
+    /**
+     * Queue a shutdown callback that sends the OTP e-mail after the JSON
+     * response has been flushed to the client. Slow SMTP the response does not
+     * block the request loop; the client never waits on the mailer.
+     */
+    private function deferOtpHtml(string $email, string $code, string $html): void
+    {
+        register_shutdown_function(function () use ($email, $code, $html) {
+            // Let the client receive the JSON before the (possibly slow) SMTP
+            // dialog runs, so "Send code" can never get stuck on "Loading...".
+            while (ob_get_level() > 0) {
+                ob_end_flush();
+            }
+            flush();
+            if (function_exists('fastcgi_finish_request')) {
+                fastcgi_finish_request();
+            }
+            clearstatcache();
 
-            // Store error in session for user feedback
-            $_SESSION['cms_otp_error'] = $e->getMessage();
+            try {
+                $mailer = new MailService(config('cms.mail'));
+                $brand = config('cms.admin.brand', 'TAVP');
+                $ttl = (int) config('cms.admin.otp_ttl_minutes', 10);
 
-            return false;
-        }
+                $mailer->send(
+                    $email,
+                    "Your {$brand} sign-in code",
+                    "Your sign-in code is: {$code}\n\nIt expires in {$ttl} minutes.",
+                    $html
+                );
+                error_log('[TAVP CMS] OTP email queued for ' . $email);
+            } catch (\Throwable $e) {
+                error_log('[TAVP CMS] deferred OTP email failed: ' . $e->getMessage());
+            }
+        });
     }
 
     public function showVerify(): string|Response
