@@ -59,7 +59,7 @@ tailwind.config = {
       <input name="email" type="email" required autofocus class="w-full bg-surface-container border border-outline-variant rounded px-4 py-3 focus:border-secondary outline-none transition-colors font-body-md" placeholder="you@example.com">
     </div>
     <div class="captcha-dark">
-      <?= captcha('puzzle') ?>
+      <?= captcha() ?>
     </div>
     <button class="w-full bg-secondary text-on-secondary font-label-caps text-label-caps py-3 rounded hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all">SEND CODE</button>
   </form>
