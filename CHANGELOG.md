@@ -39,3 +39,8 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) dan ve
 - Analytics chart via tavpblocks.
 - User CRUD sortable, taxonomy, BREAD, menus, settings.
 - Revisions/versioning konten.
+
+## [0.5.2] - 2026-08-05
+### ZeroVer sync
+- Re-tag all v0.x to ZeroVer-compatible commit (tavp/core ^0.1).
+
