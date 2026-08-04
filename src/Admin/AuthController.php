@@ -98,20 +98,39 @@ class AuthController extends AdminController
             'expires' => $otpData['expires_at'],
         ];
 
-        // AJAX: return JSON immediately, deliver the mail in the background
-        // so a slow SMTP dialog does not block the client (no stuck "loading").
-        if ($this->isAjax()) {
-            session_write_close();
-            $html = $this->otpEmailHtml($email, $otpData['code']);
-            $this->deferOtpHtml($email, $otpData['code'], $html);
-            return $this->json(['success' => true, 'message' => 'Kode OTP telah dikirim.']);
+        // Deliver the OTP inline (blocking). Login depends entirely on OTP,
+        // so reliability beats instant response. MailService has a hard
+        // 15s socket timeout, so this can never hang the request forever.
+        $sent = false;
+        $sendError = '';
+        try {
+            $sent = $this->sendOtpEmail($email, $otpData['code']);
+        } catch (\Throwable $e) {
+            $sendError = $e->getMessage();
+            error_log('[TAVP CMS] OTP email failed: ' . $sendError);
         }
 
-        // Form fallback: deliver inline
-        try {
-            $this->sendOtpEmail($email, $otpData['code']);
-        } catch (\Throwable $e) {
-            error_log('[TAVP CMS] OTP email failed: ' . $e->getMessage());
+        // Log every attempt for debugging
+        error_log(sprintf(
+            '[TAVP CMS] OTP send: email=%s sent=%s error=%s',
+            $email,
+            $sent ? 'yes' : 'no',
+            $sendError !== '' ? $sendError : '-'
+        ));
+
+        if ($this->isAjax()) {
+            session_write_close();
+
+            if (!$sent) {
+                return $this->json([
+                    'success' => false,
+                    'message' => $sendError !== ''
+                        ? 'Kode tidak terkirim. Coba lagi.'
+                        : 'Gagal mengirim kode. Coba lagi.',
+                ]);
+            }
+
+            return $this->json(['success' => true, 'message' => 'Kode OTP telah dikirim.']);
         }
 
         // Form fallback: redirect to verify page
@@ -188,71 +207,54 @@ class AuthController extends AdminController
     {
         $brand = config('cms.admin.brand', 'TAVP');
         $ttl = (int) config('cms.admin.otp_ttl_minutes', 10);
+        $escBrand = htmlspecialchars((string) $brand, ENT_QUOTES, 'UTF-8');
+        $escCode = htmlspecialchars($code, ENT_QUOTES, 'UTF-8');
 
+        // Table-based, fully inline-styled layout for maximum client support
+        // (Gmail, Outlook, Yandex, Apple Mail all render this predictably).
         return '<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<style>
-  body { margin: 0; padding: 0; background-color: #0d131f; font-family: Inter, system-ui, sans-serif; }
-  .container { max-width: 480px; margin: 0 auto; padding: 40px 24px; }
-  .card { background-color: #1a202c; border: 1px solid #45474c; border-radius: 0.5rem; padding: 32px; }
-  .code { font-family: JetBrains Mono, monospace; font-size: 32px; font-weight: 600; color: #e6c446; letter-spacing: 0.1em; text-align: center; padding: 24px 0; }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your sign-in code</title>
 </head>
-<body>
-<div class="container">
-  <div style="text-align: center; margin-bottom: 32px;">
-    <span style="font-size: 24px; font-weight: 700; color: #e6c446;">' . $brand . '</span>
-    <span style="font-size: 14px; color: #8f9097; margin-left: 8px;">admin</span>
-  </div>
-  <div class="card">
-    <h1 style="color: #dde2f3; font-size: 20px; font-weight: 600; margin: 0 0 8px 0;">Sign-in Code</h1>
-    <p style="color: #8f9097; font-size: 14px; margin: 0 0 24px 0;">Use this code below to sign in to your admin panel.</p>
-    <div class="code">' . $code . '</div>
-    <p style="color: #8f9097; font-size: 12px; text-align: center; margin: 16px 0 0 0;">This code expires in ' . $ttl . ' minutes.</p>
-  </div>
-  <p style="color: #45474c; font-size: 12px; text-align: center; margin-top: 24px;">If you did not request this code, you can safely ignore this email.</p>
-</div>
+<body style="margin:0;padding:0;background-color:#0d131f;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0d131f;padding:24px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background-color:#0d131f;">
+          <tr>
+            <td align="center" style="padding:24px 0 20px 0;">
+              <span style="font-family:Inter,Arial,sans-serif;font-size:24px;font-weight:700;color:#e6c446;">' . $escBrand . '</span>
+              <span style="font-family:Inter,Arial,sans-serif;font-size:14px;color:#8f9097;margin-left:8px;">admin</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#1a202c;border:1px solid #45474c;border-radius:12px;padding:32px 24px;">
+              <h1 style="margin:0 0 8px 0;font-family:Inter,Arial,sans-serif;font-size:20px;font-weight:600;color:#dde2f3;">Sign-in Code</h1>
+              <p style="margin:0 0 20px 0;font-family:Inter,Arial,sans-serif;font-size:14px;line-height:1.5;color:#8f9097;">Use the code below to sign in to your admin panel.</p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="background-color:#0d131f;border:1px dashed #45474c;border-radius:10px;padding:18px 12px;">
+                    <span style="font-family:Consolas,Menlo,monospace;font-size:32px;font-weight:600;letter-spacing:6px;color:#e6c446;">' . $escCode . '</span>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:16px 0 0 0;font-family:Inter,Arial,sans-serif;font-size:12px;text-align:center;color:#8f9097;">This code expires in ' . $ttl . ' minutes.</p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding-top:20px;">
+              <p style="margin:0;font-family:Inter,Arial,sans-serif;font-size:12px;color:#45474c;">If you did not request this code, you can safely ignore this email.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>';
-    }
-
-    /**
-     * Queue a shutdown callback that sends the OTP e-mail after the JSON
-     * response has been flushed to the client. Slow SMTP the response does not
-     * block the request loop; the client never waits on the mailer.
-     */
-    private function deferOtpHtml(string $email, string $code, string $html): void
-    {
-        register_shutdown_function(function () use ($email, $code, $html) {
-            // Let the client receive the JSON before the (possibly slow) SMTP
-            // dialog runs, so "Send code" can never get stuck on "Loading...".
-            while (ob_get_level() > 0) {
-                ob_end_flush();
-            }
-            flush();
-            if (function_exists('fastcgi_finish_request')) {
-                fastcgi_finish_request();
-            }
-            clearstatcache();
-
-            try {
-                $mailer = new MailService(config('cms.mail'));
-                $brand = config('cms.admin.brand', 'TAVP');
-                $ttl = (int) config('cms.admin.otp_ttl_minutes', 10);
-
-                $mailer->send(
-                    $email,
-                    "Your {$brand} sign-in code",
-                    "Your sign-in code is: {$code}\n\nIt expires in {$ttl} minutes.",
-                    $html
-                );
-                error_log('[TAVP CMS] OTP email queued for ' . $email);
-            } catch (\Throwable $e) {
-                error_log('[TAVP CMS] deferred OTP email failed: ' . $e->getMessage());
-            }
-        });
     }
 
     public function showVerify(): string|Response
