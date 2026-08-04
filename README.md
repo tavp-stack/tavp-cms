@@ -4,7 +4,7 @@ A content management system built on the TAVP Stack. WordPress-familiar,
 Voyager-style admin, thin and fast — with pluggable storage, headless API,
 and a feature set that works out of the box.
 
-> **Version: 0.3.0** — ZeroVer `0.MINOR.PATCH`.
+> **Version: 0.5.2** — ZeroVer `0.MINOR.PATCH`.
 
 ## What it is
 
