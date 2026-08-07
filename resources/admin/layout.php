@@ -182,7 +182,7 @@ tailwind.config = {
     $seoMenus = [
         ['href' => $adminPrefix . '/seo', 'icon' => 'search', 'label' => 'SEO', 'desc' => 'Search engine optimization'],
         ['href' => $adminPrefix . '/analytics', 'icon' => 'analytics', 'label' => 'Analytics', 'desc' => 'Traffic insights'],
-        ['href' => $adminPrefix . '/settings/seo', 'icon' => 'tune', 'label' => 'Footer', 'desc' => 'Footer settings'],
+        ['href' => $adminPrefix . '/settings', 'icon' => 'settings', 'label' => 'Security & Footer', 'desc' => 'Captcha type, admin path, footer settings'],
     ];
     ?>
     <?php foreach ($seoMenus as $m): $active = str_starts_with($currentPath, $m['href']); ?>
