@@ -39,6 +39,13 @@ unset($_SESSION['cms_flash']);
               <textarea name="<?= $this->e($name) ?>" rows="3"
                 placeholder="<?= $this->e($field['placeholder'] ?? '') ?>"
                 class="w-full bg-surface-container-low border border-outline-variant rounded px-4 py-3 text-on-surface focus:border-secondary outline-none transition-colors font-body-md"><?= $this->e($value) ?></textarea>
+            <?php elseif ($type === 'select'): ?>
+              <select name="<?= $this->e($name) ?>"
+                class="w-full bg-surface-container-low border border-outline-variant rounded px-4 py-3 text-on-surface focus:border-secondary outline-none transition-colors font-body-md">
+                <?php foreach (($field['options'] ?? []) as $optValue => $optLabel): ?>
+                  <option value="<?= $this->e($optValue) ?>" <?= $value === (string) $optValue ? 'selected' : '' ?>><?= $this->e($optLabel) ?></option>
+                <?php endforeach; ?>
+              </select>
             <?php else: ?>
               <input type="text" name="<?= $this->e($name) ?>" value="<?= $this->e($value) ?>"
                 placeholder="<?= $this->e($field['placeholder'] ?? '') ?>"

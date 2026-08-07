@@ -25,6 +25,20 @@ class AuthController extends AdminController
         return '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin'), '/');
     }
 
+    /**
+     * Resolve the captcha type: DB setting (Security > Captcha Type) wins,
+     * falling back to config('captcha.type') (CAPTCHA_TYPE env).
+     */
+    private function captchaType(): string
+    {
+        $type = null;
+        try {
+            $settings = app()->getService(\Tavp\Cms\Settings\Settings::class);
+            $type = $settings?->get('security.captcha_type');
+        } catch (\Throwable) {}
+        return trim((string) ($type ?: config('captcha.type', 'math'))) ?: 'math';
+    }
+
     public function __construct()
     {
         parent::__construct();
@@ -48,6 +62,7 @@ class AuthController extends AdminController
             'error' => null,
             'brand' => config('cms.admin.brand', 'TAVP'),
             'adminPrefix' => $this->adminPrefix(),
+            'captchaType' => $this->captchaType(),
         ]);
     }
 
@@ -72,6 +87,7 @@ class AuthController extends AdminController
                 'error' => 'Captcha salah. Silakan coba lagi.',
                 'brand' => config('cms.admin.brand', 'TAVP'),
                 'adminPrefix' => $this->adminPrefix(),
+                'captchaType' => $this->captchaType(),
             ]);
         }
 
@@ -86,6 +102,7 @@ class AuthController extends AdminController
                 'error' => 'That e-mail is not allowed to sign in.',
                 'brand' => config('cms.admin.brand', 'TAVP'),
                 'adminPrefix' => $this->adminPrefix(),
+                'captchaType' => $this->captchaType(),
             ]);
         }
 

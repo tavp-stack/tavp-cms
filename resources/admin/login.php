@@ -1,4 +1,4 @@
-<?php /** @var string|null $error @var string $brand @var string $adminPrefix */ ?>
+<?php /** @var string|null $error @var string $brand @var string $adminPrefix @var string $captchaType */ ?>
 <!DOCTYPE html>
 <html class="dark" lang="id">
 <head>
@@ -147,7 +147,7 @@ body{background:#0d131f;color:#dde2f3;font-family:'Inter',sans-serif}
         <input name="email" type="email" required x-model="email" class="w-full bg-surface-container border border-outline-variant rounded px-4 py-3 focus:border-secondary outline-none transition-colors font-body-md" placeholder="you@example.com">
       </div>
       <div class="captcha-dark">
-        <?= captcha() ?>
+        <?= captcha($captchaType ?? null) ?>
       </div>
       <button type="submit" :disabled="loading" class="w-full bg-secondary text-on-secondary font-label-caps text-label-caps py-3 rounded hard-step-shadow hover:brightness-110 active:translate-y-[1px] transition-all disabled:opacity-50">
         SEND CODE

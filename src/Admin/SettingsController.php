@@ -64,6 +64,17 @@ class SettingsController extends AdminController
                     ['key' => 'google_analytics_id', 'label' => 'Google Analytics ID', 'type' => 'text', 'placeholder' => 'G-XXXXXXX'],
                 ],
             ],
+            'security' => [
+                'label' => 'Security',
+                'icon' => 'shield',
+                'fields' => [
+                    ['key' => 'captcha_type', 'label' => 'Captcha Type', 'type' => 'select', 'options' => [
+                        'math' => 'Math',
+                        'slider' => 'Image Slider',
+                        'puzzle' => 'Text Puzzle',
+                    ], 'help' => 'Captcha shown on the admin sign-in page.'],
+                ],
+            ],
             'footer' => [
                 'label' => 'Footer',
                 'icon' => 'call_to_action',
