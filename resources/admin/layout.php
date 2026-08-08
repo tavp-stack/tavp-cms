@@ -13,80 +13,19 @@ $adminPrefix = '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin')
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= $this->e($__brand) ?> Admin</title>
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css"/>
-<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css"/>
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-php.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-css.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-bash.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-json.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-markdown.min.js"></script>
-<script>
-tailwind.config = {
-  darkMode: "class",
-  theme: {
-    extend: {
-      colors: {
-        "background": "#0d131f", "on-background": "#dde2f3",
-        "surface": "#0d131f", "surface-container-lowest": "#080e1a",
-        "surface-container-low": "#161c27", "surface-container": "#1a202c",
-        "surface-container-high": "#242a36", "surface-container-highest": "#2f3542",
-        "on-surface": "#dde2f3", "on-surface-variant": "#c5c6cd",
-        "primary": "#bdc7dc", "on-primary": "#273141",
-        "primary-container": "#2d3748", "secondary": "#e6c446",
-        "on-secondary": "#3b2f00", "secondary-container": "#ac8e0a",
-        "tertiary": "#bcc7dd", "on-tertiary-container": "#95a0b5",
-        "outline": "#8f9097", "outline-variant": "#45474c", "error": "#ffb4ab"
-      },
-      fontFamily: { "headline-xl": ["Geist"], "headline-lg": ["Geist"], "body-md": ["Inter"], "code-sm": ["JetBrains Mono"], "label-caps": ["JetBrains Mono"] },
-      fontSize: {
-        "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
-        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
-        "code-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
-        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
-      }
-    }
-  }
-}
-</script>
-<style>
-  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-  .hard-step-shadow { box-shadow: 2px 2px 0px 0px #000000; }
-  .performance-card { border-top: 2px solid #e6c446; }
-  body { background-color: #0d131f; color: #dde2f3; font-family: 'Inter', sans-serif; }
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: #1a202c; }
-  ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #e6c446; }
-  .sidebar-collapsed .nav-label { display: none; }
-  .sidebar-collapsed .nav-section { display: none; }
-  .sidebar-collapsed .sidebar-header-text { display: none; }
-  .sidebar-collapsed .sidebar-bottom-text { display: none; }
-  .sidebar-collapsed { width: 64px; }
-  .sidebar-collapsed + main { margin-left: 64px; }
-  /* Dropdown styles */
-  .dropdown-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-  .dropdown-content.open { max-height: 500px; }
-  /* EasyMDE dark theme overrides */
-  .EasyMDEContainer .CodeMirror { background: #161c27 !important; color: #dde2f3 !important; border-color: #45474c !important; }
-  .EasyMDEContainer .CodeMirror-cursor { border-left-color: #e6c446 !important; }
-  .EasyMDEContainer .CodeMirror-selected { background: #2d3748 !important; }
-  .EasyMDEContainer .editor-toolbar { background: #1a202c !important; border-color: #45474c !important; }
-  .EasyMDEContainer .editor-toolbar button { color: #95a0b5 !important; }
-  .EasyMDEContainer .editor-toolbar button:hover { color: #e6c446 !important; background: #242a36 !important; }
-  .EasyMDEContainer .editor-toolbar button.active { color: #e6c446 !important; background: #2d3748 !important; }
-  .EasyMDEContainer .editor-preview { background: #0d131f !important; color: #dde2f3 !important; }
-  .EasyMDEContainer .editor-preview-side { background: #0d131f !important; color: #dde2f3 !important; border-color: #45474c !important; }
-  .EasyMDEContainer .editor-statusbar { color: #95a0b5 !important; }
-  /* Floating save bar background */
-  .floating-save-bar { background: #0d131f; backdrop-filter: blur(12px); }
-</style>
+<link rel="stylesheet" href="/assets/admin.css"/>
+<link rel="stylesheet" href="/assets/fonts.css"/>
+<link rel="stylesheet" href="/css/prism-tomorrow.min.css"/>
+<link rel="stylesheet" href="/css/easymde.min.css"/>
+<script defer src="/js/alpine.min.js"></script>
+<script defer src="/js/easymde.min.js"></script>
+<script defer src="/js/prism.min.js"></script>
+<script defer src="/js/prism-php.min.js"></script>
+<script defer src="/js/prism-javascript.min.js"></script>
+<script defer src="/js/prism-css.min.js"></script>
+<script defer src="/js/prism-bash.min.js"></script>
+<script defer src="/js/prism-json.min.js"></script>
+<script defer src="/js/prism-markdown.min.js"></script>
 </head>
 <body class="overflow-x-hidden" x-data="{ sidebarCollapsed: false }">
 

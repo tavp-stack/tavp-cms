@@ -47,9 +47,9 @@ The rest of the CMS behaves identically regardless of driver.
 - **Theme system** — Volt templates under `/themes`, active theme configurable
 
 ### Planned (not yet implemented)
-- Media library admin UI
-- Menu builder admin UI
-- Settings admin UI
+- Media library admin UI (storage layer ready in `src/Media/`)
+- Menu builder admin UI (tree logic ready in `src/Menu/`)
+- Settings admin UI (storage layer ready in `src/Settings/`)
 - Scheduled publishing (`cms:publish` CLI)
 - Per-record SEO meta fields
 
@@ -115,6 +115,38 @@ Define content types in `config/cms.php` or use the admin BREAD UI:
 ],
 ```
 
+## Admin (Voyager-style)
+
+Login at `/admin` with an allowed e-mail — a one-time code is sent to it
+(Mailpit/SMTP). From there you manage content (BREAD CRUD), taxonomy,
+media, menus, users, SEO, analytics, and contact-form messages.
+
+### Building the admin (self-hosted, no CDN)
+
+Admin templates in `resources/admin/` are styled with Tailwind CSS. To avoid
+the render-blocking Google Fonts / jsdelivr / browser-JIT Tailwind CDN, ship
+static assets. In your application webroot carry:
+
+| Asset | Path (webroot) |
+|-------|----------------|
+| Tailwind build | `public/assets/admin.css` |
+| Font faces | `public/assets/fonts.css` + `/fonts/*.woff2` |
+| Alpine | `public/js/alpine.min.js` |
+| EasyMDE | `public/js/easymde.min.js`, `public/css/easymde.min.css` |
+| Prism + languages | `public/js/prism*.min.js`, `public/css/prism-tomorrow.min.css` |
+
+Build the Tailwind file from source while scanning the CMS admin templates:
+
+```bash
+npx tailwindcss \
+  -c tailwind.admin.config.js \
+  -i resources/css/admin.css \
+  -o public/assets/admin.css --minify
+```
+
+(The `tailwind.admin.config.js` + `resources/css/admin.css` live in the
+consuming app — see the `tavp-web-id` repo for the reference setup.)
+
 ## Structure
 
 ```
@@ -138,7 +170,7 @@ src/Media/                         MediaLibrary (storage only, no admin UI yet)
 src/Menu/                          MenuBuilder (storage only, no admin UI yet)
 src/Settings/                      Settings (storage only, no admin UI yet)
 src/Webhooks/                      WebhookManager
-resources/admin/                   Admin UI templates (10 views)
+resources/admin/                   Admin UI templates (28 views, self-hosted assets)
 themes/default/                    Volt + Tailwind default theme
 database/migrations/               Schema migrations
 routes/web.php                     Front-end routes (blog, taxonomy, catch-all)
