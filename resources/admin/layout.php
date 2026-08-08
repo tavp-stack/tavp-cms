@@ -13,6 +13,10 @@ $adminPrefix = '/' . trim($dbPrefix ?: config('cms.admin.route_prefix', 'admin')
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= $this->e($__brand) ?> Admin</title>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/inter-latin.woff2" crossorigin/>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/geist-latin.woff2" crossorigin/>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/jetbrains-mono-latin.woff2" crossorigin/>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/material-symbols-outlined.woff2" crossorigin/>
 <link rel="stylesheet" href="/assets/admin.css"/>
 <link rel="stylesheet" href="/assets/fonts.css"/>
 <link rel="stylesheet" href="/css/prism-tomorrow.min.css"/>
